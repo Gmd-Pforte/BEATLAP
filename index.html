@@ -306,9 +306,9 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
   <!-- IDEAS -->
   <div class="pane" data-pane="ideas" hidden>
     <section class="card hero">
-      <div class="label">PS Melody Composer</div>
+      <div class="label">PS Melody Composer 2.0</div>
       <h2>Ein ganzer Song auf Knopfdruck</h2>
-      <p class="hint">Tonart, Akkorde, Bass, Melodie und Schlagzeug für alle vier Muster, dazu ein Song-Aufbau. Läuft komplett offline.</p>
+      <p class="hint">Musikalische Motive, abwechslungsreiche Abschnitte und vollständige Songformen. Wähle, was erhalten bleiben soll – alles funktioniert offline.</p>
       <div class="row"><button class="btn grad" id="surpriseBtn">Überrasch mich</button><button class="btn" id="ideaUndo" disabled>Zurück</button></div>
     </section>
     <section class="card">
@@ -319,10 +319,12 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
         </select></label>
         <label class="field" for="ideaMood"><span>Stimmung</span><select id="ideaMood"><option value="random">Zufällig</option><option value="sad">Traurig & emotional</option><option value="melancholic">Melancholisch & ruhig</option><option value="dark">Düster & bedrückend</option><option value="hope">Hoffnungsvoll</option><option value="happy">Fröhlich & lebendig</option><option value="tense">Spannungsvoll</option></select></label>
         <label class="field" for="ideaVariation"><span>Variation</span><select id="ideaVariation"><option value="new">Ganz neue Melodie</option><option value="gentle">Sanfte Variation</option><option value="wild">Überraschung / experimentell</option></select></label>
+        <label class="field" for="ideaLength"><span>Songlänge</span><select id="ideaLength"><option value="16">Kurz · 16 Takte</option><option value="32" selected>Standard · 32 Takte</option><option value="48">Lang · 48 Takte</option><option value="64">Maximal · 64 Takte</option></select></label>
       </div>
       <div class="label">Behalten</div>
       <div class="locks" id="ideaLocks"><label><input type="checkbox" id="keepLead"> Melodie</label><label><input type="checkbox" id="keepChords"> Akkorde</label><label><input type="checkbox" id="keepBass"> Bass</label><label><input type="checkbox" id="keepDrums"> Schlagzeug</label></div>
       <button class="btn grad" id="ideaBtn">Neuen Song komponieren</button>
+      <div class="row" style="margin-top:10px;flex-wrap:wrap"><button class="btn" id="ideaMelodyBtn">🎵 Nur Melodie neu</button><button class="btn" id="ideaBackingBtn">🎹 Nur Begleitung neu</button></div>
       <p class="hint" id="composerInfo">Wähle Richtung und Stimmung oder lass beides zufällig.</p>
     </section>
     <section class="card">
@@ -1032,73 +1034,136 @@ const BEATS={ballad:[4,12],hiphop:[4,12],four:[4,12],rock:[4,12],reggae:[3,7,11,
 const MELODIC_RHYTHMS=[[0,4,8,12],[0,3,7,11,14],[0,2,6,10,13],[1,5,8,11],[0,6,9,14],[0,3,8,12,15],[2,5,10,13],[0,4,7,10,14],[0,7,11],[0,2,5,8,12,14],[0,5,10],[1,4,8,13]];
 let composerUndo=null;
 function makeRng(seed){let a=seed>>>0;return()=>{a+=0x6D2B79F5;let t=a;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return ((t^t>>>14)>>>0)/4294967296;};}
-function generateComposition(surprise=false){
+
+const COMPOSER_FORMS={
+ 16:[['Intro',0,2],['Strophe',1,4],['Refrain',2,4],['Bridge',3,2],['Letzter Refrain',2,4]],
+ 32:[['Intro',0,2],['Strophe 1',1,8],['Pre-Chorus',3,4],['Refrain',2,8],['Strophe 2',1,4],['Letzter Refrain',2,4],['Outro',0,2]],
+ 48:[['Intro',0,4],['Strophe 1',1,8],['Pre-Chorus',3,4],['Refrain',2,8],['Strophe 2',1,8],['Bridge',3,4],['Letzter Refrain',2,8],['Outro',0,4]],
+ 64:[['Intro',0,4],['Strophe 1',1,12],['Pre-Chorus',3,4],['Refrain',2,8],['Strophe 2',1,12],['Bridge',3,4],['Letzter Refrain',2,12],['Outro',0,8]]
+};
+function composerArrangement(bars){return (COMPOSER_FORMS[bars]||COMPOSER_FORMS[32]).map(([name,pat,count])=>({name,pat,bars:count}));}
+function generateComposition(surprise=false,mode='all'){
   const selectedGenre=surprise?'random':$('ideaStyle').value,selectedMood=surprise?'random':$('ideaMood').value;
-  const gKeys=Object.keys(GENRES),mKeys=Object.keys(MOODS);const seed=(window.crypto?.getRandomValues?crypto.getRandomValues(new Uint32Array(1))[0]:Math.floor(Math.random()*4294967296))>>>0;
+  const gKeys=Object.keys(GENRES),mKeys=Object.keys(MOODS);
+  const seed=(window.crypto?.getRandomValues?crypto.getRandomValues(new Uint32Array(1))[0]:Math.floor(Math.random()*4294967296))>>>0;
   const rnd=makeRng(seed),pick=a=>a[Math.floor(rnd()*a.length)],chance=p=>rnd()<p,between=(lo,hi)=>Math.round(lo+rnd()*(hi-lo));
   const genre=selectedGenre==='random'?pick(gKeys):selectedGenre,mood=selectedMood==='random'?pick(mKeys):selectedMood;
   const cfg=GENRES[genre],feel=MOODS[mood],variation=$('ideaVariation').value;
-  const keep={lead:$('keepLead').checked,chords:$('keepChords').checked,bass:$('keepBass').checked,drums:$('keepDrums').checked};
-  const prev=JSON.parse(JSON.stringify(P));composerUndo=prev;$('ideaUndo').disabled=false;
-  const scale=pick(feel.scales),roots=pick(feel.progressions).slice(),note=(d)=>Math.max(1,Math.min(15,d));
-  const density=Math.max(.17,Math.min(.94,cfg.density*feel.density*(variation==='wild'?1.16:variation==='gentle'?.85:1)));
-  if(playing)stop();P.bpm=between(...cfg.bpm);P.swing=cfg.swing;
-  if(!keep.lead&&!keep.chords&&!keep.bass){P.key=between(0,11);P.scale=scale;}
+  const keep={
+    lead:mode==='backing'||(mode==='all'&&$('keepLead').checked),
+    chords:mode==='melody'||(mode==='all'&&$('keepChords').checked),
+    bass:mode==='melody'||(mode==='all'&&$('keepBass').checked),
+    drums:mode==='melody'||(mode==='all'&&$('keepDrums').checked)
+  };
+  const preserveHarmony=mode!=='all'||keep.lead||keep.chords||keep.bass;
+  const preserveArrangement=mode!=='all';
+  const before=JSON.parse(JSON.stringify(P));composerUndo=before;$('ideaUndo').disabled=false;
+  const note=d=>Math.max(1,Math.min(15,d));
+  const scale=pick(feel.scales),roots=pick(feel.progressions).slice();
+  const density=Math.max(.2,Math.min(.9,cfg.density*feel.density*(variation==='wild'?1.22:variation==='gentle'?.82:1)));
+  if(playing)stop();
+  if(!preserveHarmony){P.bpm=between(...cfg.bpm);P.swing=cfg.swing;P.key=between(0,11);P.scale=scale;}
   P.chain=true;P.songMode=true;P.rollLengths=P.rollLengths||{};P.bassLengths=P.bassLengths||{};
-  if(keep.lead||keep.chords||keep.bass){for(let i=0;i<4;i++){
-    const source=keep.chords?P.pats[i].chords:keep.bass?P.pats[i].bass:null;
-    const existing=source?.find(v=>v>=1&&v<=7);
-    if(existing)roots[i]=existing;
-    else if(keep.lead){const mask=P.pats[i].lead.find(v=>v>0);if(mask){const row=Math.log2(mask&-mask)|0;roots[i]=row%7+1;}}
-  }}
-  if(!keep.lead)P.rollLengths={};if(!keep.bass)P.bassLengths={};
-  if(!keep.lead)P.params.lead.snd=cfg.lead;
-  if(!keep.chords)P.params.chords.snd=cfg.chord;
-  if(!keep.bass)P.params.bass.snd=cfg.bass;
-  if(!keep.drums){P.params.kick.snd=cfg.kick;P.params.snare.snd=cfg.snare;P.params.hat.snd=genre==='jazz'?'hatLofi':'hat';}
-  const baseRhythm=pick(MELODIC_RHYTHMS);
-  const motif=baseRhythm.filter(()=>chance(.65+density*.32)).map((s,i)=>({step:s,offset:i===0?0:pick([-3,-2,-1,-1,0,1,1,2,3])}));
-  if(motif.length<2){motif.push({step:0,offset:0},{step:8,offset:2});}
-  const melodicStart=pick([7,8,9,10]);
-  const percussion=['kick','snare','clap','hat','open','rim','tom','shaker'];
-  const barKick=pick(RHYTHMS[cfg.groove]),barSnare=BEATS[cfg.groove];
-  for(let bar=0;bar<4;bar++){
-    const p=P.pats[bar],root=roots[bar];
-    if(!keep.chords){p.chords=Array(16).fill(0);p.chords[0]=root;if(cfg.groove==='reggae'||cfg.groove==='four'){if(chance(.65))p.chords[8]=root;}}
-    if(!keep.bass){p.bass=Array(16).fill(0);const slots=cfg.groove==='four'?[0,4,8,12]:cfg.groove==='reggae'?[0,7,10,14]:cfg.groove==='ambient'?[0]:pick([[0,8],[0,6,10],[0,4,8,12],[0,7,11]]);
-      slots.forEach((s,i)=>{p.bass[s]=i===slots.length-1&&chance(.32)?((root+3)%7)+1:root;P.bassLengths[bar]??={};P.bassLengths[bar][s]=s===0?4:chance(.3)?3:2;});}
-    if(!keep.lead){p.lead=Array(16).fill(0);P.rollLengths[bar]={};
-      const shift=root-roots[0],transform=variation==='gentle'?0:bar===2?2:bar===3?-1:0;
-      motif.forEach((m,i)=>{let s=m.step;
-        if(bar>0&&chance(variation==='wild'?.6:.2))s=Math.max(0,Math.min(15,s+pick([-2,-1,1,2])));
-        if(!chance(density))return;
-        let row=note(melodicStart+m.offset+shift+transform+pick([0,0,0,0,1,-1]))-1;
-        if(s===0||s===8){row=note(root+7+(bar===2&&chance(.45)?2:0))-1;}
-        p.lead[s]|=1<<row;
-        const lens=P.rollLengths[bar][s]??={};lens[row]=pick(mood==='sad'||mood==='melancholic'?[2,2,3,4,6]:[1,2,2,3,4]);
-      });
-      if(!p.lead.some(Boolean)){const row=note(root+7)-1;p.lead[0]=1<<row;P.rollLengths[bar][0]={[row]:4};}
-    }
-    if(!keep.drums){for(const id of percussion)p[id]=Array(16).fill(0);
-      barKick.forEach(s=>p.kick[s]=2);
-      barSnare.forEach(s=>p.snare[s]=2);
-      if(cfg.groove!=='ambient'){for(let s=0;s<16;s+=cfg.groove==='hiphop'?2:cfg.groove==='ballad'?4:2)if(chance(.73))p.hat[s]=s%4===0?2:1;}
-      if(cfg.groove==='four'){[2,6,10,14].forEach(s=>{if(chance(.6))p.open[s]=1;});}
-      if(cfg.groove==='reggae'){[3,7,11,15].forEach(s=>p.rim[s]=1);}
-      if(cfg.groove==='ambient'){p.hat[8]=chance(.3)?1:0;}
-      if(chance(.45))p.shaker[pick([0,4,8,12])]=1;
-      if(bar===3){if(chance(.7)){p.snare[14]=1;p.snare[15]=1;}if(chance(.45))p.tom[15]=1;}
-      if(variation==='wild'&&chance(.55)){p.kick[pick([3,6,10,14])]=1;p.open[pick([3,7,11,15])]=1;}
+  if(preserveHarmony){
+    for(let bar=0;bar<4;bar++){
+      const existing=P.pats[bar].chords.find(n=>n>=1&&n<=7)||P.pats[bar].bass.find(n=>n>=1&&n<=7);
+      if(existing)roots[bar]=existing;
     }
   }
-  P.arrangement=[{pat:0,bars:2,name:'Intro'},{pat:1,bars:4,name:'Strophe'},{pat:2,bars:4,name:'Refrain'},{pat:3,bars:2,name:'Outro'}];
+  if(!keep.lead){P.rollLengths={};P.params.lead.snd=({
+    piano:'grand',sad:'felt',cinema:'cello',acoustic:'acoustic',jazz:'tenorSax',
+    folk:'acoustic',alternative:'acoustic',ambient:'flute'
+  })[genre]||cfg.lead;}
+  if(!keep.chords)P.params.chords.snd=({
+    piano:'felt',sad:'grand',cinema:'strings',acoustic:'nylon',folk:'acoustic'
+  })[genre]||cfg.chord;
+  if(!keep.bass){P.bassLengths={};P.params.bass.snd=cfg.bass;}
+  if(!keep.drums){P.params.kick.snd=cfg.kick;P.params.snare.snd=cfg.snare;P.params.hat.snd=genre==='jazz'?'hatLofi':'hat';}
+  const baseRhythm=pick(MELODIC_RHYTHMS);
+  const themeSteps=baseRhythm.filter((_,i)=>i===0||chance(.72)).slice(0,6);
+  if(themeSteps.length<3)themeSteps.push(...[4,8,12].filter(s=>!themeSteps.includes(s)).slice(0,3-themeSteps.length));
+  themeSteps.sort((a,b)=>a-b);
+  const contour=[0],walk=[-2,-1,-1,0,1,1,2];
+  for(let i=1;i<themeSteps.length;i++){
+    let offset=contour[i-1]+pick(walk);offset=Math.max(-3,Math.min(4,offset));contour.push(offset);
+  }
+  const motif=themeSteps.map((step,i)=>({step,offset:contour[i]}));
+  const melodicStart=pick([7,8,9]);
+  const percussion=['kick','snare','clap','hat','open','rim','tom','shaker'];
+  const barKick=pick(RHYTHMS[cfg.groove]),barSnare=BEATS[cfg.groove];
+  const densityBySection=[.48,.85,1.2,.7];
+  for(let bar=0;bar<4;bar++){
+    const p=P.pats[bar],root=roots[bar],sectionDensity=density*densityBySection[bar];
+    if(!keep.chords){
+      p.chords=Array(16).fill(0);p.chords[0]=root;
+      if(bar===2&&chance(.7))p.chords[8]=root;
+      if(cfg.groove==='reggae'&&bar>0)p.chords[8]=root;
+    }
+    if(!keep.bass){
+      p.bass=Array(16).fill(0);P.bassLengths[bar]={};
+      const slots=bar===0?[0]:cfg.groove==='four'?[0,4,8,12]:cfg.groove==='reggae'?[0,7,10,14]:cfg.groove==='ambient'?[0]:pick([[0,8],[0,6,10],[0,4,8,12],[0,7,11]]);
+      slots.forEach((s,i)=>{
+        p.bass[s]=i===slots.length-1&&bar===2&&chance(.4)?(root%7)+1:root;
+        P.bassLengths[bar][s]=s===0?4:chance(.3)?3:2;
+      });
+    }
+    if(!keep.lead){
+      p.lead=Array(16).fill(0);P.rollLengths[bar]={};
+      const shift=root-roots[0],variationShift=bar===2?1:bar===3?-1:0;
+      let lastRow=null;
+      const events=motif.map(m=>({...m}));
+      if(bar===2){
+        // Refrain: same theme, with a recognizable rise and a short answer phrase.
+        for(const s of [6,14])if(!events.some(e=>e.step===s))events.push({step:s,offset:pick([1,2,3])});
+      }
+      if(bar===3)events.push({step:12,offset:-1});
+      events.sort((a,b)=>a.step-b.step);
+      for(let i=0;i<events.length;i++){
+        const m=events[i];
+        const isStrong=m.step===0||m.step===8;
+        const chanceToPlay=isStrong?.94:Math.min(.95,sectionDensity*(bar===2?1.1:.98));
+        if(!chance(chanceToPlay))continue;
+        let step=m.step;
+        if(bar>0&&variation!=='gentle'&&!isStrong&&chance(variation==='wild'?.48:.18))step=Math.max(0,Math.min(15,step+pick([-1,1])));
+        let row=note(melodicStart+m.offset+shift+variationShift+(variation==='wild'?pick([-2,0,2]):pick([0,0,0,1,-1])));
+        if(isStrong)row=note(root+7+(bar===2?pick([0,2]):0));
+        if(lastRow!==null&&Math.abs(row-lastRow)>4)row=note(lastRow+Math.sign(row-lastRow)*pick([2,3,4]));
+        if(bar===0&&i>1&&chance(.65))continue;
+        lastRow=row;const bit=1<<(row-1);p.lead[step]|=bit;
+        const length=pick(mood==='sad'||mood==='melancholic'?[2,3,4,4,6]:[1,2,2,3,4]);
+        (P.rollLengths[bar][step]??={})[row-1]=Math.min(16-step,length);
+      }
+      if(!p.lead.some(Boolean)){const row=note(root+7)-1;p.lead[0]=1<<row;P.rollLengths[bar][0]={[row]:4};}
+    }
+    if(!keep.drums){
+      for(const id of percussion)p[id]=Array(16).fill(0);
+      if(bar!==0&&cfg.groove!=='ambient'){
+        barKick.forEach(s=>p.kick[s]=bar===3&&s%4!==0?1:2);
+        barSnare.forEach(s=>p.snare[s]=bar===2?2:1);
+        for(let s=0;s<16;s+=cfg.groove==='ballad'?4:2)if(chance(bar===2?.9:.64))p.hat[s]=s%4===0?2:1;
+      }else if(cfg.groove!=='ambient'){p.kick[0]=1;p.hat[8]=1;}
+      if(bar===2&&cfg.groove==='four')[2,6,10,14].forEach(s=>{if(chance(.75))p.open[s]=1;});
+      if(cfg.groove==='reggae'&&bar>0)[3,7,11,15].forEach(s=>p.rim[s]=1);
+      if(bar===3){p.snare[14]=1;p.snare[15]=1;if(chance(.5))p.tom[15]=1;}
+      if(variation==='wild'&&bar===2){p.kick[pick([3,6,10,14])]=1;p.open[pick([3,7,11,15])]=1;}
+    }
+  }
+  const requestedBars=+$('ideaLength').value||32;
+  if(!preserveArrangement)P.arrangement=composerArrangement(requestedBars);
   cur=0;save();renderAll();
+  const bars=songOrder().length;
+  const seconds=bars*4*60/P.bpm;
+  const duration=Math.floor(seconds/60)+':'+String(Math.round(seconds%60)).padStart(2,'0');
   const genreName=[...$('ideaStyle').options].find(x=>x.value===genre)?.textContent||genre;
   const moodName=[...$('ideaMood').options].find(x=>x.value===mood)?.textContent||mood;
-  $('composerInfo').textContent=`${genreName} · ${moodName} · ${P.bpm} BPM · ${NN[P.key]} ${SCALES[P.scale][0]} · Idee #${seed.toString(16).toUpperCase().padStart(8,'0')}. Über „Zurück“ kannst du die vorherige Version wiederherstellen.`;
-  msg('Neuer Song komponiert. Drück Play zum Anhören.');
+  const what=mode==='melody'?'Neue Melodie · Akkorde/Bass/Drums behalten':mode==='backing'?'Neue Begleitung · Melodie behalten':'Neuer Song';
+  $('composerInfo').textContent=what+' · '+genreName+' · '+moodName+' · '+P.bpm+' BPM · '+NN[P.key]+' '+SCALES[P.scale][0]+' · '+bars+' Takte / ca. '+duration+' Min. · Idee #'+seed.toString(16).toUpperCase().padStart(8,'0')+'.';
+  msg(what+' komponiert. Drück Play zum Anhören.');
 }
+
 $('ideaBtn').onclick=()=>generateComposition(false);
+$('ideaMelodyBtn').onclick=()=>generateComposition(false,'melody');
+$('ideaBackingBtn').onclick=()=>generateComposition(false,'backing');
 $('surpriseBtn').onclick=()=>generateComposition(true);
 $('ideaUndo').onclick=()=>{if(!composerUndo)return;if(playing)stop();P=composerUndo;composerUndo=null;$('ideaUndo').disabled=true;save();renderAll();$('composerInfo').textContent='Vorherige Komposition wiederhergestellt.';msg('Letzte Komposition wiederhergestellt.');};
 
