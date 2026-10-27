@@ -5,6 +5,9 @@
 'use strict';
 const SPECS={
  piano:{kind:'piano',soft:.4,decay:1.18,partial:9},
+ epiano:{kind:'tine',soft:.56,decay:.98,partial:8},
+ clav:{kind:'pluck',soft:.16,decay:1.55,partial:12},
+ music:{kind:'mallet',soft:.24,decay:.62,partial:8},
  grand:{kind:'piano',soft:.18,decay:1.00,partial:11},
  felt:{kind:'piano',soft:.85,decay:1.24,partial:7},
  upright:{kind:'piano',soft:.58,decay:1.35,partial:9},
@@ -33,21 +36,30 @@ function getBuf(ctx,id,f){
  const spec=SPECS[id],sr=22050,duration=spec.kind==='piano'?4.0:spec.kind==='pluck'?3.2:spec.kind==='mallet'?3.6:4;
  const length=Math.floor(sr*duration),buffer=ctx.createBuffer(1,length,sr),data=buffer.getChannelData(0);
  const rand=random((Math.round(f*10)*8171+id.length*91753)>>>0);
- const isPiano=spec.kind==='piano',isPluck=spec.kind==='pluck',isMallet=spec.kind==='mallet';
+ const isPiano=spec.kind==='piano',isPluck=spec.kind==='pluck',isMallet=spec.kind==='mallet',isTine=spec.kind==='tine';
  const copies=isPiano?3:isPluck?2:spec.kind==='ensemble'?3:1;
  const modes=[],b=isPiano?.00016:.000038;
  for(let string=0;string<copies;string++){
   const cents=isPiano?[-.75,0,.68][string]:isPluck?[-.3,.35][string]:[-4,0,4][string];
   for(let h=1;h<=spec.partial;h++){
    let multiplier=h;
-   if(isMallet && h>1)multiplier=[1,2.76,5.4,8.9,12.1,16.3,19.1,22.3][h-1];
+   if(isMallet) {
+    // Metal bars, wooden bars, tines and music boxes have different modal frequencies.
+    const ratios=id==='bell'?[1,2.1,3.95,5.45,7.8,10.5,13.2,16]:
+      id==='marimba'?[1,3.93,9.2,15.1,20,25,29,34]:
+      id==='kalimba'?[1,2.85,5.35,8.8,12.1,16.3,19.1,22.3]:
+      id==='music'?[1,2.02,3.87,5.9,7.8,10.3,12.5,15.1]:
+      [1,2,4.05,6.1,8.2,10.4,12.5,14.8];
+    multiplier=ratios[h-1];
+   } else if(isTine) multiplier=h===1?1:h===2?2.01:h*1.008;
    const hz=f*multiplier*Math.sqrt(1+b*h*h)*Math.pow(2,cents/1200);
    if(hz>sr*.46)continue;
-   const weight=Math.pow(h,-(isMallet?1.68:1.25+spec.soft*.7))/copies;
-   const dec=spec.decay*(isPiano?.53:isPluck?.8:isMallet?.58:.12)*(1+.12*h*h);
+   const weight=Math.pow(h,-(isMallet?1.55:isTine?1.62:1.25+spec.soft*.7))/copies;
+   const brightness=id==='marimba'&&h>3?.28:id==='kalimba'&&h>4?.36:id==='clav'&&h>7?.62:1;
+   const dec=spec.decay*(isPiano?.53:isPluck?.8:isMallet?.58:isTine?.42:.12)*(1+.12*h*h);
    const omega=2*Math.PI*hz/sr;
    const phase=rand()*6.28;
-   modes.push({sin:Math.sin(phase),cos:Math.cos(phase),ss:Math.sin(omega),cc:Math.cos(omega),amp:weight,factor:Math.exp(-dec/sr)});
+   modes.push({sin:Math.sin(phase),cos:Math.cos(phase),ss:Math.sin(omega),cc:Math.cos(omega),amp:weight*brightness,factor:Math.exp(-dec/sr)});
   }
  }
  let noise=0;
@@ -59,10 +71,13 @@ function getBuf(ctx,id,f){
    sum+=sin*m.amp;m.amp*=m.factor;
   }
   noise=noise*.67+(rand()*2-1)*.33;
-  const attack=1-Math.exp(-t*(isPiano?1200:isPluck?900:isMallet?1100:35));
-  const click=(isPiano?.10:isPluck?.14:isMallet?.18:.015)*(1-spec.soft)*noise*Math.exp(-t*(isPiano?70:85));
+  const attack=1-Math.exp(-t*(isPiano?1200:isPluck?900:isMallet?1100:isTine?800:35));
+  const click=(isPiano?.10:isPluck?.14:isMallet?.18:isTine?.12:.015)*(1-spec.soft)*noise*Math.exp(-t*(isPiano?70:85));
   const body=isPiano?Math.sin(2*Math.PI*137*t)*Math.exp(-t*7)*.006:0;
-  data[i]=Math.tanh((sum*.25+click+body)*attack*1.3);
+  const keyRelease=id==='clav'?Math.exp(-t*.85):1;
+  const breath=['flute','sax','tenorSax','trumpet','brass'].includes(id)?noise*.006*(1-Math.exp(-t*15)):0;
+  const bow=id==='cello'||id==='violin'||id==='strings'?noise*.004*(1-Math.exp(-t*18)):0;
+  data[i]=Math.tanh((sum*.25*keyRelease+click+body+breath+bow)*attack*1.3);
  }
  if(cache.size>=96)cache.delete(cache.keys().next().value);
  cache.set(key,buffer);
@@ -73,13 +88,13 @@ function play(ctx,out,id,f,t,dur,vol){
  const src=ctx.createBufferSource();src.buffer=getBuf(ctx,id,f);
  const amp=ctx.createGain();
  const filter=ctx.createBiquadFilter();filter.type='lowpass';
- const bright=spec.kind==='piano'?5400:spec.kind==='pluck'?4200:spec.kind==='mallet'?6100:spec.kind==='reed'?3700:4300;
+ const bright=spec.kind==='piano'?5400:spec.kind==='pluck'?4200:spec.kind==='tine'?4900:spec.kind==='mallet'?(id==='marimba'?3000:id==='kalimba'?4900:6100):spec.kind==='reed'?3700:4300;
  filter.frequency.setValueAtTime(Math.min(9000,bright*(1.1-spec.soft*.3)),t);
- if(['piano','pluck','mallet'].includes(spec.kind))
+ if(['piano','pluck','mallet','tine'].includes(spec.kind))
   filter.frequency.exponentialRampToValueAtTime(Math.max(700,bright*.47),t+.65);
  src.connect(filter);filter.connect(amp);amp.connect(out);
  const isSustain=['bow','ensemble','wind','reed','brass'].includes(spec.kind);
- const release=isSustain?.35:spec.kind==='piano'?.85:.5;
+ const release=isSustain?.35:spec.kind==='piano'?.85:spec.kind==='tine'?.65:.5;
  const end=t+Math.max(.09,dur);
  const peak=Math.max(.0001,vol)*(spec.kind==='ensemble'?.65:1.0);
  amp.gain.setValueAtTime(.0001,t);
@@ -95,5 +110,5 @@ function play(ctx,out,id,f,t,dur,vol){
  src.start(t);src.stop(Math.min(t+src.buffer.duration,end+release+.05));
  return true;
 }
-global.PSInstrumentEngine={supports:id=>!!SPECS[id],play,version:'1.0'};
+global.PSInstrumentEngine={supports:id=>!!SPECS[id],play,version:'1.1'};
 })(window);
