@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>PS Sample Pack</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;800&family=Manrope:wght@500;600;700;800&family=JetBrains+Mono:wght@600;800&display=swap">
+<style>
+/* Layout: one-column sample browser for phones; sticky search + category chips, then grouped lists of tap-to-play rows */
+:root{--bg:#0b0910;--s1:#14111b;--s2:#1c1826;--s3:#262133;--line:rgba(255,255,255,.08);--ink:#f5f1fb;--muted:#9a90ab;--faint:#6c6380;--pink:#ff4fa0;--blue:#2f9bff;--live:#5ff2c4;
+--f-display:"Unbounded","Manrope",system-ui,sans-serif;--f-body:"Manrope",system-ui,-apple-system,sans-serif;--f-mono:"JetBrains Mono",ui-monospace,monospace;color-scheme:dark}
+[hidden]{display:none!important}
+*{box-sizing:border-box}
+html,body{background:var(--bg)}
+body{color:var(--ink);font-family:var(--f-body);font-size:15px;margin:0;-webkit-tap-highlight-color:transparent;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:14px 40px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:680px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+h1{margin:0;font-family:var(--f-display);font-weight:800;font-size:1.5rem;line-height:1.1}
+h1 i{font-style:normal;background:linear-gradient(100deg,var(--pink),var(--blue));-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{margin:6px 0 0;color:var(--muted);font-size:.9rem}
+.stats{display:flex;gap:16px;font-family:var(--f-mono);font-size:.75rem;color:var(--faint)}
+.stats b{color:var(--ink);font-size:1rem;display:block}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:8px;display:flex;flex-direction:column;gap:8px}
+input[type=search]{width:100%;font:inherit;font-weight:600;color:var(--ink);background:var(--s1);border:1px solid var(--line);border-radius:14px;min-height:46px;padding:0 14px}
+.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+button{font:inherit;color:var(--ink);background:none;border:0;cursor:pointer;-webkit-user-select:none;user-select:none}
+button:focus-visible,input:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.chip{flex:none;min-height:38px;padding:0 14px;border-radius:12px;background:var(--s1);border:1px solid var(--line);font-weight:700;font-size:.86rem}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.group{display:flex;flex-direction:column;gap:6px}
+.group h2{margin:10px 0 2px;font-family:var(--f-mono);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);display:flex;justify-content:space-between}
+.item{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:12px;align-items:center;background:var(--s1);border:1px solid var(--line);border-radius:14px;padding:8px 12px 8px 8px;text-align:left;width:100%}
+.item .pl{width:44px;height:44px;border-radius:12px;background:var(--s3);display:grid;place-items:center}
+.item .pl svg{width:18px;height:18px}
+.item.on{border-color:var(--live)}
+.item.on .pl{background:linear-gradient(120deg,var(--pink),var(--blue))}
+.item b{display:block;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item small{display:block;font-family:var(--f-mono);font-size:.68rem;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .meta{font-family:var(--f-mono);font-size:.7rem;color:var(--muted);text-align:right;white-space:nowrap}
+.prog{height:3px;border-radius:2px;background:var(--live);width:0;grid-column:2/4;margin-top:-4px}
+.empty{color:var(--muted);text-align:center;padding:30px 0}
+</style>
+</head><body>
+<div class="wrap">
+  <header>
+    <h1>PS AI MUSIC<br><i>Sample Pack</i></h1>
+    <p class="lead">Alle Sounds selbst erzeugt und frei nutzbar. Tippe auf einen Sound zum Anhören.</p>
+  </header>
+  <div class="stats" id="stats"></div>
+  <div class="bar">
+    <input type="search" id="q" placeholder="Suchen, z. B. Kick, 808, Pad …" aria-label="Suchen">
+    <div class="chips" id="cats"></div>
+  </div>
+  <div id="list"></div>
+  <p class="empty" id="empty" hidden>Nichts gefunden.</p>
+</div>
+<script>
+(async function(){
+const $=id=>document.getElementById(id);
+let data; try{ data=await (await fetch('samples.json')).json(); }catch(e){ $('list').innerHTML='<p class="empty">Die Übersicht samples.json konnte nicht geladen werden. Öffne die Seite über GitHub Pages oder einen Webserver.</p>'; return; }
+const S=data.samples; let cat='all', q='', cur=null, audio=new Audio();
+$('stats').innerHTML=`<span><b>${S.length}</b>Sounds</span><span><b>${Object.keys(data.categories).length}</b>Kategorien</span><span><b>${(S.reduce((a,s)=>a+s.duration,0)/60).toFixed(0)} min</b>Audio</span>`;
+const cats=[['all','Alle'],...Object.entries(data.categories)];
+cats.forEach(([k,n])=>{ const b=document.createElement('button'); b.className='chip'; b.textContent=n+(k==='all'?'':' '+S.filter(s=>s.category===k).length); b.setAttribute('aria-pressed',k===cat); b.onclick=()=>{ cat=k; [...$('cats').children].forEach(c=>c.setAttribute('aria-pressed',c===b)); render(); }; $('cats').append(b); });
+$('q').oninput=e=>{ q=e.target.value.toLowerCase().trim(); render(); };
+const PLAY='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>', STOP='<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>';
+function meta(s){ if(s.type==='loop') return `${s.bpm} BPM · ${s.bars} T`; if(s.rootNote) return 'Ton '+s.rootNote; return s.duration.toFixed(2)+' s'; }
+function render(){ const L=$('list'); L.innerHTML=''; let n=0;
+  const items=S.filter(s=>(cat==='all'||s.category===cat)&&(!q||(s.name+' '+s.group+' '+(data.groups[s.group]||'')+' '+s.tags.join(' ')).toLowerCase().includes(q)));
+  const groups={}; items.forEach(s=>{ const k=s.category+'/'+s.group; (groups[k]=groups[k]||[]).push(s); });
+  for(const [k,arr] of Object.entries(groups)){ const g=document.createElement('section'); g.className='group'; const [c,gr]=k.split('/');
+    g.innerHTML=`<h2><span>${data.categories[c]} · ${data.groups[gr]||gr}</span><span>${arr.length}</span></h2>`;
+    for(const s of arr){ const b=document.createElement('button'); b.className='item'; b.innerHTML=`<span class="pl">${PLAY}</span><span><b></b><small></small></span><span class="meta"></span>`;
+      b.querySelector('b').textContent=s.name; b.querySelector('small').textContent=s.file.split('/').pop(); b.querySelector('.meta').textContent=meta(s);
+      b.onclick=()=>toggle(s,b); g.append(b); n++; }
+    L.append(g); }
+  $('empty').hidden=n>0; }
+function toggle(s,b){ if(cur&&cur.b===b&&!audio.paused){ audio.pause(); mark(null); return; }
+  audio.pause(); audio=new Audio(s.file); audio.loop=s.type==='loop'; audio.play().catch(()=>{}); mark({s,b}); audio.onended=()=>mark(null); }
+function mark(n){ if(cur){ cur.b.classList.remove('on'); cur.b.querySelector('.pl').innerHTML=PLAY; } cur=n; if(cur){ cur.b.classList.add('on'); cur.b.querySelector('.pl').innerHTML=STOP; } }
+render();
+})();
+</script>
+</body></html>

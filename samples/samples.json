@@ -1,0 +1,5314 @@
+{
+ "name": "PS AI MUSIC Sample Pack",
+ "version": "1.0",
+ "sampleRate": 44100,
+ "bitDepth": 16,
+ "format": "wav",
+ "license": "Alle Sounds wurden synthetisch erzeugt (keine Fremdaufnahmen). Frei nutzbar für PS AI MUSIC, auch kommerziell.",
+ "categories": {
+  "drums": "Drums",
+  "percussion": "Percussion",
+  "bass": "Bass",
+  "instruments": "Instrumente",
+  "chords": "Akkorde",
+  "fx": "Effekte",
+  "loops": "Loops"
+ },
+ "groups": {
+  "kick": "Kicks",
+  "snare": "Snares",
+  "rim": "Rimshots",
+  "clap": "Claps",
+  "snap": "Snaps",
+  "hihat": "Hi-Hats",
+  "openhat": "Open Hats",
+  "ride": "Rides",
+  "crash": "Crashes",
+  "tom": "Toms",
+  "hand": "Handtrommeln",
+  "metal": "Metall",
+  "wood": "Holz",
+  "shaker": "Shaker & Tamburin",
+  "808": "808",
+  "synth": "Bass-Synths",
+  "keys": "Tasten",
+  "mallets": "Mallets & Glocken",
+  "strings": "Saiten",
+  "winds": "Bläser",
+  "voices": "Stimmen",
+  "stab": "Stabs",
+  "pad": "Pads",
+  "guitar": "Gitarre",
+  "riser": "Riser",
+  "downlifter": "Downlifter",
+  "impact": "Impacts",
+  "drop": "Sub Drops",
+  "laser": "Laser & Zaps",
+  "whoosh": "Whooshes",
+  "scratch": "Scratches",
+  "texture": "Texturen",
+  "horn": "Hörner",
+  "reverse": "Rückwärts",
+  "tone": "Töne",
+  "drums": "Drum-Loops",
+  "melodic": "Melodie-Loops"
+ },
+ "count": 285,
+ "samples": [
+  {
+   "id": "kick-01",
+   "name": "Kick Boom Bap",
+   "category": "drums",
+   "group": "kick",
+   "file": "drums/kick/ps-kick-01-kick-boom-bap.wav",
+   "type": "oneshot",
+   "tracks": [
+    "kick"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 1.68,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "kick-02",
+   "name": "Kick Punch",
+   "category": "drums",
+   "group": "kick",
+   "file": "drums/kick/ps-kick-02-kick-punch.wav",
+   "type": "oneshot",
+   "tracks": [
+    "kick"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 1.08,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "kick-03",
+   "name": "Kick Deep",
+   "category": "drums",
+   "group": "kick",
+   "file": "drums/kick/ps-kick-03-kick-deep.wav",
+   "type": "oneshot",
+   "tracks": [
+    "kick"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 2.2,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "kick-04",
+   "name": "Kick Tight",
+   "category": "drums",
+   "group": "kick",
+   "file": "drums/kick/ps-kick-04-kick-tight.wav",
+   "type": "oneshot",
+   "tracks": [
+    "kick"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.68,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "kick-05",
+   "name": "Kick House",
+   "category": "drums",
+   "group": "kick",
+   "file": "drums/kick/ps-kick-05-kick-house.wav",
+   "type": "oneshot",
+   "tracks": [
+    "kick"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 1.58,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "kick-06",
+   "name": "Kick Techno",
+   "category": "drums",
+   "group": "kick",
+   "file": "drums/kick/ps-kick-06-kick-techno.wav",
+   "type": "oneshot",
+   "tracks": [
+    "kick"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 1.98,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "kick-07",
+   "name": "Kick Lo-Fi",
+   "category": "drums",
+   "group": "kick",
+   "file": "drums/kick/ps-kick-07-kick-lo-fi.wav",
+   "type": "oneshot",
+   "tracks": [
+    "kick"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 1.58,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "kick-08",
+   "name": "Kick Akustik",
+   "category": "drums",
+   "group": "kick",
+   "file": "drums/kick/ps-kick-08-kick-akustik.wav",
+   "type": "oneshot",
+   "tracks": [
+    "kick"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 1.18,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "kick-09",
+   "name": "Kick Sub",
+   "category": "drums",
+   "group": "kick",
+   "file": "drums/kick/ps-kick-09-kick-sub.wav",
+   "type": "oneshot",
+   "tracks": [
+    "kick"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 2.2,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "kick-10",
+   "name": "Kick 808 kurz",
+   "category": "drums",
+   "group": "kick",
+   "file": "drums/kick/ps-kick-10-kick-808-kurz.wav",
+   "type": "oneshot",
+   "tracks": [
+    "kick"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 2.2,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "kick-11",
+   "name": "Kick 808 lang",
+   "category": "drums",
+   "group": "kick",
+   "file": "drums/kick/ps-kick-11-kick-808-lang.wav",
+   "type": "oneshot",
+   "tracks": [
+    "kick"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 2.2,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "kick-12",
+   "name": "Kick Trap",
+   "category": "drums",
+   "group": "kick",
+   "file": "drums/kick/ps-kick-12-kick-trap.wav",
+   "type": "oneshot",
+   "tracks": [
+    "kick"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 2.2,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "kick-13",
+   "name": "Kick Verzerrt",
+   "category": "drums",
+   "group": "kick",
+   "file": "drums/kick/ps-kick-13-kick-verzerrt.wav",
+   "type": "oneshot",
+   "tracks": [
+    "kick"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 1.83,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "kick-14",
+   "name": "Kick Weich",
+   "category": "drums",
+   "group": "kick",
+   "file": "drums/kick/ps-kick-14-kick-weich.wav",
+   "type": "oneshot",
+   "tracks": [
+    "kick"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 1.33,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "kick-15",
+   "name": "Kick Thump",
+   "category": "drums",
+   "group": "kick",
+   "file": "drums/kick/ps-kick-15-kick-thump.wav",
+   "type": "oneshot",
+   "tracks": [
+    "kick"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.88,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "kick-16",
+   "name": "Kick Club",
+   "category": "drums",
+   "group": "kick",
+   "file": "drums/kick/ps-kick-16-kick-club.wav",
+   "type": "oneshot",
+   "tracks": [
+    "kick"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 2.18,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "kick-17",
+   "name": "Kick Hart",
+   "category": "drums",
+   "group": "kick",
+   "file": "drums/kick/ps-kick-17-kick-hart.wav",
+   "type": "oneshot",
+   "tracks": [
+    "kick"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 1.58,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "kick-18",
+   "name": "Kick Rund",
+   "category": "drums",
+   "group": "kick",
+   "file": "drums/kick/ps-kick-18-kick-rund.wav",
+   "type": "oneshot",
+   "tracks": [
+    "kick"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 1.83,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "kick-19",
+   "name": "Kick Staubig",
+   "category": "drums",
+   "group": "kick",
+   "file": "drums/kick/ps-kick-19-kick-staubig.wav",
+   "type": "oneshot",
+   "tracks": [
+    "kick"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 1.48,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "kick-20",
+   "name": "Kick Knock",
+   "category": "drums",
+   "group": "kick",
+   "file": "drums/kick/ps-kick-20-kick-knock.wav",
+   "type": "oneshot",
+   "tracks": [
+    "kick"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.58,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "kick-21",
+   "name": "Kick Boomy",
+   "category": "drums",
+   "group": "kick",
+   "file": "drums/kick/ps-kick-21-kick-boomy.wav",
+   "type": "oneshot",
+   "tracks": [
+    "kick"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 2.2,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "kick-22",
+   "name": "Kick Kurz",
+   "category": "drums",
+   "group": "kick",
+   "file": "drums/kick/ps-kick-22-kick-kurz.wav",
+   "type": "oneshot",
+   "tracks": [
+    "kick"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.43,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "kick-23",
+   "name": "Kick Hip-Hop",
+   "category": "drums",
+   "group": "kick",
+   "file": "drums/kick/ps-kick-23-kick-hip-hop.wav",
+   "type": "oneshot",
+   "tracks": [
+    "kick"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 1.88,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "kick-24",
+   "name": "Kick Garage",
+   "category": "drums",
+   "group": "kick",
+   "file": "drums/kick/ps-kick-24-kick-garage.wav",
+   "type": "oneshot",
+   "tracks": [
+    "kick"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 1.28,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "snare-01",
+   "name": "Snare Klassik",
+   "category": "drums",
+   "group": "snare",
+   "file": "drums/snare/ps-snare-01-snare-klassik.wav",
+   "type": "oneshot",
+   "tracks": [
+    "snare"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.95,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "snare-02",
+   "name": "Snare Trap",
+   "category": "drums",
+   "group": "snare",
+   "file": "drums/snare/ps-snare-02-snare-trap.wav",
+   "type": "oneshot",
+   "tracks": [
+    "snare"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.7,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "snare-03",
+   "name": "Snare Fett",
+   "category": "drums",
+   "group": "snare",
+   "file": "drums/snare/ps-snare-03-snare-fett.wav",
+   "type": "oneshot",
+   "tracks": [
+    "snare"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 1.55,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "snare-04",
+   "name": "Snare Lo-Fi",
+   "category": "drums",
+   "group": "snare",
+   "file": "drums/snare/ps-snare-04-snare-lo-fi.wav",
+   "type": "oneshot",
+   "tracks": [
+    "snare"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 1.05,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "snare-05",
+   "name": "Snare Tight",
+   "category": "drums",
+   "group": "snare",
+   "file": "drums/snare/ps-snare-05-snare-tight.wav",
+   "type": "oneshot",
+   "tracks": [
+    "snare"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.45,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "snare-06",
+   "name": "Snare Rock",
+   "category": "drums",
+   "group": "snare",
+   "file": "drums/snare/ps-snare-06-snare-rock.wav",
+   "type": "oneshot",
+   "tracks": [
+    "snare"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 1.45,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "snare-07",
+   "name": "Snare Hall",
+   "category": "drums",
+   "group": "snare",
+   "file": "drums/snare/ps-snare-07-snare-hall.wav",
+   "type": "oneshot",
+   "tracks": [
+    "snare"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 1.465,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "snare-08",
+   "name": "Snare Piccolo",
+   "category": "drums",
+   "group": "snare",
+   "file": "drums/snare/ps-snare-08-snare-piccolo.wav",
+   "type": "oneshot",
+   "tracks": [
+    "snare"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.65,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "snare-09",
+   "name": "Snare Tief",
+   "category": "drums",
+   "group": "snare",
+   "file": "drums/snare/ps-snare-09-snare-tief.wav",
+   "type": "oneshot",
+   "tracks": [
+    "snare"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 1.3,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "snare-10",
+   "name": "Snare House",
+   "category": "drums",
+   "group": "snare",
+   "file": "drums/snare/ps-snare-10-snare-house.wav",
+   "type": "oneshot",
+   "tracks": [
+    "snare"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.85,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "snare-11",
+   "name": "Snare Breakbeat",
+   "category": "drums",
+   "group": "snare",
+   "file": "drums/snare/ps-snare-11-snare-breakbeat.wav",
+   "type": "oneshot",
+   "tracks": [
+    "snare"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.9,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "snare-12",
+   "name": "Snare Dubstep",
+   "category": "drums",
+   "group": "snare",
+   "file": "drums/snare/ps-snare-12-snare-dubstep.wav",
+   "type": "oneshot",
+   "tracks": [
+    "snare"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 2.137,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "snare-13",
+   "name": "Snare Weich",
+   "category": "drums",
+   "group": "snare",
+   "file": "drums/snare/ps-snare-13-snare-weich.wav",
+   "type": "oneshot",
+   "tracks": [
+    "snare"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.8,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "snare-14",
+   "name": "Snare Crack",
+   "category": "drums",
+   "group": "snare",
+   "file": "drums/snare/ps-snare-14-snare-crack.wav",
+   "type": "oneshot",
+   "tracks": [
+    "snare"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.5,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "snare-15",
+   "name": "Snare Snappy",
+   "category": "drums",
+   "group": "snare",
+   "file": "drums/snare/ps-snare-15-snare-snappy.wav",
+   "type": "oneshot",
+   "tracks": [
+    "snare"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 1.15,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "snare-16",
+   "name": "Snare Boom Bap",
+   "category": "drums",
+   "group": "snare",
+   "file": "drums/snare/ps-snare-16-snare-boom-bap.wav",
+   "type": "oneshot",
+   "tracks": [
+    "snare"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 1.1,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "snare-17",
+   "name": "Snare Besen",
+   "category": "drums",
+   "group": "snare",
+   "file": "drums/snare/ps-snare-17-snare-besen.wav",
+   "type": "oneshot",
+   "tracks": [
+    "snare"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.5,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "snare-18",
+   "name": "Snare Besen lang",
+   "category": "drums",
+   "group": "snare",
+   "file": "drums/snare/ps-snare-18-snare-besen-lang.wav",
+   "type": "oneshot",
+   "tracks": [
+    "snare"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.9,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "rim-01",
+   "name": "Rim Klassik",
+   "category": "drums",
+   "group": "rim",
+   "file": "drums/rim/ps-rim-01-rim-klassik.wav",
+   "type": "oneshot",
+   "tracks": [
+    "rim",
+    "snare"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.25,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "rim-02",
+   "name": "Rim Hell",
+   "category": "drums",
+   "group": "rim",
+   "file": "drums/rim/ps-rim-02-rim-hell.wav",
+   "type": "oneshot",
+   "tracks": [
+    "rim",
+    "snare"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.25,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "rim-03",
+   "name": "Rim Holz",
+   "category": "drums",
+   "group": "rim",
+   "file": "drums/rim/ps-rim-03-rim-holz.wav",
+   "type": "oneshot",
+   "tracks": [
+    "rim",
+    "snare"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.25,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "rim-04",
+   "name": "Rim Klick",
+   "category": "drums",
+   "group": "rim",
+   "file": "drums/rim/ps-rim-04-rim-klick.wav",
+   "type": "oneshot",
+   "tracks": [
+    "rim",
+    "snare"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.245,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "rim-05",
+   "name": "Rim Mittel",
+   "category": "drums",
+   "group": "rim",
+   "file": "drums/rim/ps-rim-05-rim-mittel.wav",
+   "type": "oneshot",
+   "tracks": [
+    "rim",
+    "snare"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.25,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "rim-06",
+   "name": "Rim Dunkel",
+   "category": "drums",
+   "group": "rim",
+   "file": "drums/rim/ps-rim-06-rim-dunkel.wav",
+   "type": "oneshot",
+   "tracks": [
+    "rim",
+    "snare"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.25,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "clap-01",
+   "name": "Clap Klassik",
+   "category": "drums",
+   "group": "clap",
+   "file": "drums/clap/ps-clap-01-clap-klassik.wav",
+   "type": "oneshot",
+   "tracks": [
+    "clap",
+    "snare"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 1.083,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "clap-02",
+   "name": "Clap Kurz",
+   "category": "drums",
+   "group": "clap",
+   "file": "drums/clap/ps-clap-02-clap-kurz.wav",
+   "type": "oneshot",
+   "tracks": [
+    "clap",
+    "snare"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.422,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "clap-03",
+   "name": "Clap Groß",
+   "category": "drums",
+   "group": "clap",
+   "file": "drums/clap/ps-clap-03-clap-gross.wav",
+   "type": "oneshot",
+   "tracks": [
+    "clap",
+    "snare"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 2.085,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "clap-04",
+   "name": "Clap 808",
+   "category": "drums",
+   "group": "clap",
+   "file": "drums/clap/ps-clap-04-clap-808.wav",
+   "type": "oneshot",
+   "tracks": [
+    "clap",
+    "snare"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 1.336,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "clap-05",
+   "name": "Clap House",
+   "category": "drums",
+   "group": "clap",
+   "file": "drums/clap/ps-clap-05-clap-house.wav",
+   "type": "oneshot",
+   "tracks": [
+    "clap",
+    "snare"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 1.318,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "clap-06",
+   "name": "Clap Trap",
+   "category": "drums",
+   "group": "clap",
+   "file": "drums/clap/ps-clap-06-clap-trap.wav",
+   "type": "oneshot",
+   "tracks": [
+    "clap",
+    "snare"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.824,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "clap-07",
+   "name": "Clap Hell",
+   "category": "drums",
+   "group": "clap",
+   "file": "drums/clap/ps-clap-07-clap-hell.wav",
+   "type": "oneshot",
+   "tracks": [
+    "clap",
+    "snare"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.683,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "clap-08",
+   "name": "Clap Dunkel",
+   "category": "drums",
+   "group": "clap",
+   "file": "drums/clap/ps-clap-08-clap-dunkel.wav",
+   "type": "oneshot",
+   "tracks": [
+    "clap",
+    "snare"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 1.183,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "clap-09",
+   "name": "Clap Stadion",
+   "category": "drums",
+   "group": "clap",
+   "file": "drums/clap/ps-clap-09-clap-stadion.wav",
+   "type": "oneshot",
+   "tracks": [
+    "clap",
+    "snare"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 2.518,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "clap-10",
+   "name": "Clap Lo-Fi",
+   "category": "drums",
+   "group": "clap",
+   "file": "drums/clap/ps-clap-10-clap-lo-fi.wav",
+   "type": "oneshot",
+   "tracks": [
+    "clap",
+    "snare"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.983,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "clap-11",
+   "name": "Clap Hall",
+   "category": "drums",
+   "group": "clap",
+   "file": "drums/clap/ps-clap-11-clap-hall.wav",
+   "type": "oneshot",
+   "tracks": [
+    "clap",
+    "snare"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 1.643,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "clap-12",
+   "name": "Clap Dick",
+   "category": "drums",
+   "group": "clap",
+   "file": "drums/clap/ps-clap-12-clap-dick.wav",
+   "type": "oneshot",
+   "tracks": [
+    "clap",
+    "snare"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 1.5,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "snap-01",
+   "name": "Fingerschnipsen 1",
+   "category": "drums",
+   "group": "snap",
+   "file": "drums/snap/ps-snap-01-fingerschnipsen-1.wav",
+   "type": "oneshot",
+   "tracks": [
+    "clap",
+    "rim"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.268,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "snap-02",
+   "name": "Fingerschnipsen 2",
+   "category": "drums",
+   "group": "snap",
+   "file": "drums/snap/ps-snap-02-fingerschnipsen-2.wav",
+   "type": "oneshot",
+   "tracks": [
+    "clap",
+    "rim"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.19,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "snap-03",
+   "name": "Fingerschnipsen 3",
+   "category": "drums",
+   "group": "snap",
+   "file": "drums/snap/ps-snap-03-fingerschnipsen-3.wav",
+   "type": "oneshot",
+   "tracks": [
+    "clap",
+    "rim"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.3,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "snap-04",
+   "name": "Fingerschnipsen 4",
+   "category": "drums",
+   "group": "snap",
+   "file": "drums/snap/ps-snap-04-fingerschnipsen-4.wav",
+   "type": "oneshot",
+   "tracks": [
+    "clap",
+    "rim"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.225,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "hihat-01",
+   "name": "Hi-Hat Klassik",
+   "category": "drums",
+   "group": "hihat",
+   "file": "drums/hihat/ps-hihat-01-hi-hat-klassik.wav",
+   "type": "oneshot",
+   "tracks": [
+    "hat"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.3,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "hihat-02",
+   "name": "Hi-Hat Trap",
+   "category": "drums",
+   "group": "hihat",
+   "file": "drums/hihat/ps-hihat-02-hi-hat-trap.wav",
+   "type": "oneshot",
+   "tracks": [
+    "hat"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.21,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "hihat-03",
+   "name": "Hi-Hat Lo-Fi",
+   "category": "drums",
+   "group": "hihat",
+   "file": "drums/hihat/ps-hihat-03-hi-hat-lo-fi.wav",
+   "type": "oneshot",
+   "tracks": [
+    "hat"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.33,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "hihat-04",
+   "name": "Hi-Hat Tight",
+   "category": "drums",
+   "group": "hihat",
+   "file": "drums/hihat/ps-hihat-04-hi-hat-tight.wav",
+   "type": "oneshot",
+   "tracks": [
+    "hat"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.15,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "hihat-05",
+   "name": "Hi-Hat Weich",
+   "category": "drums",
+   "group": "hihat",
+   "file": "drums/hihat/ps-hihat-05-hi-hat-weich.wav",
+   "type": "oneshot",
+   "tracks": [
+    "hat"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.27,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "hihat-06",
+   "name": "Hi-Hat Metall",
+   "category": "drums",
+   "group": "hihat",
+   "file": "drums/hihat/ps-hihat-06-hi-hat-metall.wav",
+   "type": "oneshot",
+   "tracks": [
+    "hat"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.33,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "hihat-07",
+   "name": "Hi-Hat Hell",
+   "category": "drums",
+   "group": "hihat",
+   "file": "drums/hihat/ps-hihat-07-hi-hat-hell.wav",
+   "type": "oneshot",
+   "tracks": [
+    "hat"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.24,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "hihat-08",
+   "name": "Hi-Hat Dunkel",
+   "category": "drums",
+   "group": "hihat",
+   "file": "drums/hihat/ps-hihat-08-hi-hat-dunkel.wav",
+   "type": "oneshot",
+   "tracks": [
+    "hat"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.36,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "hihat-09",
+   "name": "Hi-Hat Rauschen",
+   "category": "drums",
+   "group": "hihat",
+   "file": "drums/hihat/ps-hihat-09-hi-hat-rauschen.wav",
+   "type": "oneshot",
+   "tracks": [
+    "hat"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.27,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "hihat-10",
+   "name": "Hi-Hat 808",
+   "category": "drums",
+   "group": "hihat",
+   "file": "drums/hihat/ps-hihat-10-hi-hat-808.wav",
+   "type": "oneshot",
+   "tracks": [
+    "hat"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.33,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "hihat-11",
+   "name": "Hi-Hat 909",
+   "category": "drums",
+   "group": "hihat",
+   "file": "drums/hihat/ps-hihat-11-hi-hat-909.wav",
+   "type": "oneshot",
+   "tracks": [
+    "hat"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.39,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "hihat-12",
+   "name": "Hi-Hat Pedal",
+   "category": "drums",
+   "group": "hihat",
+   "file": "drums/hihat/ps-hihat-12-hi-hat-pedal.wav",
+   "type": "oneshot",
+   "tracks": [
+    "hat"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.21,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "hihat-13",
+   "name": "Hi-Hat Shaker-Hat",
+   "category": "drums",
+   "group": "hihat",
+   "file": "drums/hihat/ps-hihat-13-hi-hat-shaker-hat.wav",
+   "type": "oneshot",
+   "tracks": [
+    "hat"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.45,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "hihat-14",
+   "name": "Hi-Hat Knackig",
+   "category": "drums",
+   "group": "hihat",
+   "file": "drums/hihat/ps-hihat-14-hi-hat-knackig.wav",
+   "type": "oneshot",
+   "tracks": [
+    "hat"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.12,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "hihat-15",
+   "name": "Hi-Hat Glanz",
+   "category": "drums",
+   "group": "hihat",
+   "file": "drums/hihat/ps-hihat-15-hi-hat-glanz.wav",
+   "type": "oneshot",
+   "tracks": [
+    "hat"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.51,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "hihat-16",
+   "name": "Hi-Hat Staubig",
+   "category": "drums",
+   "group": "hihat",
+   "file": "drums/hihat/ps-hihat-16-hi-hat-staubig.wav",
+   "type": "oneshot",
+   "tracks": [
+    "hat"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.3,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "openhat-01",
+   "name": "Open Hat Klassik",
+   "category": "drums",
+   "group": "openhat",
+   "file": "drums/openhat/ps-openhat-01-open-hat-klassik.wav",
+   "type": "oneshot",
+   "tracks": [
+    "open",
+    "hat"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 1.83,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "openhat-02",
+   "name": "Open Hat Kurz",
+   "category": "drums",
+   "group": "openhat",
+   "file": "drums/openhat/ps-openhat-02-open-hat-kurz.wav",
+   "type": "oneshot",
+   "tracks": [
+    "open",
+    "hat"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.99,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "openhat-03",
+   "name": "Open Hat Lang",
+   "category": "drums",
+   "group": "openhat",
+   "file": "drums/openhat/ps-openhat-03-open-hat-lang.wav",
+   "type": "oneshot",
+   "tracks": [
+    "open",
+    "hat"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 3.63,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "openhat-04",
+   "name": "Open Hat Trap",
+   "category": "drums",
+   "group": "openhat",
+   "file": "drums/openhat/ps-openhat-04-open-hat-trap.wav",
+   "type": "oneshot",
+   "tracks": [
+    "open",
+    "hat"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 1.53,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "openhat-05",
+   "name": "Open Hat Lo-Fi",
+   "category": "drums",
+   "group": "openhat",
+   "file": "drums/openhat/ps-openhat-05-open-hat-lo-fi.wav",
+   "type": "oneshot",
+   "tracks": [
+    "open",
+    "hat"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 1.83,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "openhat-06",
+   "name": "Open Hat 808",
+   "category": "drums",
+   "group": "openhat",
+   "file": "drums/openhat/ps-openhat-06-open-hat-808.wav",
+   "type": "oneshot",
+   "tracks": [
+    "open",
+    "hat"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 2.13,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "openhat-07",
+   "name": "Open Hat 909",
+   "category": "drums",
+   "group": "openhat",
+   "file": "drums/openhat/ps-openhat-07-open-hat-909.wav",
+   "type": "oneshot",
+   "tracks": [
+    "open",
+    "hat"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 2.43,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "openhat-08",
+   "name": "Open Hat Dunkel",
+   "category": "drums",
+   "group": "openhat",
+   "file": "drums/openhat/ps-openhat-08-open-hat-dunkel.wav",
+   "type": "oneshot",
+   "tracks": [
+    "open",
+    "hat"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 2.13,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "openhat-09",
+   "name": "Open Hat Hell",
+   "category": "drums",
+   "group": "openhat",
+   "file": "drums/openhat/ps-openhat-09-open-hat-hell.wav",
+   "type": "oneshot",
+   "tracks": [
+    "open",
+    "hat"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 1.71,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "openhat-10",
+   "name": "Open Hat Rauschen",
+   "category": "drums",
+   "group": "openhat",
+   "file": "drums/openhat/ps-openhat-10-open-hat-rauschen.wav",
+   "type": "oneshot",
+   "tracks": [
+    "open",
+    "hat"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 1.95,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "ride-01",
+   "name": "Ride Klassik",
+   "category": "drums",
+   "group": "ride",
+   "file": "drums/ride/ps-ride-01-ride-klassik.wav",
+   "type": "oneshot",
+   "tracks": [
+    "open",
+    "hat"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 3.6,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "ride-02",
+   "name": "Ride Glocke",
+   "category": "drums",
+   "group": "ride",
+   "file": "drums/ride/ps-ride-02-ride-glocke.wav",
+   "type": "oneshot",
+   "tracks": [
+    "open",
+    "hat"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 2.8,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "ride-03",
+   "name": "Ride Dunkel",
+   "category": "drums",
+   "group": "ride",
+   "file": "drums/ride/ps-ride-03-ride-dunkel.wav",
+   "type": "oneshot",
+   "tracks": [
+    "open",
+    "hat"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 4.8,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "ride-04",
+   "name": "Ride Hell",
+   "category": "drums",
+   "group": "ride",
+   "file": "drums/ride/ps-ride-04-ride-hell.wav",
+   "type": "oneshot",
+   "tracks": [
+    "open",
+    "hat"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 2.0,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "crash-01",
+   "name": "Crash",
+   "category": "drums",
+   "group": "crash",
+   "file": "drums/crash/ps-crash-01-crash.wav",
+   "type": "oneshot",
+   "tracks": [
+    "open"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 4.9,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "crash-02",
+   "name": "Crash lang",
+   "category": "drums",
+   "group": "crash",
+   "file": "drums/crash/ps-crash-02-crash-lang.wav",
+   "type": "oneshot",
+   "tracks": [
+    "open"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 7.0,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "crash-03",
+   "name": "Splash",
+   "category": "drums",
+   "group": "crash",
+   "file": "drums/crash/ps-crash-03-splash.wav",
+   "type": "oneshot",
+   "tracks": [
+    "open"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 3.15,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "crash-04",
+   "name": "Crash rückwärts",
+   "category": "drums",
+   "group": "crash",
+   "file": "drums/crash/ps-crash-04-crash-rueckwaerts.wav",
+   "type": "oneshot",
+   "tracks": [
+    "open"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 5.6,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "tom-01",
+   "name": "Tom hoch Akustik",
+   "category": "drums",
+   "group": "tom",
+   "file": "drums/tom/ps-tom-01-tom-hoch-akustik.wav",
+   "type": "oneshot",
+   "tracks": [
+    "tom"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 1.15,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "tom-02",
+   "name": "Tom mittel Akustik",
+   "category": "drums",
+   "group": "tom",
+   "file": "drums/tom/ps-tom-02-tom-mittel-akustik.wav",
+   "type": "oneshot",
+   "tracks": [
+    "tom"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 1.45,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "tom-03",
+   "name": "Tom tief Akustik",
+   "category": "drums",
+   "group": "tom",
+   "file": "drums/tom/ps-tom-03-tom-tief-akustik.wav",
+   "type": "oneshot",
+   "tracks": [
+    "tom"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 1.85,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "tom-04",
+   "name": "Tom hoch Elektro",
+   "category": "drums",
+   "group": "tom",
+   "file": "drums/tom/ps-tom-04-tom-hoch-elektro.wav",
+   "type": "oneshot",
+   "tracks": [
+    "tom"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.93,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "tom-05",
+   "name": "Tom mittel Elektro",
+   "category": "drums",
+   "group": "tom",
+   "file": "drums/tom/ps-tom-05-tom-mittel-elektro.wav",
+   "type": "oneshot",
+   "tracks": [
+    "tom"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 1.17,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "tom-06",
+   "name": "Tom tief Elektro",
+   "category": "drums",
+   "group": "tom",
+   "file": "drums/tom/ps-tom-06-tom-tief-elektro.wav",
+   "type": "oneshot",
+   "tracks": [
+    "tom"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 1.49,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "tom-07",
+   "name": "Tom hoch 808",
+   "category": "drums",
+   "group": "tom",
+   "file": "drums/tom/ps-tom-07-tom-hoch-808.wav",
+   "type": "oneshot",
+   "tracks": [
+    "tom"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 1.59,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "tom-08",
+   "name": "Tom mittel 808",
+   "category": "drums",
+   "group": "tom",
+   "file": "drums/tom/ps-tom-08-tom-mittel-808.wav",
+   "type": "oneshot",
+   "tracks": [
+    "tom"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 2.01,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "tom-09",
+   "name": "Tom tief 808",
+   "category": "drums",
+   "group": "tom",
+   "file": "drums/tom/ps-tom-09-tom-tief-808.wav",
+   "type": "oneshot",
+   "tracks": [
+    "tom"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 2.57,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "hand-01",
+   "name": "Conga hoch",
+   "category": "percussion",
+   "group": "hand",
+   "file": "percussion/hand/ps-hand-01-conga-hoch.wav",
+   "type": "oneshot",
+   "tracks": [
+    "rim",
+    "tom",
+    "shaker"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 1.01,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "hand-02",
+   "name": "Conga mittel",
+   "category": "percussion",
+   "group": "hand",
+   "file": "percussion/hand/ps-hand-02-conga-mittel.wav",
+   "type": "oneshot",
+   "tracks": [
+    "rim",
+    "tom",
+    "shaker"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 1.25,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "hand-03",
+   "name": "Conga tief",
+   "category": "percussion",
+   "group": "hand",
+   "file": "percussion/hand/ps-hand-03-conga-tief.wav",
+   "type": "oneshot",
+   "tracks": [
+    "rim",
+    "tom",
+    "shaker"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 1.49,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "hand-04",
+   "name": "Conga Slap",
+   "category": "percussion",
+   "group": "hand",
+   "file": "percussion/hand/ps-hand-04-conga-slap.wav",
+   "type": "oneshot",
+   "tracks": [
+    "rim",
+    "tom",
+    "shaker"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.47,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "hand-05",
+   "name": "Bongo hoch",
+   "category": "percussion",
+   "group": "hand",
+   "file": "percussion/hand/ps-hand-05-bongo-hoch.wav",
+   "type": "oneshot",
+   "tracks": [
+    "rim",
+    "tom",
+    "shaker"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.65,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "hand-06",
+   "name": "Bongo tief",
+   "category": "percussion",
+   "group": "hand",
+   "file": "percussion/hand/ps-hand-06-bongo-tief.wav",
+   "type": "oneshot",
+   "tracks": [
+    "rim",
+    "tom",
+    "shaker"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.83,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "hand-07",
+   "name": "Djembe Bass",
+   "category": "percussion",
+   "group": "hand",
+   "file": "percussion/hand/ps-hand-07-djembe-bass.wav",
+   "type": "oneshot",
+   "tracks": [
+    "rim",
+    "tom",
+    "shaker"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 1.55,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "hand-08",
+   "name": "Djembe Ton",
+   "category": "percussion",
+   "group": "hand",
+   "file": "percussion/hand/ps-hand-08-djembe-ton.wav",
+   "type": "oneshot",
+   "tracks": [
+    "rim",
+    "tom",
+    "shaker"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.89,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "hand-09",
+   "name": "Djembe Slap",
+   "category": "percussion",
+   "group": "hand",
+   "file": "percussion/hand/ps-hand-09-djembe-slap.wav",
+   "type": "oneshot",
+   "tracks": [
+    "rim",
+    "tom",
+    "shaker"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.41,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "hand-10",
+   "name": "Timbale hoch",
+   "category": "percussion",
+   "group": "hand",
+   "file": "percussion/hand/ps-hand-10-timbale-hoch.wav",
+   "type": "oneshot",
+   "tracks": [
+    "rim",
+    "tom",
+    "shaker"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 1.55,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "hand-11",
+   "name": "Timbale tief",
+   "category": "percussion",
+   "group": "hand",
+   "file": "percussion/hand/ps-hand-11-timbale-tief.wav",
+   "type": "oneshot",
+   "tracks": [
+    "rim",
+    "tom",
+    "shaker"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 1.85,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "hand-12",
+   "name": "Tabla",
+   "category": "percussion",
+   "group": "hand",
+   "file": "percussion/hand/ps-hand-12-tabla.wav",
+   "type": "oneshot",
+   "tracks": [
+    "rim",
+    "tom",
+    "shaker"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 2.15,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "metal-01",
+   "name": "Cowbell Klassik",
+   "category": "percussion",
+   "group": "metal",
+   "file": "percussion/metal/ps-metal-01-cowbell-klassik.wav",
+   "type": "oneshot",
+   "tracks": [
+    "rim",
+    "shaker"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 1.25,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "metal-02",
+   "name": "Cowbell Kurz",
+   "category": "percussion",
+   "group": "metal",
+   "file": "percussion/metal/ps-metal-02-cowbell-kurz.wav",
+   "type": "oneshot",
+   "tracks": [
+    "rim",
+    "shaker"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.9,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "metal-03",
+   "name": "Cowbell Tief",
+   "category": "percussion",
+   "group": "metal",
+   "file": "percussion/metal/ps-metal-03-cowbell-tief.wav",
+   "type": "oneshot",
+   "tracks": [
+    "rim",
+    "shaker"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 1.75,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "wood-01",
+   "name": "Clave 1",
+   "category": "percussion",
+   "group": "wood",
+   "file": "percussion/wood/ps-wood-01-clave-1.wav",
+   "type": "oneshot",
+   "tracks": [
+    "rim"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.3,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "wood-02",
+   "name": "Clave 2",
+   "category": "percussion",
+   "group": "wood",
+   "file": "percussion/wood/ps-wood-02-clave-2.wav",
+   "type": "oneshot",
+   "tracks": [
+    "rim"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.3,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "wood-03",
+   "name": "Holzblock mittel",
+   "category": "percussion",
+   "group": "wood",
+   "file": "percussion/wood/ps-wood-03-holzblock-mittel.wav",
+   "type": "oneshot",
+   "tracks": [
+    "rim"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.3,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "wood-04",
+   "name": "Holzblock hoch",
+   "category": "percussion",
+   "group": "wood",
+   "file": "percussion/wood/ps-wood-04-holzblock-hoch.wav",
+   "type": "oneshot",
+   "tracks": [
+    "rim"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.298,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "wood-05",
+   "name": "Holzblock tief",
+   "category": "percussion",
+   "group": "wood",
+   "file": "percussion/wood/ps-wood-05-holzblock-tief.wav",
+   "type": "oneshot",
+   "tracks": [
+    "rim"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.3,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "shaker-01",
+   "name": "Shaker Klassik",
+   "category": "percussion",
+   "group": "shaker",
+   "file": "percussion/shaker/ps-shaker-01-shaker-klassik.wav",
+   "type": "oneshot",
+   "tracks": [
+    "shaker"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.4,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "shaker-02",
+   "name": "Shaker Hell",
+   "category": "percussion",
+   "group": "shaker",
+   "file": "percussion/shaker/ps-shaker-02-shaker-hell.wav",
+   "type": "oneshot",
+   "tracks": [
+    "shaker"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.4,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "shaker-03",
+   "name": "Shaker Weich",
+   "category": "percussion",
+   "group": "shaker",
+   "file": "percussion/shaker/ps-shaker-03-shaker-weich.wav",
+   "type": "oneshot",
+   "tracks": [
+    "shaker"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.4,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "shaker-04",
+   "name": "Shaker Kurz",
+   "category": "percussion",
+   "group": "shaker",
+   "file": "percussion/shaker/ps-shaker-04-shaker-kurz.wav",
+   "type": "oneshot",
+   "tracks": [
+    "shaker"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.319,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "shaker-05",
+   "name": "Shaker Lang",
+   "category": "percussion",
+   "group": "shaker",
+   "file": "percussion/shaker/ps-shaker-05-shaker-lang.wav",
+   "type": "oneshot",
+   "tracks": [
+    "shaker"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.6,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "shaker-06",
+   "name": "Shaker Sand",
+   "category": "percussion",
+   "group": "shaker",
+   "file": "percussion/shaker/ps-shaker-06-shaker-sand.wav",
+   "type": "oneshot",
+   "tracks": [
+    "shaker"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.4,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "shaker-07",
+   "name": "Tamburin Klassik",
+   "category": "percussion",
+   "group": "shaker",
+   "file": "percussion/shaker/ps-shaker-07-tamburin-klassik.wav",
+   "type": "oneshot",
+   "tracks": [
+    "shaker",
+    "open"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.7,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "shaker-08",
+   "name": "Tamburin Kurz",
+   "category": "percussion",
+   "group": "shaker",
+   "file": "percussion/shaker/ps-shaker-08-tamburin-kurz.wav",
+   "type": "oneshot",
+   "tracks": [
+    "shaker",
+    "open"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.45,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "shaker-09",
+   "name": "Tamburin Lang",
+   "category": "percussion",
+   "group": "shaker",
+   "file": "percussion/shaker/ps-shaker-09-tamburin-lang.wav",
+   "type": "oneshot",
+   "tracks": [
+    "shaker",
+    "open"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 1.1,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "shaker-10",
+   "name": "Tamburin Hell",
+   "category": "percussion",
+   "group": "shaker",
+   "file": "percussion/shaker/ps-shaker-10-tamburin-hell.wav",
+   "type": "oneshot",
+   "tracks": [
+    "shaker",
+    "open"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.6,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "metal-04",
+   "name": "Triangel offen",
+   "category": "percussion",
+   "group": "metal",
+   "file": "percussion/metal/ps-metal-04-triangel-offen.wav",
+   "type": "oneshot",
+   "tracks": [
+    "shaker",
+    "open"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 4.8,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "metal-05",
+   "name": "Triangel kurz",
+   "category": "percussion",
+   "group": "metal",
+   "file": "percussion/metal/ps-metal-05-triangel-kurz.wav",
+   "type": "oneshot",
+   "tracks": [
+    "shaker",
+    "open"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 3.2,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "wood-06",
+   "name": "Guiro kurz",
+   "category": "percussion",
+   "group": "wood",
+   "file": "percussion/wood/ps-wood-06-guiro-kurz.wav",
+   "type": "oneshot",
+   "tracks": [
+    "shaker"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.15,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "wood-07",
+   "name": "Guiro lang",
+   "category": "percussion",
+   "group": "wood",
+   "file": "percussion/wood/ps-wood-07-guiro-lang.wav",
+   "type": "oneshot",
+   "tracks": [
+    "shaker"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.315,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "metal-06",
+   "name": "Glöckchen 1",
+   "category": "percussion",
+   "group": "metal",
+   "file": "percussion/metal/ps-metal-06-gloeckchen-1.wav",
+   "type": "oneshot",
+   "tracks": [
+    "shaker",
+    "open"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 5.4,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "metal-07",
+   "name": "Glöckchen 2",
+   "category": "percussion",
+   "group": "metal",
+   "file": "percussion/metal/ps-metal-07-gloeckchen-2.wav",
+   "type": "oneshot",
+   "tracks": [
+    "shaker",
+    "open"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 7.2,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "metal-08",
+   "name": "Agogo hoch",
+   "category": "percussion",
+   "group": "metal",
+   "file": "percussion/metal/ps-metal-08-agogo-hoch.wav",
+   "type": "oneshot",
+   "tracks": [
+    "rim"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 1.6,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "metal-09",
+   "name": "Agogo tief",
+   "category": "percussion",
+   "group": "metal",
+   "file": "percussion/metal/ps-metal-09-agogo-tief.wav",
+   "type": "oneshot",
+   "tracks": [
+    "rim"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 2.4,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "shaker-11",
+   "name": "Cabasa 1",
+   "category": "percussion",
+   "group": "shaker",
+   "file": "percussion/shaker/ps-shaker-11-cabasa-1.wav",
+   "type": "oneshot",
+   "tracks": [
+    "shaker"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.9,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "shaker-12",
+   "name": "Cabasa 2",
+   "category": "percussion",
+   "group": "shaker",
+   "file": "percussion/shaker/ps-shaker-12-cabasa-2.wav",
+   "type": "oneshot",
+   "tracks": [
+    "shaker"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 1.5,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "808-01",
+   "name": "808 Klassik",
+   "category": "bass",
+   "group": "808",
+   "file": "bass/808/ps-808-01-808-klassik.wav",
+   "type": "melodic",
+   "tracks": [
+    "bass"
+   ],
+   "root": 24,
+   "rootNote": "C1",
+   "bpm": null,
+   "bars": null,
+   "duration": 2.35,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "808-02",
+   "name": "808 Kurz",
+   "category": "bass",
+   "group": "808",
+   "file": "bass/808/ps-808-02-808-kurz.wav",
+   "type": "melodic",
+   "tracks": [
+    "bass"
+   ],
+   "root": 24,
+   "rootNote": "C1",
+   "bpm": null,
+   "bars": null,
+   "duration": 0.975,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "808-03",
+   "name": "808 Lang",
+   "category": "bass",
+   "group": "808",
+   "file": "bass/808/ps-808-03-808-lang.wav",
+   "type": "melodic",
+   "tracks": [
+    "bass"
+   ],
+   "root": 24,
+   "rootNote": "C1",
+   "bpm": null,
+   "bars": null,
+   "duration": 4.1,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "808-04",
+   "name": "808 Verzerrt",
+   "category": "bass",
+   "group": "808",
+   "file": "bass/808/ps-808-04-808-verzerrt.wav",
+   "type": "melodic",
+   "tracks": [
+    "bass"
+   ],
+   "root": 24,
+   "rootNote": "C1",
+   "bpm": null,
+   "bars": null,
+   "duration": 2.35,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "808-05",
+   "name": "808 Glide hoch",
+   "category": "bass",
+   "group": "808",
+   "file": "bass/808/ps-808-05-808-glide-hoch.wav",
+   "type": "melodic",
+   "tracks": [
+    "bass"
+   ],
+   "root": 24,
+   "rootNote": "C1",
+   "bpm": null,
+   "bars": null,
+   "duration": 2.85,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "808-06",
+   "name": "808 Glide tief",
+   "category": "bass",
+   "group": "808",
+   "file": "bass/808/ps-808-06-808-glide-tief.wav",
+   "type": "melodic",
+   "tracks": [
+    "bass"
+   ],
+   "root": 24,
+   "rootNote": "C1",
+   "bpm": null,
+   "bars": null,
+   "duration": 2.85,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "808-07",
+   "name": "808 Sauber",
+   "category": "bass",
+   "group": "808",
+   "file": "bass/808/ps-808-07-808-sauber.wav",
+   "type": "melodic",
+   "tracks": [
+    "bass"
+   ],
+   "root": 24,
+   "rootNote": "C1",
+   "bpm": null,
+   "bars": null,
+   "duration": 2.35,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "808-08",
+   "name": "808 Hart",
+   "category": "bass",
+   "group": "808",
+   "file": "bass/808/ps-808-08-808-hart.wav",
+   "type": "melodic",
+   "tracks": [
+    "bass"
+   ],
+   "root": 24,
+   "rootNote": "C1",
+   "bpm": null,
+   "bars": null,
+   "duration": 1.85,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "808-09",
+   "name": "808 Rund",
+   "category": "bass",
+   "group": "808",
+   "file": "bass/808/ps-808-09-808-rund.wav",
+   "type": "melodic",
+   "tracks": [
+    "bass"
+   ],
+   "root": 24,
+   "rootNote": "C1",
+   "bpm": null,
+   "bars": null,
+   "duration": 3.1,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "808-10",
+   "name": "808 Dreckig",
+   "category": "bass",
+   "group": "808",
+   "file": "bass/808/ps-808-10-808-dreckig.wav",
+   "type": "melodic",
+   "tracks": [
+    "bass"
+   ],
+   "root": 24,
+   "rootNote": "C1",
+   "bpm": null,
+   "bars": null,
+   "duration": 2.1,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "808-11",
+   "name": "808 Boom",
+   "category": "bass",
+   "group": "808",
+   "file": "bass/808/ps-808-11-808-boom.wav",
+   "type": "melodic",
+   "tracks": [
+    "bass"
+   ],
+   "root": 24,
+   "rootNote": "C1",
+   "bpm": null,
+   "bars": null,
+   "duration": 3.6,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "808-12",
+   "name": "808 Trap",
+   "category": "bass",
+   "group": "808",
+   "file": "bass/808/ps-808-12-808-trap.wav",
+   "type": "melodic",
+   "tracks": [
+    "bass"
+   ],
+   "root": 24,
+   "rootNote": "C1",
+   "bpm": null,
+   "bars": null,
+   "duration": 2.6,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "synth-01",
+   "name": "Bass Synth",
+   "category": "bass",
+   "group": "synth",
+   "file": "bass/synth/ps-synth-01-bass-synth.wav",
+   "type": "melodic",
+   "tracks": [
+    "bass"
+   ],
+   "root": 36,
+   "rootNote": "C2",
+   "bpm": null,
+   "bars": null,
+   "duration": 0.7,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "synth-02",
+   "name": "Bass Reese",
+   "category": "bass",
+   "group": "synth",
+   "file": "bass/synth/ps-synth-02-bass-reese.wav",
+   "type": "melodic",
+   "tracks": [
+    "bass"
+   ],
+   "root": 36,
+   "rootNote": "C2",
+   "bpm": null,
+   "bars": null,
+   "duration": 1.0,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "synth-03",
+   "name": "Bass Acid",
+   "category": "bass",
+   "group": "synth",
+   "file": "bass/synth/ps-synth-03-bass-acid.wav",
+   "type": "melodic",
+   "tracks": [
+    "bass"
+   ],
+   "root": 36,
+   "rootNote": "C2",
+   "bpm": null,
+   "bars": null,
+   "duration": 0.7,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "synth-04",
+   "name": "Bass Zupf",
+   "category": "bass",
+   "group": "synth",
+   "file": "bass/synth/ps-synth-04-bass-zupf.wav",
+   "type": "melodic",
+   "tracks": [
+    "bass"
+   ],
+   "root": 36,
+   "rootNote": "C2",
+   "bpm": null,
+   "bars": null,
+   "duration": 0.45,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "synth-05",
+   "name": "Bass Sub",
+   "category": "bass",
+   "group": "synth",
+   "file": "bass/synth/ps-synth-05-bass-sub.wav",
+   "type": "melodic",
+   "tracks": [
+    "bass"
+   ],
+   "root": 36,
+   "rootNote": "C2",
+   "bpm": null,
+   "bars": null,
+   "duration": 0.8,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "synth-06",
+   "name": "Bass Saw",
+   "category": "bass",
+   "group": "synth",
+   "file": "bass/synth/ps-synth-06-bass-saw.wav",
+   "type": "melodic",
+   "tracks": [
+    "bass"
+   ],
+   "root": 36,
+   "rootNote": "C2",
+   "bpm": null,
+   "bars": null,
+   "duration": 0.7,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "synth-07",
+   "name": "Bass Funk",
+   "category": "bass",
+   "group": "synth",
+   "file": "bass/synth/ps-synth-07-bass-funk.wav",
+   "type": "melodic",
+   "tracks": [
+    "bass"
+   ],
+   "root": 36,
+   "rootNote": "C2",
+   "bpm": null,
+   "bars": null,
+   "duration": 0.4,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "synth-08",
+   "name": "Bass Wobble",
+   "category": "bass",
+   "group": "synth",
+   "file": "bass/synth/ps-synth-08-bass-wobble.wav",
+   "type": "melodic",
+   "tracks": [
+    "bass"
+   ],
+   "root": 36,
+   "rootNote": "C2",
+   "bpm": null,
+   "bars": null,
+   "duration": 1.2,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "synth-09",
+   "name": "Bass Dunkel",
+   "category": "bass",
+   "group": "synth",
+   "file": "bass/synth/ps-synth-09-bass-dunkel.wav",
+   "type": "melodic",
+   "tracks": [
+    "bass"
+   ],
+   "root": 36,
+   "rootNote": "C2",
+   "bpm": null,
+   "bars": null,
+   "duration": 0.7,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "synth-10",
+   "name": "Bass Moog",
+   "category": "bass",
+   "group": "synth",
+   "file": "bass/synth/ps-synth-10-bass-moog.wav",
+   "type": "melodic",
+   "tracks": [
+    "bass"
+   ],
+   "root": 36,
+   "rootNote": "C2",
+   "bpm": null,
+   "bars": null,
+   "duration": 0.7,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "synth-11",
+   "name": "Bass Pluck tief",
+   "category": "bass",
+   "group": "synth",
+   "file": "bass/synth/ps-synth-11-bass-pluck-tief.wav",
+   "type": "melodic",
+   "tracks": [
+    "bass"
+   ],
+   "root": 36,
+   "rootNote": "C2",
+   "bpm": null,
+   "bars": null,
+   "duration": 0.5,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "synth-12",
+   "name": "Bass Fett",
+   "category": "bass",
+   "group": "synth",
+   "file": "bass/synth/ps-synth-12-bass-fett.wav",
+   "type": "melodic",
+   "tracks": [
+    "bass"
+   ],
+   "root": 36,
+   "rootNote": "C2",
+   "bpm": null,
+   "bars": null,
+   "duration": 0.7,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "synth-13",
+   "name": "Bass Kontrabass",
+   "category": "bass",
+   "group": "synth",
+   "file": "bass/synth/ps-synth-13-bass-kontrabass.wav",
+   "type": "melodic",
+   "tracks": [
+    "bass"
+   ],
+   "root": 36,
+   "rootNote": "C2",
+   "bpm": null,
+   "bars": null,
+   "duration": 1.4,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "synth-14",
+   "name": "Bass E-Bass",
+   "category": "bass",
+   "group": "synth",
+   "file": "bass/synth/ps-synth-14-bass-e-bass.wav",
+   "type": "melodic",
+   "tracks": [
+    "bass"
+   ],
+   "root": 36,
+   "rootNote": "C2",
+   "bpm": null,
+   "bars": null,
+   "duration": 1.2,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "keys-01",
+   "name": "Piano",
+   "category": "instruments",
+   "group": "keys",
+   "file": "instruments/keys/ps-keys-01-piano.wav",
+   "type": "melodic",
+   "tracks": [
+    "lead",
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 2.5,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "keys-02",
+   "name": "Piano weich",
+   "category": "instruments",
+   "group": "keys",
+   "file": "instruments/keys/ps-keys-02-piano-weich.wav",
+   "type": "melodic",
+   "tracks": [
+    "lead",
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 2.5,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "keys-03",
+   "name": "Piano Lo-Fi",
+   "category": "instruments",
+   "group": "keys",
+   "file": "instruments/keys/ps-keys-03-piano-lo-fi.wav",
+   "type": "melodic",
+   "tracks": [
+    "lead",
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 2.2,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "keys-04",
+   "name": "E-Piano",
+   "category": "instruments",
+   "group": "keys",
+   "file": "instruments/keys/ps-keys-04-e-piano.wav",
+   "type": "melodic",
+   "tracks": [
+    "lead",
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 2.4,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "keys-05",
+   "name": "E-Piano hell",
+   "category": "instruments",
+   "group": "keys",
+   "file": "instruments/keys/ps-keys-05-e-piano-hell.wav",
+   "type": "melodic",
+   "tracks": [
+    "lead",
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 2.2,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "keys-06",
+   "name": "Orgel",
+   "category": "instruments",
+   "group": "keys",
+   "file": "instruments/keys/ps-keys-06-orgel.wav",
+   "type": "melodic",
+   "tracks": [
+    "lead",
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 2.0,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "keys-07",
+   "name": "Clavinet",
+   "category": "instruments",
+   "group": "keys",
+   "file": "instruments/keys/ps-keys-07-clavinet.wav",
+   "type": "melodic",
+   "tracks": [
+    "lead",
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 1.2,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "mallets-01",
+   "name": "Glocke",
+   "category": "instruments",
+   "group": "mallets",
+   "file": "instruments/mallets/ps-mallets-01-glocke.wav",
+   "type": "melodic",
+   "tracks": [
+    "lead",
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 3.0,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "mallets-02",
+   "name": "Röhrenglocke",
+   "category": "instruments",
+   "group": "mallets",
+   "file": "instruments/mallets/ps-mallets-02-roehrenglocke.wav",
+   "type": "melodic",
+   "tracks": [
+    "lead",
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 4.0,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "mallets-03",
+   "name": "Marimba",
+   "category": "instruments",
+   "group": "mallets",
+   "file": "instruments/mallets/ps-mallets-03-marimba.wav",
+   "type": "melodic",
+   "tracks": [
+    "lead",
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 1.2,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "mallets-04",
+   "name": "Kalimba",
+   "category": "instruments",
+   "group": "mallets",
+   "file": "instruments/mallets/ps-mallets-04-kalimba.wav",
+   "type": "melodic",
+   "tracks": [
+    "lead",
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 1.6,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "mallets-05",
+   "name": "Vibraphon",
+   "category": "instruments",
+   "group": "mallets",
+   "file": "instruments/mallets/ps-mallets-05-vibraphon.wav",
+   "type": "melodic",
+   "tracks": [
+    "lead",
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 3.0,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "mallets-06",
+   "name": "Spieluhr",
+   "category": "instruments",
+   "group": "mallets",
+   "file": "instruments/mallets/ps-mallets-06-spieluhr.wav",
+   "type": "melodic",
+   "tracks": [
+    "lead",
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 2.0,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "mallets-07",
+   "name": "Steeldrum",
+   "category": "instruments",
+   "group": "mallets",
+   "file": "instruments/mallets/ps-mallets-07-steeldrum.wav",
+   "type": "melodic",
+   "tracks": [
+    "lead",
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 2.5,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "strings-01",
+   "name": "Gitarre",
+   "category": "instruments",
+   "group": "strings",
+   "file": "instruments/strings/ps-strings-01-gitarre.wav",
+   "type": "melodic",
+   "tracks": [
+    "lead",
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 2.5,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "strings-02",
+   "name": "Gitarre gedämpft",
+   "category": "instruments",
+   "group": "strings",
+   "file": "instruments/strings/ps-strings-02-gitarre-gedaempft.wav",
+   "type": "melodic",
+   "tracks": [
+    "lead",
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 1.0,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "strings-03",
+   "name": "Harfe",
+   "category": "instruments",
+   "group": "strings",
+   "file": "instruments/strings/ps-strings-03-harfe.wav",
+   "type": "melodic",
+   "tracks": [
+    "lead",
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 3.0,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "strings-04",
+   "name": "Sitar-artig",
+   "category": "instruments",
+   "group": "strings",
+   "file": "instruments/strings/ps-strings-04-sitar-artig.wav",
+   "type": "melodic",
+   "tracks": [
+    "lead",
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 2.5,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "strings-05",
+   "name": "Streicher",
+   "category": "instruments",
+   "group": "strings",
+   "file": "instruments/strings/ps-strings-05-streicher.wav",
+   "type": "melodic",
+   "tracks": [
+    "lead",
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 2.596,
+   "channels": 2,
+   "tags": []
+  },
+  {
+   "id": "strings-06",
+   "name": "Pizzicato",
+   "category": "instruments",
+   "group": "strings",
+   "file": "instruments/strings/ps-strings-06-pizzicato.wav",
+   "type": "melodic",
+   "tracks": [
+    "lead",
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 0.948,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "winds-01",
+   "name": "Brass",
+   "category": "instruments",
+   "group": "winds",
+   "file": "instruments/winds/ps-winds-01-brass.wav",
+   "type": "melodic",
+   "tracks": [
+    "lead",
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 1.6,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "winds-02",
+   "name": "Flöte",
+   "category": "instruments",
+   "group": "winds",
+   "file": "instruments/winds/ps-winds-02-floete.wav",
+   "type": "melodic",
+   "tracks": [
+    "lead",
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 1.8,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "winds-03",
+   "name": "Pan-Flöte",
+   "category": "instruments",
+   "group": "winds",
+   "file": "instruments/winds/ps-winds-03-pan-floete.wav",
+   "type": "melodic",
+   "tracks": [
+    "lead",
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 1.8,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "voices-01",
+   "name": "Chor Ah",
+   "category": "instruments",
+   "group": "voices",
+   "file": "instruments/voices/ps-voices-01-chor-ah.wav",
+   "type": "melodic",
+   "tracks": [
+    "lead",
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 1.6,
+   "channels": 2,
+   "tags": []
+  },
+  {
+   "id": "voices-02",
+   "name": "Chor Oh",
+   "category": "instruments",
+   "group": "voices",
+   "file": "instruments/voices/ps-voices-02-chor-oh.wav",
+   "type": "melodic",
+   "tracks": [
+    "lead",
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 1.6,
+   "channels": 2,
+   "tags": []
+  },
+  {
+   "id": "voices-03",
+   "name": "Vox A",
+   "category": "instruments",
+   "group": "voices",
+   "file": "instruments/voices/ps-voices-03-vox-a.wav",
+   "type": "melodic",
+   "tracks": [
+    "lead",
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 0.7,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "voices-04",
+   "name": "Vox E",
+   "category": "instruments",
+   "group": "voices",
+   "file": "instruments/voices/ps-voices-04-vox-e.wav",
+   "type": "melodic",
+   "tracks": [
+    "lead",
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 0.7,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "voices-05",
+   "name": "Vox I",
+   "category": "instruments",
+   "group": "voices",
+   "file": "instruments/voices/ps-voices-05-vox-i.wav",
+   "type": "melodic",
+   "tracks": [
+    "lead",
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 0.7,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "voices-06",
+   "name": "Vox O",
+   "category": "instruments",
+   "group": "voices",
+   "file": "instruments/voices/ps-voices-06-vox-o.wav",
+   "type": "melodic",
+   "tracks": [
+    "lead",
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 0.7,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "voices-07",
+   "name": "Vox U",
+   "category": "instruments",
+   "group": "voices",
+   "file": "instruments/voices/ps-voices-07-vox-u.wav",
+   "type": "melodic",
+   "tracks": [
+    "lead",
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 0.7,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "synth-01",
+   "name": "Pluck",
+   "category": "instruments",
+   "group": "synth",
+   "file": "instruments/synth/ps-synth-01-pluck.wav",
+   "type": "melodic",
+   "tracks": [
+    "lead",
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 1.0,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "synth-02",
+   "name": "Pluck hell",
+   "category": "instruments",
+   "group": "synth",
+   "file": "instruments/synth/ps-synth-02-pluck-hell.wav",
+   "type": "melodic",
+   "tracks": [
+    "lead",
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 0.867,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "synth-03",
+   "name": "Lead",
+   "category": "instruments",
+   "group": "synth",
+   "file": "instruments/synth/ps-synth-03-lead.wav",
+   "type": "melodic",
+   "tracks": [
+    "lead",
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 1.4,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "synth-04",
+   "name": "Supersaw",
+   "category": "instruments",
+   "group": "synth",
+   "file": "instruments/synth/ps-synth-04-supersaw.wav",
+   "type": "melodic",
+   "tracks": [
+    "lead",
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 1.8,
+   "channels": 2,
+   "tags": []
+  },
+  {
+   "id": "synth-05",
+   "name": "Pad warm",
+   "category": "instruments",
+   "group": "synth",
+   "file": "instruments/synth/ps-synth-05-pad-warm.wav",
+   "type": "melodic",
+   "tracks": [
+    "lead",
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 3.978,
+   "channels": 2,
+   "tags": []
+  },
+  {
+   "id": "synth-06",
+   "name": "Pad gläsern",
+   "category": "instruments",
+   "group": "synth",
+   "file": "instruments/synth/ps-synth-06-pad-glaesern.wav",
+   "type": "melodic",
+   "tracks": [
+    "lead",
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 3.969,
+   "channels": 2,
+   "tags": []
+  },
+  {
+   "id": "synth-07",
+   "name": "Chiptune",
+   "category": "instruments",
+   "group": "synth",
+   "file": "instruments/synth/ps-synth-07-chiptune.wav",
+   "type": "melodic",
+   "tracks": [
+    "lead",
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 0.8,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "synth-08",
+   "name": "Chiptune Puls",
+   "category": "instruments",
+   "group": "synth",
+   "file": "instruments/synth/ps-synth-08-chiptune-puls.wav",
+   "type": "melodic",
+   "tracks": [
+    "lead",
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 0.8,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "synth-09",
+   "name": "Sinus Lead",
+   "category": "instruments",
+   "group": "synth",
+   "file": "instruments/synth/ps-synth-09-sinus-lead.wav",
+   "type": "melodic",
+   "tracks": [
+    "lead",
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 1.4,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "synth-10",
+   "name": "Wobble Lead",
+   "category": "instruments",
+   "group": "synth",
+   "file": "instruments/synth/ps-synth-10-wobble-lead.wav",
+   "type": "melodic",
+   "tracks": [
+    "lead",
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 1.4,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "synth-11",
+   "name": "Hoover",
+   "category": "instruments",
+   "group": "synth",
+   "file": "instruments/synth/ps-synth-11-hoover.wav",
+   "type": "melodic",
+   "tracks": [
+    "lead",
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 1.6,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "stab-01",
+   "name": "E-Piano Moll",
+   "category": "chords",
+   "group": "stab",
+   "file": "chords/stab/ps-stab-01-e-piano-moll.wav",
+   "type": "melodic",
+   "tracks": [
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 2.0,
+   "channels": 1,
+   "tags": [
+    "Moll"
+   ]
+  },
+  {
+   "id": "stab-02",
+   "name": "Stab Moll",
+   "category": "chords",
+   "group": "stab",
+   "file": "chords/stab/ps-stab-02-stab-moll.wav",
+   "type": "melodic",
+   "tracks": [
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 0.8,
+   "channels": 1,
+   "tags": [
+    "Moll"
+   ]
+  },
+  {
+   "id": "stab-03",
+   "name": "E-Piano Dur",
+   "category": "chords",
+   "group": "stab",
+   "file": "chords/stab/ps-stab-03-e-piano-dur.wav",
+   "type": "melodic",
+   "tracks": [
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 2.0,
+   "channels": 1,
+   "tags": [
+    "Dur"
+   ]
+  },
+  {
+   "id": "stab-04",
+   "name": "Stab Dur",
+   "category": "chords",
+   "group": "stab",
+   "file": "chords/stab/ps-stab-04-stab-dur.wav",
+   "type": "melodic",
+   "tracks": [
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 0.8,
+   "channels": 1,
+   "tags": [
+    "Dur"
+   ]
+  },
+  {
+   "id": "stab-05",
+   "name": "E-Piano Moll7",
+   "category": "chords",
+   "group": "stab",
+   "file": "chords/stab/ps-stab-05-e-piano-moll7.wav",
+   "type": "melodic",
+   "tracks": [
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 2.0,
+   "channels": 1,
+   "tags": [
+    "Moll7"
+   ]
+  },
+  {
+   "id": "stab-06",
+   "name": "Stab Moll7",
+   "category": "chords",
+   "group": "stab",
+   "file": "chords/stab/ps-stab-06-stab-moll7.wav",
+   "type": "melodic",
+   "tracks": [
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 0.8,
+   "channels": 1,
+   "tags": [
+    "Moll7"
+   ]
+  },
+  {
+   "id": "stab-07",
+   "name": "E-Piano Maj7",
+   "category": "chords",
+   "group": "stab",
+   "file": "chords/stab/ps-stab-07-e-piano-maj7.wav",
+   "type": "melodic",
+   "tracks": [
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 2.0,
+   "channels": 1,
+   "tags": [
+    "Maj7"
+   ]
+  },
+  {
+   "id": "stab-08",
+   "name": "Stab Maj7",
+   "category": "chords",
+   "group": "stab",
+   "file": "chords/stab/ps-stab-08-stab-maj7.wav",
+   "type": "melodic",
+   "tracks": [
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 0.8,
+   "channels": 1,
+   "tags": [
+    "Maj7"
+   ]
+  },
+  {
+   "id": "stab-09",
+   "name": "E-Piano Sus2",
+   "category": "chords",
+   "group": "stab",
+   "file": "chords/stab/ps-stab-09-e-piano-sus2.wav",
+   "type": "melodic",
+   "tracks": [
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 2.0,
+   "channels": 1,
+   "tags": [
+    "Sus2"
+   ]
+  },
+  {
+   "id": "stab-10",
+   "name": "Stab Sus2",
+   "category": "chords",
+   "group": "stab",
+   "file": "chords/stab/ps-stab-10-stab-sus2.wav",
+   "type": "melodic",
+   "tracks": [
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 0.8,
+   "channels": 1,
+   "tags": [
+    "Sus2"
+   ]
+  },
+  {
+   "id": "stab-11",
+   "name": "E-Piano Moll9",
+   "category": "chords",
+   "group": "stab",
+   "file": "chords/stab/ps-stab-11-e-piano-moll9.wav",
+   "type": "melodic",
+   "tracks": [
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 2.0,
+   "channels": 1,
+   "tags": [
+    "Moll9"
+   ]
+  },
+  {
+   "id": "stab-12",
+   "name": "Stab Moll9",
+   "category": "chords",
+   "group": "stab",
+   "file": "chords/stab/ps-stab-12-stab-moll9.wav",
+   "type": "melodic",
+   "tracks": [
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 0.8,
+   "channels": 1,
+   "tags": [
+    "Moll9"
+   ]
+  },
+  {
+   "id": "pad-01",
+   "name": "Pad Moll",
+   "category": "chords",
+   "group": "pad",
+   "file": "chords/pad/ps-pad-01-pad-moll.wav",
+   "type": "melodic",
+   "tracks": [
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 3.982,
+   "channels": 2,
+   "tags": [
+    "Moll"
+   ]
+  },
+  {
+   "id": "pad-02",
+   "name": "Pad Moll7",
+   "category": "chords",
+   "group": "pad",
+   "file": "chords/pad/ps-pad-02-pad-moll7.wav",
+   "type": "melodic",
+   "tracks": [
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 3.982,
+   "channels": 2,
+   "tags": [
+    "Moll7"
+   ]
+  },
+  {
+   "id": "pad-03",
+   "name": "Pad Dur",
+   "category": "chords",
+   "group": "pad",
+   "file": "chords/pad/ps-pad-03-pad-dur.wav",
+   "type": "melodic",
+   "tracks": [
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 3.987,
+   "channels": 2,
+   "tags": [
+    "Dur"
+   ]
+  },
+  {
+   "id": "pad-04",
+   "name": "Pad Maj7",
+   "category": "chords",
+   "group": "pad",
+   "file": "chords/pad/ps-pad-04-pad-maj7.wav",
+   "type": "melodic",
+   "tracks": [
+    "chords"
+   ],
+   "root": 60,
+   "rootNote": "C4",
+   "bpm": null,
+   "bars": null,
+   "duration": 3.981,
+   "channels": 2,
+   "tags": [
+    "Maj7"
+   ]
+  },
+  {
+   "id": "guitar-01",
+   "name": "Gitarre Moll",
+   "category": "chords",
+   "group": "guitar",
+   "file": "chords/guitar/ps-guitar-01-gitarre-moll.wav",
+   "type": "melodic",
+   "tracks": [
+    "chords"
+   ],
+   "root": 48,
+   "rootNote": "C3",
+   "bpm": null,
+   "bars": null,
+   "duration": 2.6,
+   "channels": 1,
+   "tags": [
+    "Moll"
+   ]
+  },
+  {
+   "id": "guitar-02",
+   "name": "Gitarre Dur",
+   "category": "chords",
+   "group": "guitar",
+   "file": "chords/guitar/ps-guitar-02-gitarre-dur.wav",
+   "type": "melodic",
+   "tracks": [
+    "chords"
+   ],
+   "root": 48,
+   "rootNote": "C3",
+   "bpm": null,
+   "bars": null,
+   "duration": 2.6,
+   "channels": 1,
+   "tags": [
+    "Dur"
+   ]
+  },
+  {
+   "id": "guitar-03",
+   "name": "Gitarre Moll7",
+   "category": "chords",
+   "group": "guitar",
+   "file": "chords/guitar/ps-guitar-03-gitarre-moll7.wav",
+   "type": "melodic",
+   "tracks": [
+    "chords"
+   ],
+   "root": 48,
+   "rootNote": "C3",
+   "bpm": null,
+   "bars": null,
+   "duration": 2.592,
+   "channels": 1,
+   "tags": [
+    "Moll7"
+   ]
+  },
+  {
+   "id": "riser-01",
+   "name": "Riser 2 s",
+   "category": "fx",
+   "group": "riser",
+   "file": "fx/riser/ps-riser-01-riser-2-s.wav",
+   "type": "oneshot",
+   "tracks": [],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 2.0,
+   "channels": 2,
+   "tags": [
+    "übergang"
+   ]
+  },
+  {
+   "id": "riser-02",
+   "name": "Riser 4 s",
+   "category": "fx",
+   "group": "riser",
+   "file": "fx/riser/ps-riser-02-riser-4-s.wav",
+   "type": "oneshot",
+   "tracks": [],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 4.0,
+   "channels": 2,
+   "tags": [
+    "übergang"
+   ]
+  },
+  {
+   "id": "riser-03",
+   "name": "Riser 1 s",
+   "category": "fx",
+   "group": "riser",
+   "file": "fx/riser/ps-riser-03-riser-1-s.wav",
+   "type": "oneshot",
+   "tracks": [],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 1.0,
+   "channels": 2,
+   "tags": [
+    "übergang"
+   ]
+  },
+  {
+   "id": "riser-04",
+   "name": "Riser 8 s",
+   "category": "fx",
+   "group": "riser",
+   "file": "fx/riser/ps-riser-04-riser-8-s.wav",
+   "type": "oneshot",
+   "tracks": [],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 8.0,
+   "channels": 2,
+   "tags": [
+    "übergang"
+   ]
+  },
+  {
+   "id": "downlifter-01",
+   "name": "Downlifter 1",
+   "category": "fx",
+   "group": "downlifter",
+   "file": "fx/downlifter/ps-downlifter-01-downlifter-1.wav",
+   "type": "oneshot",
+   "tracks": [],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 1.899,
+   "channels": 1,
+   "tags": [
+    "übergang"
+   ]
+  },
+  {
+   "id": "downlifter-02",
+   "name": "Downlifter 2",
+   "category": "fx",
+   "group": "downlifter",
+   "file": "fx/downlifter/ps-downlifter-02-downlifter-2.wav",
+   "type": "oneshot",
+   "tracks": [],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.967,
+   "channels": 1,
+   "tags": [
+    "übergang"
+   ]
+  },
+  {
+   "id": "downlifter-03",
+   "name": "Downlifter 3",
+   "category": "fx",
+   "group": "downlifter",
+   "file": "fx/downlifter/ps-downlifter-03-downlifter-3.wav",
+   "type": "oneshot",
+   "tracks": [],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 2.85,
+   "channels": 1,
+   "tags": [
+    "übergang"
+   ]
+  },
+  {
+   "id": "impact-01",
+   "name": "Impact 1",
+   "category": "fx",
+   "group": "impact",
+   "file": "fx/impact/ps-impact-01-impact-1.wav",
+   "type": "oneshot",
+   "tracks": [],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 2.879,
+   "channels": 1,
+   "tags": [
+    "drop"
+   ]
+  },
+  {
+   "id": "impact-02",
+   "name": "Impact 2",
+   "category": "fx",
+   "group": "impact",
+   "file": "fx/impact/ps-impact-02-impact-2.wav",
+   "type": "oneshot",
+   "tracks": [],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 2.273,
+   "channels": 1,
+   "tags": [
+    "drop"
+   ]
+  },
+  {
+   "id": "impact-03",
+   "name": "Impact 3",
+   "category": "fx",
+   "group": "impact",
+   "file": "fx/impact/ps-impact-03-impact-3.wav",
+   "type": "oneshot",
+   "tracks": [],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 3.655,
+   "channels": 1,
+   "tags": [
+    "drop"
+   ]
+  },
+  {
+   "id": "impact-04",
+   "name": "Impact 4",
+   "category": "fx",
+   "group": "impact",
+   "file": "fx/impact/ps-impact-04-impact-4.wav",
+   "type": "oneshot",
+   "tracks": [],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 2.589,
+   "channels": 1,
+   "tags": [
+    "drop"
+   ]
+  },
+  {
+   "id": "drop-01",
+   "name": "Sub Drop 1",
+   "category": "fx",
+   "group": "drop",
+   "file": "fx/drop/ps-drop-01-sub-drop-1.wav",
+   "type": "oneshot",
+   "tracks": [
+    "kick"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 1.44,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "drop-02",
+   "name": "Sub Drop 2",
+   "category": "fx",
+   "group": "drop",
+   "file": "fx/drop/ps-drop-02-sub-drop-2.wav",
+   "type": "oneshot",
+   "tracks": [
+    "kick"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 2.4,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "drop-03",
+   "name": "Sub Drop 3",
+   "category": "fx",
+   "group": "drop",
+   "file": "fx/drop/ps-drop-03-sub-drop-3.wav",
+   "type": "oneshot",
+   "tracks": [
+    "kick"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.96,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "laser-01",
+   "name": "Laser 1",
+   "category": "fx",
+   "group": "laser",
+   "file": "fx/laser/ps-laser-01-laser-1.wav",
+   "type": "oneshot",
+   "tracks": [
+    "rim"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.3,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "laser-02",
+   "name": "Laser 2",
+   "category": "fx",
+   "group": "laser",
+   "file": "fx/laser/ps-laser-02-laser-2.wav",
+   "type": "oneshot",
+   "tracks": [
+    "rim"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.2,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "laser-03",
+   "name": "Laser 3",
+   "category": "fx",
+   "group": "laser",
+   "file": "fx/laser/ps-laser-03-laser-3.wav",
+   "type": "oneshot",
+   "tracks": [
+    "rim"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.5,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "laser-04",
+   "name": "Zap 1",
+   "category": "fx",
+   "group": "laser",
+   "file": "fx/laser/ps-laser-04-zap-1.wav",
+   "type": "oneshot",
+   "tracks": [
+    "rim"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.15,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "laser-05",
+   "name": "Zap 2",
+   "category": "fx",
+   "group": "laser",
+   "file": "fx/laser/ps-laser-05-zap-2.wav",
+   "type": "oneshot",
+   "tracks": [
+    "rim"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.1,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "laser-06",
+   "name": "Zap 3",
+   "category": "fx",
+   "group": "laser",
+   "file": "fx/laser/ps-laser-06-zap-3.wav",
+   "type": "oneshot",
+   "tracks": [
+    "rim"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.08,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "whoosh-01",
+   "name": "Whoosh 1",
+   "category": "fx",
+   "group": "whoosh",
+   "file": "fx/whoosh/ps-whoosh-01-whoosh-1.wav",
+   "type": "oneshot",
+   "tracks": [],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.672,
+   "channels": 1,
+   "tags": [
+    "übergang"
+   ]
+  },
+  {
+   "id": "whoosh-02",
+   "name": "Whoosh 2",
+   "category": "fx",
+   "group": "whoosh",
+   "file": "fx/whoosh/ps-whoosh-02-whoosh-2.wav",
+   "type": "oneshot",
+   "tracks": [],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 1.2,
+   "channels": 1,
+   "tags": [
+    "übergang"
+   ]
+  },
+  {
+   "id": "whoosh-03",
+   "name": "Whoosh 3",
+   "category": "fx",
+   "group": "whoosh",
+   "file": "fx/whoosh/ps-whoosh-03-whoosh-3.wav",
+   "type": "oneshot",
+   "tracks": [],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.486,
+   "channels": 1,
+   "tags": [
+    "übergang"
+   ]
+  },
+  {
+   "id": "scratch-01",
+   "name": "Scratch 1",
+   "category": "fx",
+   "group": "scratch",
+   "file": "fx/scratch/ps-scratch-01-scratch-1.wav",
+   "type": "oneshot",
+   "tracks": [
+    "rim",
+    "clap"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.35,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "scratch-02",
+   "name": "Scratch 2",
+   "category": "fx",
+   "group": "scratch",
+   "file": "fx/scratch/ps-scratch-02-scratch-2.wav",
+   "type": "oneshot",
+   "tracks": [
+    "rim",
+    "clap"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.45,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "scratch-03",
+   "name": "Scratch 3",
+   "category": "fx",
+   "group": "scratch",
+   "file": "fx/scratch/ps-scratch-03-scratch-3.wav",
+   "type": "oneshot",
+   "tracks": [
+    "rim",
+    "clap"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.55,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "texture-01",
+   "name": "Vinyl-Knistern 1",
+   "category": "fx",
+   "group": "texture",
+   "file": "fx/texture/ps-texture-01-vinyl-knistern-1.wav",
+   "type": "oneshot",
+   "tracks": [
+    "shaker"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 2.0,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "texture-02",
+   "name": "Vinyl-Knistern 2",
+   "category": "fx",
+   "group": "texture",
+   "file": "fx/texture/ps-texture-02-vinyl-knistern-2.wav",
+   "type": "oneshot",
+   "tracks": [
+    "shaker"
+   ],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 3.0,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "texture-03",
+   "name": "Tape-Stopp 1",
+   "category": "fx",
+   "group": "texture",
+   "file": "fx/texture/ps-texture-03-tape-stopp-1.wav",
+   "type": "oneshot",
+   "tracks": [],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 1.2,
+   "channels": 1,
+   "tags": [
+    "übergang"
+   ]
+  },
+  {
+   "id": "texture-04",
+   "name": "Tape-Stopp 2",
+   "category": "fx",
+   "group": "texture",
+   "file": "fx/texture/ps-texture-04-tape-stopp-2.wav",
+   "type": "oneshot",
+   "tracks": [],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 1.2,
+   "channels": 1,
+   "tags": [
+    "übergang"
+   ]
+  },
+  {
+   "id": "horn-01",
+   "name": "Air Horn",
+   "category": "fx",
+   "group": "horn",
+   "file": "fx/horn/ps-horn-01-air-horn.wav",
+   "type": "oneshot",
+   "tracks": [],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.505,
+   "channels": 1,
+   "tags": [
+    "dancehall"
+   ]
+  },
+  {
+   "id": "horn-02",
+   "name": "Air Horn tief",
+   "category": "fx",
+   "group": "horn",
+   "file": "fx/horn/ps-horn-02-air-horn-tief.wav",
+   "type": "oneshot",
+   "tracks": [],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 0.499,
+   "channels": 1,
+   "tags": [
+    "dancehall"
+   ]
+  },
+  {
+   "id": "reverse-01",
+   "name": "Reverse Becken 1",
+   "category": "fx",
+   "group": "reverse",
+   "file": "fx/reverse/ps-reverse-01-reverse-becken-1.wav",
+   "type": "oneshot",
+   "tracks": [],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 2.0,
+   "channels": 1,
+   "tags": [
+    "übergang"
+   ]
+  },
+  {
+   "id": "reverse-02",
+   "name": "Reverse Becken 2",
+   "category": "fx",
+   "group": "reverse",
+   "file": "fx/reverse/ps-reverse-02-reverse-becken-2.wav",
+   "type": "oneshot",
+   "tracks": [],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 2.0,
+   "channels": 1,
+   "tags": [
+    "übergang"
+   ]
+  },
+  {
+   "id": "reverse-03",
+   "name": "Reverse Becken 3",
+   "category": "fx",
+   "group": "reverse",
+   "file": "fx/reverse/ps-reverse-03-reverse-becken-3.wav",
+   "type": "oneshot",
+   "tracks": [],
+   "root": null,
+   "rootNote": null,
+   "bpm": null,
+   "bars": null,
+   "duration": 2.0,
+   "channels": 1,
+   "tags": [
+    "übergang"
+   ]
+  },
+  {
+   "id": "tone-01",
+   "name": "Ping 1",
+   "category": "fx",
+   "group": "tone",
+   "file": "fx/tone/ps-tone-01-ping-1.wav",
+   "type": "melodic",
+   "tracks": [],
+   "root": 81,
+   "rootNote": "A5",
+   "bpm": null,
+   "bars": null,
+   "duration": 3.909,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "tone-02",
+   "name": "Ping 2",
+   "category": "fx",
+   "group": "tone",
+   "file": "fx/tone/ps-tone-02-ping-2.wav",
+   "type": "melodic",
+   "tracks": [],
+   "root": 88,
+   "rootNote": "E6",
+   "bpm": null,
+   "bars": null,
+   "duration": 3.0,
+   "channels": 1,
+   "tags": []
+  },
+  {
+   "id": "drums-01",
+   "name": "Boom Bap 90 BPM",
+   "category": "loops",
+   "group": "drums",
+   "file": "loops/drums/ps-drums-01-boom-bap-90-bpm.wav",
+   "type": "loop",
+   "tracks": [],
+   "root": null,
+   "rootNote": null,
+   "bpm": 90,
+   "bars": 2,
+   "duration": 5.333,
+   "channels": 2,
+   "tags": []
+  },
+  {
+   "id": "drums-02",
+   "name": "Trap 140 BPM",
+   "category": "loops",
+   "group": "drums",
+   "file": "loops/drums/ps-drums-02-trap-140-bpm.wav",
+   "type": "loop",
+   "tracks": [],
+   "root": null,
+   "rootNote": null,
+   "bpm": 140,
+   "bars": 2,
+   "duration": 3.429,
+   "channels": 2,
+   "tags": []
+  },
+  {
+   "id": "drums-03",
+   "name": "House 124 BPM",
+   "category": "loops",
+   "group": "drums",
+   "file": "loops/drums/ps-drums-03-house-124-bpm.wav",
+   "type": "loop",
+   "tracks": [],
+   "root": null,
+   "rootNote": null,
+   "bpm": 124,
+   "bars": 2,
+   "duration": 3.871,
+   "channels": 2,
+   "tags": []
+  },
+  {
+   "id": "drums-04",
+   "name": "Lo-Fi 78 BPM",
+   "category": "loops",
+   "group": "drums",
+   "file": "loops/drums/ps-drums-04-lo-fi-78-bpm.wav",
+   "type": "loop",
+   "tracks": [],
+   "root": null,
+   "rootNote": null,
+   "bpm": 78,
+   "bars": 2,
+   "duration": 6.154,
+   "channels": 2,
+   "tags": []
+  },
+  {
+   "id": "drums-05",
+   "name": "Reggaeton 96 BPM",
+   "category": "loops",
+   "group": "drums",
+   "file": "loops/drums/ps-drums-05-reggaeton-96-bpm.wav",
+   "type": "loop",
+   "tracks": [],
+   "root": null,
+   "rootNote": null,
+   "bpm": 96,
+   "bars": 2,
+   "duration": 5.0,
+   "channels": 2,
+   "tags": []
+  },
+  {
+   "id": "drums-06",
+   "name": "Afrobeats 104 BPM",
+   "category": "loops",
+   "group": "drums",
+   "file": "loops/drums/ps-drums-06-afrobeats-104-bpm.wav",
+   "type": "loop",
+   "tracks": [],
+   "root": null,
+   "rootNote": null,
+   "bpm": 104,
+   "bars": 2,
+   "duration": 4.615,
+   "channels": 2,
+   "tags": []
+  },
+  {
+   "id": "drums-07",
+   "name": "Techno 128 BPM",
+   "category": "loops",
+   "group": "drums",
+   "file": "loops/drums/ps-drums-07-techno-128-bpm.wav",
+   "type": "loop",
+   "tracks": [],
+   "root": null,
+   "rootNote": null,
+   "bpm": 128,
+   "bars": 2,
+   "duration": 3.75,
+   "channels": 2,
+   "tags": []
+  },
+  {
+   "id": "drums-08",
+   "name": "Drum and Bass 172 BPM",
+   "category": "loops",
+   "group": "drums",
+   "file": "loops/drums/ps-drums-08-drum-and-bass-172-bpm.wav",
+   "type": "loop",
+   "tracks": [],
+   "root": null,
+   "rootNote": null,
+   "bpm": 172,
+   "bars": 2,
+   "duration": 2.791,
+   "channels": 2,
+   "tags": []
+  },
+  {
+   "id": "drums-09",
+   "name": "Dancehall 100 BPM",
+   "category": "loops",
+   "group": "drums",
+   "file": "loops/drums/ps-drums-09-dancehall-100-bpm.wav",
+   "type": "loop",
+   "tracks": [],
+   "root": null,
+   "rootNote": null,
+   "bpm": 100,
+   "bars": 2,
+   "duration": 4.8,
+   "channels": 2,
+   "tags": []
+  },
+  {
+   "id": "drums-10",
+   "name": "Rock 120 BPM",
+   "category": "loops",
+   "group": "drums",
+   "file": "loops/drums/ps-drums-10-rock-120-bpm.wav",
+   "type": "loop",
+   "tracks": [],
+   "root": null,
+   "rootNote": null,
+   "bpm": 120,
+   "bars": 2,
+   "duration": 4.0,
+   "channels": 2,
+   "tags": []
+  },
+  {
+   "id": "drums-11",
+   "name": "Jersey Club 140 BPM",
+   "category": "loops",
+   "group": "drums",
+   "file": "loops/drums/ps-drums-11-jersey-club-140-bpm.wav",
+   "type": "loop",
+   "tracks": [],
+   "root": null,
+   "rootNote": null,
+   "bpm": 140,
+   "bars": 2,
+   "duration": 3.429,
+   "channels": 2,
+   "tags": []
+  },
+  {
+   "id": "drums-12",
+   "name": "Garage 132 BPM",
+   "category": "loops",
+   "group": "drums",
+   "file": "loops/drums/ps-drums-12-garage-132-bpm.wav",
+   "type": "loop",
+   "tracks": [],
+   "root": null,
+   "rootNote": null,
+   "bpm": 132,
+   "bars": 2,
+   "duration": 3.636,
+   "channels": 2,
+   "tags": []
+  },
+  {
+   "id": "melodic-01",
+   "name": "Akkorde E-Piano Cm 90 BPM",
+   "category": "loops",
+   "group": "melodic",
+   "file": "loops/melodic/ps-melodic-01-akkorde-e-piano-cm-90-bpm.wav",
+   "type": "loop",
+   "tracks": [],
+   "root": null,
+   "rootNote": null,
+   "bpm": 90,
+   "bars": 4,
+   "duration": 10.667,
+   "channels": 1,
+   "tags": [
+    "C Moll"
+   ]
+  },
+  {
+   "id": "melodic-02",
+   "name": "Melodie Pluck Cm 90 BPM",
+   "category": "loops",
+   "group": "melodic",
+   "file": "loops/melodic/ps-melodic-02-melodie-pluck-cm-90-bpm.wav",
+   "type": "loop",
+   "tracks": [],
+   "root": null,
+   "rootNote": null,
+   "bpm": 90,
+   "bars": 4,
+   "duration": 10.667,
+   "channels": 1,
+   "tags": [
+    "C Moll"
+   ]
+  },
+  {
+   "id": "melodic-03",
+   "name": "Arpeggio Kalimba Cm 140 BPM",
+   "category": "loops",
+   "group": "melodic",
+   "file": "loops/melodic/ps-melodic-03-arpeggio-kalimba-cm-140-bpm.wav",
+   "type": "loop",
+   "tracks": [],
+   "root": null,
+   "rootNote": null,
+   "bpm": 140,
+   "bars": 4,
+   "duration": 6.857,
+   "channels": 1,
+   "tags": [
+    "C Moll"
+   ]
+  }
+ ]
+}
