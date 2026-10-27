@@ -755,7 +755,15 @@ function tick(){
     const sw=(step%2)?(P.swing/100)*stepDur()*.5:0, t=nextT+sw, p=P.pats[playPat];
     for(const tr of TR){ const v=p[tr.id][step]; if(v) play(live,tr.id,t,v,noteLength(playPat,step,v,tr.id)); }
     queue.push({t,step,pat:playPat,bar:songBar}); if(queue.length>64) queue.splice(0,32);
-    nextT+=stepDur(); step=(step+1)%16; if(step===0){songBar++;playPat=P.songMode?patForBar(songBar):nextPat(playPat);}
+    nextT+=stepDur(); step=(step+1)%16; if(step===0){
+      songBar++;
+      if(P.songMode&&songBar>=songOrder().length){
+        clearInterval(timer);
+        setTimeout(()=>{if(playing)stop();},Math.max(0,(nextT-ac.currentTime)*1000)+80);
+        return;
+      }
+      playPat=P.songMode?patForBar(songBar):nextPat(playPat);
+    }
   }
 }
 function start(){ if(!ensureAudio()) return; playing=true; step=0; songBar=0; playPat=P.songMode?patForBar(0):P.chain&&!used(cur)?nextPat(cur):cur; nextT=ac.currentTime+.06; queue=[]; tick(); timer=setInterval(tick,25);
