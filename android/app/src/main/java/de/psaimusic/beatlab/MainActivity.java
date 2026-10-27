@@ -199,7 +199,7 @@ public class MainActivity extends Activity {
                         : filename.replaceAll("[^a-zA-Z0-9._ -]", "_");
                 if (safe.length() > 100) safe = safe.substring(safe.length() - 100);
                 if (safe.isBlank()) safe = "beatlab.wav";
-                String type = "application/zip".equals(mime) ? "application/zip" : "audio/wav";
+                String type = "application/zip".equals(mime) ? "application/zip" : ("application/json".equals(mime) ? "application/json" : "audio/wav");
                 ContentValues values = new ContentValues();
                 values.put(MediaStore.MediaColumns.DISPLAY_NAME, safe);
                 values.put(MediaStore.MediaColumns.MIME_TYPE, type);
