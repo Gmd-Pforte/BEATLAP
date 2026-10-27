@@ -6,6 +6,7 @@ on:
     paths:
       - 'index.html'
       - 'sw.js'
+      - 'instrument-engine.js'
       - 'samples/**'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
@@ -31,7 +32,7 @@ jobs:
       - name: Prepare public studio
         run: |
           mkdir -p public
-          cp index.html sw.js public/
+          cp index.html sw.js instrument-engine.js public/
           cp -r samples public/
           touch public/.nojekyll
       - name: Configure Pages
