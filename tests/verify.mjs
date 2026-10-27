@@ -77,5 +77,31 @@ test('Composer 2.0 offers distinct song structures and safe lengths', () => {
   assert.match(html,/generateComposition\(false,'backing'\)/);
 });
 
+
+test('Notensong importer supports validated multi-track JSON and note TXT', () => {
+  for (const id of ['scoreFile','scoreTracks','scoreEnable','scoreDisable','scoreExample']) {
+    assert.ok(html.includes('id="'+id+'"'), 'Missing import control '+id);
+  }
+  const from=html.indexOf('const SCORE_FORMAT=');
+  const to=html.indexOf('function scoreEvents(',from);
+  assert.ok(from>0&&to>from,'Score parser missing');
+  const parser=new Function(
+    'const INSTR={piano:1,cello:1};const BASSES={sub:1};const DRUMS={kickBoom:1};'+
+    html.slice(from,to)+';return {validateScore,parseScoreText};'
+  )();
+  const score=parser.validateScore({format:'PS-Beatlap-Score-1',title:'Test',bpm:80,
+    tracks:[{instrument:'piano',notes:[{pitch:'C4',start:0,duration:2}]},
+            {instrument:'cello',notes:[{pitch:'A2',start:0,duration:4}]}]});
+  assert.equal(score.tracks.length,2);
+  assert.equal(score.tracks[0].notes[0].pitch,60);
+  assert.equal(score.lengthBeats,4);
+  const text=parser.parseScoreText('TITLE: Test\nBPM: 80\nTRACK: Piano|piano\nC4 0 1 .7');
+  assert.equal(parser.validateScore(text).tracks[0].notes[0].velocity,.7);
+  assert.throws(()=>parser.validateScore({format:'PS-Beatlap-Score-1',bpm:80,
+    tracks:[{instrument:'piano',notes:[{pitch:'C4',start:0,duration:999}]}]}));
+  assert.match(html,/renderScoreWav/);
+  assert.match(html,/startScore/);
+});
+
 console.log(`✓ Beatlab checks passed (${checks.length} groups)`);
 for (const item of checks) console.log(`  ✓ ${item}`);
