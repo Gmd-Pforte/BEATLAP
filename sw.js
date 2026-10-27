@@ -1,6 +1,6 @@
-const SHELL='ps-beatlab-shell-v1';
+const SHELL='ps-beatlab-shell-v2';
 const AUDIO='ps-beatlab-audio-v1';
-const SHELL_FILES=['./index.html','./samples/samples.json'];
+const SHELL_FILES=['./index.html','./instrument-engine.js','./samples/samples.json'];
 
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(SHELL).then(cache=>cache.addAll(SHELL_FILES)).then(()=>self.skipWaiting()));

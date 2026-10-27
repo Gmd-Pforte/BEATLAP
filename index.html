@@ -412,6 +412,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 </div>
 <div class="toast" id="msg" role="status" aria-live="polite" hidden></div>
 
+<script src="./instrument-engine.js"></script>
 <script>
 (function(){
 const $=id=>document.getElementById(id);
@@ -427,7 +428,9 @@ const DRUMS={
  laser:['Laser','Effekte'],zap:['Zap','Effekte'],riser:['Riser','Effekte'],scratch:['Scratch','Effekte'],vinyl:['Vinyl-Knistern','Effekte'],horn:['Air Horn','Effekte'],drop:['Sub Drop','Effekte'],whoosh:['Whoosh','Effekte'],
 };
 const BASSES={'808':['808 Klassik','Bass'],'808d':['808 verzerrt mit Glide','Bass'],sub:['Sub-Bass','Bass'],reese:['Reese','Bass'],synthb:['Synth-Bass','Bass'],pluckb:['Zupf-Bass','Bass'],acid:['Acid','Bass'],wobble:['Wobble','Bass']};
-const INSTR={piano:['Piano','Tasten'],epiano:['E-Piano','Tasten'],organ:['Orgel','Tasten'],clav:['Clavinet','Tasten'],
+const INSTR={grand:['Konzertflügel · Real Engine','Real Instruments'],felt:['Felt Piano · sanft','Real Instruments'],upright:['Klavier · warm','Real Instruments'],
+ cello:['Solo Cello','Real Instruments'],violin:['Solo Violine','Real Instruments'],acoustic:['Akustikgitarre','Real Instruments'],nylon:['Nylongitarre','Real Instruments'],sax:['Altsaxofon','Real Instruments'],tenorSax:['Tenorsaxofon','Real Instruments'],trumpet:['Trompete','Real Instruments'],
+ piano:['Piano','Tasten'],epiano:['E-Piano','Tasten'],organ:['Orgel','Tasten'],clav:['Clavinet','Tasten'],
  pluck:['Pluck','Synth'],lead:['Synth Lead','Synth'],supersaw:['Supersaw','Synth'],chip:['Chiptune','Synth'],pad:['Pad','Synth'],
  bell:['Glocke','Mallets'],marimba:['Marimba','Mallets'],kalimba:['Kalimba','Mallets'],vibes:['Vibraphon','Mallets'],music:['Spieluhr','Mallets'],
  guitar:['Gitarre','Saiten'],harp:['Harfe','Saiten'],strings:['Streicher','Saiten'],
@@ -615,6 +618,8 @@ function adsr(g,t,v,a,d,s,dur,r){ g.gain.setValueAtTime(.0001,t); g.gain.linearR
 function ksBuf(E,f){ const key=Math.round(f*4); if(E.ks[key]) return E.ks[key]; const C=E.ctx, sr=C.sampleRate, L=Math.floor(sr*2.6), b=C.createBuffer(1,L,sr), d=b.getChannelData(0), Nn=Math.max(2,Math.round(sr/f));
   for(let i=0;i<Nn;i++) d[i]=Math.random()*2-1; for(let i=1;i<Nn;i++) d[i]=(d[i]+d[i-1])*.5; d[Nn]=d[0]; for(let i=Nn+1;i<L;i++) d[i]=.4985*(d[i-Nn]+d[i-Nn-1]); return E.ks[key]=b; }
 function voice(E,o,ins,f,t,dur,v){
+  // Modeled instruments are shared by live playback and offline WAV exports.
+  if(window.PSInstrumentEngine?.supports(ins) && window.PSInstrumentEngine.play(E.ctx,o,ins,f,t,dur,v)) return;
   const C=E.ctx, g=C.createGain(); let end;
   const vib=(os,depth,del)=>{ const l=O(E,'sine',5.5,t,dur+1), lg=C.createGain(); lg.gain.setValueAtTime(0,t); lg.gain.linearRampToValueAtTime(f*depth,t+(del||.2)); l.connect(lg); lg.connect(os.frequency); };
   const fm=(ratio,index,idec,decay)=>{ const car=O(E,'sine',f,t,decay+dur+.5), mod=O(E,'sine',f*ratio,t,decay+dur+.5), mg=C.createGain(); mg.gain.setValueAtTime(f*index,t); mg.gain.exponentialRampToValueAtTime(f*index*.08+1,t+idec); mod.connect(mg); mg.connect(car.frequency); return car; };
