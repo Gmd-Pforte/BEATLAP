@@ -947,7 +947,26 @@ $('sampleRemove').onclick=async()=>{ const id=sel; delete samples[id]; delete sa
 let dl=null; (async()=>{ try{ dl=await (window.claude&&window.claude.use?window.claude.use('downloads'):null); }catch(e){ dl=null; } })();
 const inClaude=()=>!!dl;
 function plainDownload(name,blob){ const url=URL.createObjectURL(blob),a=document.createElement('a'); a.href=url; a.download=name; a.style.display='none'; document.body.append(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),60000); }
-async function saveFile(name,blob){ if(dl){ try{ await dl.save({filename:name,data:blob}); return 'saved'; }catch(e){ if(e&&e.code==='declined') return 'declined'; if(e&&e.code==='too_large') throw Error('Die Datei ist zu groß. Wähle weniger Takte.'); throw Error('Speichern hat nicht geklappt'); } }
+async function saveFileToAndroid(name,blob){
+  const native=window.BeatlabAndroid;
+  const id=native.beginDownload(name,blob.type||'application/octet-stream');
+  if(!id)throw Error('Android konnte den Download nicht starten');
+  const chunkSize=96*1024;
+  try{
+    for(let offset=0;offset<blob.size;offset+=chunkSize){
+      const bytes=new Uint8Array(await blob.slice(offset,offset+chunkSize).arrayBuffer());
+      let binary='';for(let i=0;i<bytes.length;i+=8192)binary+=String.fromCharCode(...bytes.subarray(i,i+8192));
+      if(!native.writeChunk(id,btoa(binary)))throw Error('Speichern unterbrochen oder Datei zu groß');
+    }
+    if(!native.finishDownload(id))throw Error('Download konnte nicht abgeschlossen werden');
+    return 'saved';
+  }catch(e){native.cancelDownload(id);throw e;}
+}
+async function saveFile(name,blob){
+  if(window.BeatlabAndroid&&typeof window.BeatlabAndroid.beginDownload==='function'){
+    return saveFileToAndroid(name,blob);
+  }
+  if(dl){ try{ await dl.save({filename:name,data:blob}); return 'saved'; }catch(e){ if(e&&e.code==='declined') return 'declined'; if(e&&e.code==='too_large') throw Error('Die Datei ist zu groß. Wähle weniger Takte.'); throw Error('Speichern hat nicht geklappt'); } }
   plainDownload(name,blob); return 'saved'; }
 const CRC=(()=>{ const t=new Uint32Array(256); for(let n=0;n<256;n++){ let c=n; for(let k=0;k<8;k++) c=c&1?0xEDB88320^(c>>>1):c>>>1; t[n]=c>>>0; } return t; })();
 function crc32(u){ let c=0xFFFFFFFF; for(let i=0;i<u.length;i++) c=CRC[(c^u[i])&255]^(c>>>8); return (c^0xFFFFFFFF)>>>0; }
@@ -1141,6 +1160,9 @@ document.querySelectorAll('.view').forEach(b=>b.onclick=()=>{ showView(b.dataset
 renderAll(); initializeSoundLibrary(); requestAnimationFrame(raf);
 let v0='beat'; try{ v0=localStorage.getItem('beatlab.view')||'beat'; }catch(e){} if(!document.querySelector(`[data-pane="${v0}"]`)) v0='beat'; showView(v0);
 setTimeout(exportLabel,600);
+if(location.protocol==='https:'&&'serviceWorker' in navigator){
+  navigator.serviceWorker.register('./sw.js').catch(e=>console.info('Offline-Cache nicht verfügbar:',e));
+}
 })();
 </script>
 
