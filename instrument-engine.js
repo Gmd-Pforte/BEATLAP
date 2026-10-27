@@ -46,7 +46,8 @@ function getBuf(ctx,id,f){
    const weight=Math.pow(h,-(isMallet?1.68:1.25+spec.soft*.7))/copies;
    const dec=spec.decay*(isPiano?.53:isPluck?.8:isMallet?.58:.12)*(1+.12*h*h);
    const omega=2*Math.PI*hz/sr;
-   modes.push({sin:Math.sin(rand()*6.28),cos:Math.cos(rand()*6.28),ss:Math.sin(omega),cc:Math.cos(omega),weight,dec});
+   const phase=rand()*6.28;
+   modes.push({sin:Math.sin(phase),cos:Math.cos(phase),ss:Math.sin(omega),cc:Math.cos(omega),amp:weight,factor:Math.exp(-dec/sr)});
   }
  }
  let noise=0;
@@ -55,7 +56,7 @@ function getBuf(ctx,id,f){
   for(const m of modes){
    const sin=m.sin*m.cc+m.cos*m.ss;
    m.cos=m.cos*m.cc-m.sin*m.ss;m.sin=sin;
-   sum+=sin*m.weight*Math.exp(-t*m.dec);
+   sum+=sin*m.amp;m.amp*=m.factor;
   }
   noise=noise*.67+(rand()*2-1)*.33;
   const attack=1-Math.exp(-t*(isPiano?1200:isPluck?900:isMallet?1100:35));
