@@ -336,6 +336,14 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 
   <!-- FILE -->
   <div class="pane" data-pane="file" hidden>
+    <section class="card" id="scoreCard">
+      <div class="label">🎼 Song aus Noten importieren</div>
+      <p class="hint">Komplette mehrspurige Kompositionen als Beatlap-JSON oder einfache Noten-TXT laden. Notenlängen, Instrumente und Tempo bleiben erhalten.</p>
+      <div class="row"><label class="btn grad file">Songdatei auswählen<input id="scoreFile" type="file" accept=".json,.txt,application/json,text/plain"></label><button class="btn" id="scoreExample">Beispiel herunterladen</button></div>
+      <p class="hint" id="scoreStatus">Noch kein Notensong geladen. Deine bisherigen Beats bleiben erhalten.</p>
+      <div id="scoreTracks" class="sub" aria-label="Importierte Instrumentenspuren"></div>
+      <div class="row"><button class="btn" id="scoreEnable" hidden>Notensong abspielen</button><button class="btn" id="scoreDisable" hidden>Zurück zu Beats</button><button class="btn" id="scoreRemove" hidden>Song entfernen</button></div>
+    </section>
     <section class="card">
       <div class="label">Audio exportieren</div>
       <p class="hint" id="exportScope"></p>
@@ -501,7 +509,7 @@ function normalize(){
   if(!SCALES[P.scale]) P.scale='minor'; if(!Array.isArray(P.pats)||P.pats.length!==4) P.pats=JSON.parse(JSON.stringify(PRESETS['Boom Bap'].pats));
   P.params=P.params||{}; for(const t of TR){ P.params[t.id]={...defParam(t),pan:0,low:0,high:0,delay:0,solo:false,...(P.params[t.id]||{})}; if(!libOf(t)[P.params[t.id].snd]) P.params[t.id].snd=t.d; P.pats.forEach(p=>{ if(!Array.isArray(p[t.id])||p[t.id].length!==16) p[t.id]=Array(16).fill(0); }); }
   P.arrangement=Array.isArray(P.arrangement)&&P.arrangement.length?P.arrangement:defaultArr();
-  P.songMode=!!P.songMode; P.rollLengths=P.rollLengths||{}; P.bassLengths=P.bassLengths||{}; P.master=typeof P.master==='number'?P.master:80; P.bpm=P.bpm||90; P.swing=P.swing||0; P.key=P.key||0;
+  P.songMode=!!P.songMode; P.scoreActive=!!P.scoreActive&&!!P.score; P.rollLengths=P.rollLengths||{}; P.bassLengths=P.bassLengths||{}; P.master=typeof P.master==='number'?P.master:80; P.bpm=P.bpm||90; P.swing=P.swing||0; P.key=P.key||0;
 }
 normalize();
 function applySnd(pr){ for(const id in (pr.snd||{})) Object.assign(P.params[id],pr.snd[id]); }
@@ -743,6 +751,133 @@ function ensureAudio(){ if(ac){ if(ac.state==='suspended') ac.resume(); return t
 const preview=(id,val)=>{ if(!ensureAudio()) return; const t=trk(id); play(live,id,ac.currentTime+.01,val,t.k==='bass'?brushLen.bass:t.k==='lead'?Object.fromEntries([...Array(15)].map((_,r)=>[r,brushLen.lead])):1); };
 const prevVal=id=>{ const t=TR.find(x=>x.id===id); return t.k==='drum'?2:t.k==='lead'?(1<<(brush.lead-1)):brush[id]; };
 
+
+/* ---------- PS Beatlap Notensong Import 1.0 ---------- */
+const SCORE_FORMAT='PS-Beatlap-Score-1';
+const SCORE_LIMITS={tracks:16,notes:6000,beats:256};
+function scoreMidi(pitch){
+  if(Number.isInteger(pitch)&&pitch>=24&&pitch<=108)return pitch;
+  const m=typeof pitch==='string'&&/^([A-Ga-g])([#b]?)(-?\d)$/.exec(pitch.trim());
+  if(!m)throw Error('Ungültige Note: '+String(pitch));
+  const base={C:0,D:2,E:4,F:5,G:7,A:9,B:11}[m[1].toUpperCase()];
+  const n=(Number(m[3])+1)*12+base+(m[2]==='#'?1:m[2]==='b'?-1:0);
+  if(n<24||n>108)throw Error('Note außerhalb des Bereichs: '+pitch);
+  return n;
+}
+function validateScore(raw){
+  if(!raw||raw.format!==SCORE_FORMAT||!Array.isArray(raw.tracks))throw Error('Kein Beatlap-Notensong. Benötigt: format '+SCORE_FORMAT);
+  if(raw.tracks.length<1||raw.tracks.length>SCORE_LIMITS.tracks)throw Error('Es sind 1 bis 16 Spuren erlaubt.');
+  const bpm=Number(raw.bpm);
+  if(!Number.isFinite(bpm)||bpm<40||bpm>200)throw Error('BPM muss zwischen 40 und 200 liegen.');
+  const beatsPerBar=Number(raw.beatsPerBar||4);
+  if(beatsPerBar!==4)throw Error('In Version 1.0 wird zunächst 4/4 unterstützt.');
+  let count=0,maxBeat=0;
+  const tracks=raw.tracks.map((tr,ti)=>{
+    const instrument=String(tr.instrument||'piano');
+    if(!(instrument in INSTR)&&!(instrument in BASSES)&&!(instrument in DRUMS))throw Error('Unbekanntes Instrument in Spur '+(ti+1)+': '+instrument);
+    if(!Array.isArray(tr.notes))throw Error('Spur '+(ti+1)+' hat keine Notenliste.');
+    const notes=tr.notes.map((n,ni)=>{
+      const start=Number(n.start),duration=Number(n.duration),velocity=n.velocity===undefined?.8:Number(n.velocity);
+      if(!Number.isFinite(start)||start<0||!Number.isFinite(duration)||duration<=0||!Number.isFinite(velocity)||velocity<0||velocity>1)throw Error('Ungültige Notenwerte in Spur '+(ti+1)+' Note '+(ni+1));
+      if(start+duration>SCORE_LIMITS.beats)throw Error('Komposition ist länger als '+SCORE_LIMITS.beats+' Viertelschläge.');
+      maxBeat=Math.max(maxBeat,start+duration);return {pitch:scoreMidi(n.pitch),start,duration,velocity};
+    }).sort((a,b)=>a.start-b.start);
+    count+=notes.length;
+    if(count>SCORE_LIMITS.notes)throw Error('Zu viele Noten, maximal '+SCORE_LIMITS.notes+'.');
+    return {name:String(tr.name||instrument).slice(0,50),instrument,volume:Math.max(0,Math.min(1,Number.isFinite(+tr.volume)?+tr.volume:.8)),pan:Math.max(-1,Math.min(1,Number.isFinite(+tr.pan)?+tr.pan:0)),notes};
+  });
+  if(!count)throw Error('Die Songdatei enthält keine Noten.');
+  const lengthBeats=Math.ceil(maxBeat/4)*4;
+  const sections=Array.isArray(raw.sections)?raw.sections.slice(0,20).map(s=>({name:String(s.name||'Abschnitt').slice(0,40),start:Number(s.start)||0})).filter(s=>s.start>=0&&s.start<lengthBeats):[];
+  return {format:SCORE_FORMAT,title:String(raw.title||'Unbenannter Song').slice(0,90),bpm,beatsPerBar,tracks,sections,lengthBeats};
+}
+function parseScoreText(text){
+  const raw={format:SCORE_FORMAT,title:'Notensong',bpm:90,beatsPerBar:4,tracks:[]};
+  let track=null;
+  for(const rawline of text.split(/\r?\n/)){
+    const line=rawline.trim();if(!line||line.startsWith('#')||line.startsWith('//'))continue;
+    const h=/^(TITLE|BPM)\s*[:=]\s*(.+)$/i.exec(line);
+    if(h){if(h[1].toUpperCase()==='TITLE')raw.title=h[2];else raw.bpm=Number(h[2]);continue;}
+    const t=/^TRACK\s*[:=]\s*([^|]+)(?:\|\s*([\w-]+))?$/i.exec(line);
+    if(t){track={name:t[1].trim(),instrument:(t[2]||'piano').trim(),notes:[]};raw.tracks.push(track);continue;}
+    const parts=line.split(/[\s,;]+/);
+    if(!track||parts.length<3)throw Error('TXT: Verwende TRACK: Name|instrument und danach Note Start Länge [Stärke].');
+    track.notes.push({pitch:parts[0],start:Number(parts[1]),duration:Number(parts[2]),velocity:parts[3]===undefined?.8:Number(parts[3])});
+  }
+  return raw;
+}
+function scoreEvents(score,onlyTrack=-1){const a=[];score.tracks.forEach((tr,i)=>{if(onlyTrack>=0&&i!==onlyTrack)return;for(const n of tr.notes)a.push({track:tr,note:n});});return a.sort((a,b)=>a.note.start-b.note.start);}
+function midiName(n){return NN[n%12]+(Math.floor(n/12)-1);}
+function scorePreview(){
+  const sc=P.score,active=!!sc&&P.scoreActive;
+  $('scoreEnable').hidden=!sc||active;$('scoreDisable').hidden=!sc||!active;$('scoreRemove').hidden=!sc;
+  $('scoreTracks').replaceChildren();
+  if(!sc){$('scoreStatus').textContent='Noch kein Notensong geladen. Deine bisherigen Beats bleiben erhalten.';return;}
+  $('scoreStatus').textContent=(active?'▶ Notensong aktiv · ':'')+sc.title+' · '+sc.bpm+' BPM · '+(sc.lengthBeats/4)+' Takte · '+sc.tracks.length+' Spuren';
+  for(const tr of sc.tracks){
+    const item=document.createElement('div');item.className='hint';item.style.padding='8px';item.style.border='1px solid var(--line2)';item.style.borderRadius='12px';
+    const title=document.createElement('strong');title.textContent=tr.name+' · '+(INSTR[tr.instrument]?.[0]||BASSES[tr.instrument]?.[0]||DRUMS[tr.instrument]?.[0]||tr.instrument);
+    const details=document.createElement('div');details.textContent=tr.notes.length+' Noten · '+tr.notes.slice(0,8).map(n=>midiName(n.pitch)).join(' · ')+(tr.notes.length>8?' …':'');
+    item.append(title,details);$('scoreTracks').append(item);
+  }
+}
+function activateScore(on){if(playing)stop();P.scoreActive=!!P.score&&!!on;if(P.scoreActive)bpm(P.score.bpm);save();scorePreview();exportLabel();msg(P.scoreActive?'Notensong aktiv. Drücke Play.':'Beat-Patterns wieder aktiv.');}
+$('scoreEnable').onclick=()=>activateScore(true);
+$('scoreDisable').onclick=()=>activateScore(false);
+$('scoreRemove').onclick=()=>{if(playing)stop();delete P.score;P.scoreActive=false;save();scorePreview();exportLabel();msg('Notensong entfernt, Beat-Patterns bleiben erhalten.');};
+$('scoreFile').onchange=async e=>{
+  const file=e.target.files?.[0];if(!file)return;
+  try{
+    if(file.size>3*1024*1024)throw Error('Songdatei zu groß (maximal 3 MB).');
+    const source=await file.text(),raw=file.name.toLowerCase().endsWith('.txt')?parseScoreText(source):JSON.parse(source);
+    const score=validateScore(raw);if(playing)stop();P.score=score;P.scoreActive=true;bpm(score.bpm);save();scorePreview();exportLabel();
+    msg('Notensong geladen: '+score.title+' · '+score.tracks.reduce((s,t)=>s+t.notes.length,0)+' Noten.');
+  }catch(err){msg('Songimport fehlgeschlagen: '+err.message);}
+  finally{e.target.value='';}
+};
+function scoreExample(){
+  return {format:SCORE_FORMAT,title:'PS AI MUSIC – Kompositionsbeispiel',bpm:76,beatsPerBar:4,
+    sections:[{name:'Intro',start:0},{name:'Strophe',start:16},{name:'Refrain',start:32}],
+    tracks:[
+      {name:'Piano',instrument:'piano',volume:.8,notes:Array.from({length:12},(_,i)=>({pitch:['A3','C4','E4','A4','G4','E4'][i%6],start:i*4,duration:2.5,velocity:.75}))},
+      {name:'Cello',instrument:'cello',volume:.7,notes:Array.from({length:12},(_,i)=>({pitch:['A2','F2','C3','G2'][Math.floor(i/3)%4],start:i*4,duration:3.8,velocity:.7}))},
+      {name:'Gitarre',instrument:'acoustic',volume:.55,notes:Array.from({length:24},(_,i)=>({pitch:['A3','E4','C4','G3'][i%4],start:i*2,duration:1.5,velocity:.62}))}
+    ]};
+}
+$('scoreExample').onclick=()=>saveFile('PS-Beatlap-Notensong-Beispiel.json',new Blob([JSON.stringify(scoreExample(),null,2)],{type:'application/json'})).then(()=>msg('Notensong-Beispiel gespeichert.')).catch(e=>msg('Beispiel konnte nicht gespeichert werden: '+e.message));
+function playScoreNote(E,tr,n,t,secPerBeat){
+  const C=E.ctx,o=C.createGain(),pan=C.createStereoPanner?C.createStereoPanner():C.createGain();
+  if(pan.pan)pan.pan.value=tr.pan;chain(o,pan,E.bus);
+  const vol=tr.volume*n.velocity,duration=n.duration*secPerBeat,f=440*semi(n.pitch-69);
+  if(DRUMS[tr.instrument]){(DF[tr.instrument]||DF.kickBoom)(E,o,t,vol,0,1);return;}
+  if(BASSES[tr.instrument]){playBass(E,o,t,vol,f,Math.max(.1,duration),tr.instrument,duration);return;}
+  voice(E,o,tr.instrument,f,t,duration,vol*.8);
+}
+let scoreCursor=0,scoreStartTime=0,scorePlaybackEvents=[];
+function tickScore(){
+  if(!playing||!P.scoreActive||!P.score)return;
+  const secPerBeat=60/P.bpm;
+  while(scoreCursor<scorePlaybackEvents.length){
+    const ev=scorePlaybackEvents[scoreCursor],t=scoreStartTime+ev.note.start*secPerBeat;
+    if(t>ac.currentTime+.16)break;
+    if(t>=ac.currentTime-.05)playScoreNote(live,ev.track,ev.note,t,secPerBeat);
+    scoreCursor++;
+  }
+  if(ac.currentTime>scoreStartTime+P.score.lengthBeats*secPerBeat+.2)stop();
+}
+function startScore(){
+  if(!ensureAudio()||!P.score)return;
+  playing=true;scorePlaybackEvents=scoreEvents(P.score);scoreCursor=0;scoreStartTime=ac.currentTime+.08;tickScore();timer=setInterval(tickScore,25);
+  $('playBtn').classList.add('on');$('playIcon').setAttribute('d','M6 5h4v14H6zM14 5h4v14h-4z');$('playBtn').setAttribute('aria-label','Stopp');
+}
+async function renderScoreWav(onlyTrack=-1){
+  const OC=window.OfflineAudioContext||window.webkitOfflineAudioContext;if(!OC)throw Error('WAV-Export wird hier nicht unterstützt.');
+  const secPerBeat=60/P.bpm,sr=44100,duration=P.score.lengthBeats*secPerBeat+2.5;
+  const oc=new OC(2,Math.ceil(duration*sr),sr),E=makeEngine(oc);
+  for(const ev of scoreEvents(P.score,onlyTrack))playScoreNote(E,ev.track,ev.note,.02+ev.note.start*secPerBeat,secPerBeat);
+  return wav(await oc.startRendering());
+}
+
 /* ---------- sequencer ---------- */
 let playing=false, step=0, nextT=0, timer=null, playPat=0, queue=[], tapTimes=[],songBar=0;
 const stepDur=()=>60/P.bpm/4;
@@ -766,9 +901,9 @@ function tick(){
     }
   }
 }
-function start(){ if(!ensureAudio()) return; playing=true; step=0; songBar=0; playPat=P.songMode?patForBar(0):P.chain&&!used(cur)?nextPat(cur):cur; nextT=ac.currentTime+.06; queue=[]; tick(); timer=setInterval(tick,25);
+function start(){ if(P.scoreActive&&P.score){startScore();return;} if(!ensureAudio()) return; playing=true; step=0; songBar=0; playPat=P.songMode?patForBar(0):P.chain&&!used(cur)?nextPat(cur):cur; nextT=ac.currentTime+.06; queue=[]; tick(); timer=setInterval(tick,25);
   $('playBtn').classList.add('on'); $('playIcon').setAttribute('d','M6 5h4v14H6zM14 5h4v14h-4z'); $('playBtn').setAttribute('aria-label','Stopp'); }
-function stop(){ playing=false; clearInterval(timer); lastPos=''; setTimeout(renderMini,0); arrNow=-1; document.querySelectorAll('.arrblock.now').forEach(b=>b.classList.remove('now')); $('playBtn').classList.remove('on'); $('playIcon').setAttribute('d','M7 4.5v15l13-7.5z'); $('playBtn').setAttribute('aria-label','Abspielen'); setPh(-1,-1); }
+function stop(){ playing=false; clearInterval(timer); scorePlaybackEvents=[]; scoreCursor=0; lastPos=''; setTimeout(renderMini,0); arrNow=-1; document.querySelectorAll('.arrblock.now').forEach(b=>b.classList.remove('now')); $('playBtn').classList.remove('on'); $('playIcon').setAttribute('d','M7 4.5v15l13-7.5z'); $('playBtn').setAttribute('aria-label','Abspielen'); setPh(-1,-1); }
 $('playBtn').onclick=()=>playing?stop():start();
 function bpm(v){ P.bpm=Math.max(50,Math.min(200,Math.round(v))); $('bpmVal').textContent=P.bpm; $('bpmMini').textContent=P.bpm; if(live) live.delay.delayTime.setTargetAtTime(Math.min(.95,stepDur()*3),ac.currentTime,.05); save(); }
 let holdT=null;
@@ -1002,10 +1137,10 @@ $('projectSave').onclick=async()=>{ try{ const embedded={}; for(const [id,bytes]
     const r=await saveFile(name,new Blob([body],{type:'application/json'})); msg(r==='declined'?'Speichern abgebrochen.':`Projekt gespeichert: ${name}`); }
   catch(e){ msg('Projekt konnte nicht gespeichert werden. '+e.message+'.'); } };
 $('projectFile').onchange=async e=>{const file=e.target.files[0];if(!file)return;try{if(file.size>90*1024*1024)throw Error('Die Datei ist zu groß');const json=JSON.parse(await file.text());if(json.format!=='PS-Beatlab-2'||!json.project||!Array.isArray(json.project.pats)||json.project.pats.length!==4)throw Error('Das ist keine Beatlab-Projektdatei');
-  if(playing)stop(); P=json.project; normalize();
+  if(playing)stop(); P=json.project; normalize(); if(P.score){try{P.score=validateScore(P.score);}catch(err){delete P.score;P.scoreActive=false;}}
   for(const id of Object.keys(samples)){delete samples[id];delete sampleBytes[id];await delSample(id);}
   for(const [id,encoded] of Object.entries(json.samples||{})){if(TR.some(t=>t.id===id)){ try{ await decodeSample(id,unbase64(encoded)); }catch(err){} }}
-  cur=0;sel='kick';save();renderAll();await loadSampleLibrary();msg('Projekt geöffnet: '+file.name);
+  cur=0;sel='kick';save();renderAll();scorePreview();exportLabel();await loadSampleLibrary();msg('Projekt geöffnet: '+file.name);
 }catch(err){msg('Projekt konnte nicht geöffnet werden. '+err.message+'.');}finally{e.target.value='';}};
 
 /* ---------- PS Melody Composer: seeded, harmonically constrained generation ---------- */
@@ -1186,6 +1321,7 @@ function exportOrder(){ if(P.songMode) return songOrder();
   const bars=+$('barsSel').value, order=[]; if(P.chain){ const u=[0,1,2,3].filter(used), list=u.length?u:[cur]; for(let i=0;i<bars;i++) order.push(list[i%list.length]); } else for(let i=0;i<bars;i++) order.push(cur);
   return order; }
 async function renderWav(order,onlyTrack){
+  if(P.scoreActive&&P.score)return renderScoreWav(typeof onlyTrack==='number'?onlyTrack:-1);
   const OC=window.OfflineAudioContext||window.webkitOfflineAudioContext; if(!OC) throw Error('Dieser Browser kann nicht exportieren');
   const sr=44100, sd=stepDur(), tailSec=onlyTrack?2.5:2.5, dur=order.length*16*sd+tailSec;
   const oc=new OC(2,Math.ceil(dur*sr),sr), E=makeEngine(oc);
@@ -1194,17 +1330,17 @@ async function renderWav(order,onlyTrack){
   finally{ stemMode=false; }
   return wav(await oc.startRendering()); }
 let exporting=false;
-function exportLabel(){ const order=exportOrder(); $('barsRow').hidden=P.songMode;
+function exportLabel(){ if(P.scoreActive&&P.score){$('barsRow').hidden=true;$('exportScope').textContent=`Notensong: ${P.score.title} · ${P.score.lengthBeats/4} Takte · ${P.score.tracks.length} Spuren · ca. ${Math.round(P.score.lengthBeats*60/P.bpm)} s.`;$('exportNote').textContent='WAV-Mix oder einzelne Spuren als ZIP. Längere Songs benötigen beim Export mehr Zeit.';return;} const order=exportOrder(); $('barsRow').hidden=P.songMode;
   $('exportScope').textContent=P.songMode?`Song-Modus ist an: Exportiert wird der ganze Song (${order.length} Takte, ca. ${Math.round(order.length*16*stepDur())} s).`:(P.chain?`Kette ist an: Die benutzten Muster laufen nacheinander.`:`Exportiert wird Muster ${'ABCD'[cur]}.`);
   $('exportNote').textContent=inClaude()?'Die WAV-Dateien kommen in einer ZIP-Datei, weil das Speichern hier nur ZIP erlaubt. In der Dateien-App öffnest du sie mit einem Tipp. Stereo, 44,1 kHz, 16 Bit.':'Stereo, 44,1 kHz, 16 Bit. Einzelspuren kommen gesammelt in einer ZIP-Datei.'; }
-async function exportAudio(stems){ if(exporting) return; const order=exportOrder(); if(!order.length||!order.some(i=>used(i))){ msg('Die Muster sind leer. Setz erst ein paar Töne.'); return; }
+async function exportAudio(stems){ if(exporting) return; const order=exportOrder(); if(!P.scoreActive&&(!order.length||!order.some(i=>used(i)))){ msg('Die Muster sind leer. Setz erst ein paar Töne.'); return; }
   exporting=true; $('exportBtn').disabled=true; $('stemBtn').disabled=true;
-  const base=`PS-Beatlab-${P.bpm}bpm-${NN[P.key]}${P.scale==='minor'?'m':''}`;
+  const base=P.scoreActive&&P.score?'PS-Beatlap-Notensong-'+P.bpm+'bpm':`PS-Beatlab-${P.bpm}bpm-${NN[P.key]}${P.scale==='minor'?'m':''}`;
   try{ let r;
     if(!stems){ msg('Mix wird gerendert …'); const bytes=await renderWav(order);
       r=inClaude()?await saveFile(base+'-Mix.zip',zip([{name:base+'-Mix.wav',data:bytes}])):await saveFile(base+'-Mix.wav',new Blob([bytes],{type:'audio/wav'}));
       if(r!=='declined') msg(`Mix gespeichert: ${order.length} Takte, ${(bytes.length/1048576).toFixed(1)} MB.`); }
-    else{ const tracks=TR.filter(tr=>order.some(pi=>P.pats[pi][tr.id].some(Boolean))&&!P.params[tr.id].mute); if(!tracks.length) throw Error('Keine Spur hat Töne');
+    else{ const tracks=P.scoreActive&&P.score?P.score.tracks.map((tr,i)=>({id:i,n:tr.name})):TR.filter(tr=>order.some(pi=>P.pats[pi][tr.id].some(Boolean))&&!P.params[tr.id].mute); if(!tracks.length) throw Error('Keine Spur hat Töne');
       const files=[]; for(let i=0;i<tracks.length;i++){ const tr=tracks[i]; msg(`Einzelspur ${i+1} von ${tracks.length}: ${tr.n} …`); files.push({name:`${base}-${String(i+1).padStart(2,'0')}-${tr.n.replace(/\s+/g,'')}.wav`,data:await renderWav(order,tr.id)}); await new Promise(r=>setTimeout(r,20)); }
       r=await saveFile(base+'-Spuren.zip',zip(files)); if(r!=='declined') msg(`${files.length} Einzelspuren gespeichert (eine ZIP-Datei).`); }
     if(r==='declined') msg('Speichern abgebrochen.');
@@ -1235,7 +1371,7 @@ function showView(v){ closeSheets(); $('viewTitle').textContent=VIEWNAMES[v]||''
   try{ localStorage.setItem('beatlab.view',v); }catch(e){} if(v==='mix') renderMixer(); if(v==='song') renderArrangement(); if(v==='file') exportLabel(); if(v==='beat') renderAll(); }
 document.querySelectorAll('.view').forEach(b=>b.onclick=()=>{ showView(b.dataset.view); window.scrollTo(0,0); });
 
-renderAll(); initializeSoundLibrary(); requestAnimationFrame(raf);
+renderAll(); scorePreview(); initializeSoundLibrary(); requestAnimationFrame(raf);
 let v0='beat'; try{ v0=localStorage.getItem('beatlab.view')||'beat'; }catch(e){} if(!document.querySelector(`[data-pane="${v0}"]`)) v0='beat'; showView(v0);
 setTimeout(exportLabel,600);
 if(location.protocol==='https:'&&'serviceWorker' in navigator){
