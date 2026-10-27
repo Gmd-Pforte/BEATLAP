@@ -57,5 +57,25 @@ test('Procedural instrument engine parses and is loaded by Beatlab', () => {
   }
 });
 
+
+test('Composer 2.0 offers distinct song structures and safe lengths', () => {
+  for (const id of ['ideaLength', 'ideaMelodyBtn', 'ideaBackingBtn']) {
+    assert.ok(html.includes('id="'+id+'"'), 'Missing Composer 2.0 control '+id);
+  }
+  const start=html.indexOf('const COMPOSER_FORMS=');
+  const end=html.indexOf('function generateComposition(',start);
+  assert.ok(start>0&&end>start,'Composer song forms are missing');
+  const forms=new Function(html.slice(start,end)+';return {COMPOSER_FORMS,composerArrangement};')();
+  for (const bars of [16,32,48,64]) {
+    const arrangement=forms.composerArrangement(bars);
+    assert.equal(arrangement.reduce((sum,s)=>sum+s.bars,0),bars,'Wrong total bars '+bars);
+    assert.ok(arrangement.some(s=>s.name==='Intro'),'Intro missing');
+    assert.ok(arrangement.some(s=>s.name.includes('Refrain')),'Refrain missing');
+    assert.ok(arrangement.every(s=>s.pat>=0&&s.pat<=3),'Invalid pattern');
+  }
+  assert.match(html,/generateComposition\(false,'melody'\)/);
+  assert.match(html,/generateComposition\(false,'backing'\)/);
+});
+
 console.log(`✓ Beatlab checks passed (${checks.length} groups)`);
 for (const item of checks) console.log(`  ✓ ${item}`);
