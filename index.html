@@ -360,6 +360,15 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
     <div class="sample" id="sampleBox">
       <div class="row" style="justify-content:space-between"><span class="label">Eigenes Sample</span><span class="row"><label class="btn sm file">Laden<input type="file" id="sampleFile" accept="audio/*,.wav,.mp3,.ogg,.m4a,.aif,.aiff"></label><button class="btn sm" id="sampleRemove" hidden>Entfernen</button></span></div>
       <p class="hint" id="sampleInfo"></p>
+      <div class="sub" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--line)">
+        <div class="label">PS AI MUSIC Soundbibliothek · 285 Samples</div>
+        <div class="row" style="gap:7px">
+          <select id="libSample" aria-label="Sound aus Bibliothek" style="flex:1;min-width:0"><option value="">Bibliothek wird geladen …</option></select>
+          <button class="btn sm" id="libPreview" aria-label="Sample vorhören">▶</button>
+          <button class="btn sm grad" id="libUse">Verwenden</button>
+        </div>
+        <p class="hint" id="libStatus">Die Bibliothek lädt einzelne Sounds erst bei Bedarf. Bei lokal geöffneter HTML-Datei ist die Online-Bibliothek nicht verfügbar.</p>
+      </div>
     </div>
     <div class="group">Pegel</div>
     <label class="slider" for="pVol"><span>Lautstärke</span><input type="range" id="pVol" min="0" max="100"><output id="oVol"></output></label>
@@ -636,6 +645,66 @@ function voice(E,o,ins,f,t,dur,v){
 
 /* dispatcher */
 const samples={}; const sampleBytes={};
+let sampleLibrary=null;
+const libraryCache=new Map();
+function libraryById(id){return sampleLibrary?.samples?.find(x=>x.id===id)||null;}
+function renderLibraryOptions(){
+  const box=$('libSample');if(!box)return;box.innerHTML='';
+  const opt=(value,label,parent)=>{const o=document.createElement('option');o.value=value;o.textContent=label;(parent||box).append(o);};
+  opt('','Eingebauter Sound / eigenes Sample');
+  if(!sampleLibrary){$('libStatus').textContent=location.protocol==='file:'?'Bibliothek nur über GitHub Pages oder einen Webserver verfügbar. Eigene Dateien kannst du weiterhin laden.':'Soundbibliothek wird geladen oder ist derzeit nicht erreichbar.';return;}
+  const eligible=sampleLibrary.samples.filter(x=>Array.isArray(x.tracks)&&x.tracks.includes(sel));
+  const groups={};
+  for(const item of eligible){
+    const group=sampleLibrary.groups?.[item.group]||item.group||item.category;
+    if(!groups[group]){const g=document.createElement('optgroup');g.label=group;box.append(g);groups[group]=g;}
+    opt(item.id,item.name+(item.type==='loop'?' · Loop (Vorschau)':''),groups[group]);
+  }
+  const active=P.params[sel].lib;
+  box.value=active&&eligible.some(x=>x.id===active)?active:'';
+  $('libStatus').textContent=eligible.length+' Sounds für diese Spur. Nur der ausgewählte Sound wird geladen. Loops können vorgehört werden.';
+}
+async function getLibraryAudio(entry){
+  if(libraryCache.has(entry.id)){const buf=libraryCache.get(entry.id);libraryCache.delete(entry.id);libraryCache.set(entry.id,buf);return buf;}
+  if(!ensureAudio())throw Error('Audio wird vom Browser nicht unterstützt');
+  if(!/^[a-zA-Z0-9_./-]+$/.test(entry.file)||entry.file.includes('..'))throw Error('Ungültiger Dateipfad');
+  const res=await fetch('samples/'+entry.file);if(!res.ok)throw Error('Sounddatei nicht erreichbar ('+res.status+')');
+  const wav=await res.arrayBuffer(),buf=await ac.decodeAudioData(wav.slice(0));
+  libraryCache.set(entry.id,buf);
+  while(libraryCache.size>16)libraryCache.delete(libraryCache.keys().next().value);
+  return buf;
+}
+async function useLibrarySample(trackId,entry){
+  if(entry.type==='loop')throw Error('Loops können hier vorgehört werden. Die Loop-Spur folgt in einer späteren Version.');
+  const buf=await getLibraryAudio(entry);samples[trackId]=buf;
+  P.params[trackId].lib=entry.id;P.params[trackId].libRoot=entry.root??null;
+  P.sampleNames??={};P.sampleNames[trackId]=entry.name;
+  save();updateSampleInfo();renderLibraryOptions();renderPads();
+}
+async function loadSampleLibrary(){
+  try{const res=await fetch('samples/samples.json');if(!res.ok)throw Error(String(res.status));const data=await res.json();if(!Array.isArray(data.samples))throw Error('Ungültige Liste');sampleLibrary=data;}
+  catch(err){sampleLibrary=null;console.info('Soundbibliothek nicht verfügbar',err);}
+  renderLibraryOptions();
+  if(sampleLibrary){for(const tr of TR){const entry=libraryById(P.params[tr.id].lib);if(!entry||entry.type==='loop')continue;try{samples[tr.id]=await getLibraryAudio(entry);}catch(err){console.warn('Sample nicht geladen:',entry.id,err);}}renderPads();updateSampleInfo();}
+}
+async function initializeSoundLibrary(){await loadSamples();await loadSampleLibrary();}
+$('libPreview').onclick=async()=>{
+  const entry=libraryById($('libSample').value);if(!entry)return msg('Wähle zuerst einen Sound aus.');
+  try{const buf=await getLibraryAudio(entry);if(!ensureAudio())return;
+    const src=ac.createBufferSource(),gain=ac.createGain();src.buffer=buf;
+    src.playbackRate.value=entry.type==='loop'&&entry.bpm?P.bpm/entry.bpm:1;
+    gain.gain.value=.55;src.connect(gain);gain.connect(ac.destination);src.start();
+    $('libStatus').textContent='▶ '+entry.name+(entry.type==='loop'?' · Original '+entry.bpm+' BPM':'');
+  }catch(err){msg('Vorschau nicht möglich: '+err.message);}
+};
+$('libUse').onclick=async()=>{
+  const entry=libraryById($('libSample').value);
+  if(!entry){const id=sel;delete P.params[id].lib;delete P.params[id].libRoot;
+    if(sampleBytes[id]){try{await decodeSample(id,sampleBytes[id],false);}catch(e){delete samples[id];}}else delete samples[id];
+    save();updateSampleInfo();renderLibraryOptions();renderPads();return msg('Eingebauter bzw. eigener Sound ist wieder aktiv.');}
+  try{await useLibrarySample(sel,entry);msg('Sound aktiviert: '+entry.name);}
+  catch(err){msg('Sound konnte nicht aktiviert werden: '+err.message);}
+};
 function play(E,id,t,val,len){
   const pr=P.params[id]; if(!val) return; if(!stemMode&&(pr.mute||(anySolo()&&!pr.solo))) return; const tr=TR.find(x=>x.id===id), C=E.ctx;
   const o=C.createGain(),low=F(E,'lowshelf',180),high=F(E,'highshelf',4000);low.gain.value=pr.low||0; high.gain.value=pr.high||0;
@@ -755,7 +824,7 @@ function renderEditor(){
   const sel_=$('sndSel'); sel_.innerHTML=''; const groups={};
   for(const [key,[name,grp]] of Object.entries(lib)){ if(!groups[grp]){ groups[grp]=document.createElement('optgroup'); groups[grp].label=grp; sel_.appendChild(groups[grp]); } const o=document.createElement('option'); o.value=key; o.textContent=name; groups[grp].appendChild(o); }
   sel_.value=pr.snd;
-  for(const [id,k] of SLIDERS) $(id).value=pr[k]||0; outs(); updateSampleInfo();
+  for(const [id,k] of SLIDERS) $(id).value=pr[k]||0; outs(); updateSampleInfo(); renderLibraryOptions();
 }
 const SLIDERS=[['pVol','vol'],['pPan','pan'],['pPitch','pitch'],['pDecay','decay'],['pLow','low'],['pHigh','high'],['pHall','hall'],['pDelay','delay']];
 const sgn=v=>(v>0?'+':'')+v;
@@ -867,12 +936,12 @@ function updateSampleInfo(){ const s=samples[sel], t=trk(sel); $('sampleRemove')
   $('sampleInfo').textContent=s?`Aktiv: ${P.sampleNames?.[sel]||'Sample'} · ${s.duration.toFixed(1)} s. Es ersetzt den eingebauten Sound dieser Spur.`+(t.k==='drum'?'':' Es wird auf die gespielten Töne umgestimmt. Am besten klingt ein Sample, das auf C gestimmt ist.')
     :(t.k==='drum'?'Lade einen eigenen Drum-Sound, z. B. eine Kick oder eine Stimme. Höchstens 30 Sekunden.':'Lade einen einzelnen Ton, am besten auf C gestimmt. Er wird automatisch auf deine Melodie umgestimmt.'); }
 $('sampleFile').onchange=async e=>{ const file=e.target.files[0]; if(!file) return; const id=sel;
-  try{ if(file.size>12*1024*1024) throw Error('Die Datei ist größer als 12 MB'); const bytes=await file.arrayBuffer(); const kept=await decodeSample(id,bytes);
-    P.sampleNames??={}; P.sampleNames[id]=file.name; save(); updateSampleInfo(); renderEditor(); renderPads(); if(!playing) preview(id,prevVal(id));
+  try{ if(file.size>12*1024*1024) throw Error('Die Datei ist größer als 12 MB'); const bytes=await file.arrayBuffer(); const kept=await decodeSample(id,bytes); delete P.params[id].lib; delete P.params[id].libRoot;
+    P.sampleNames??={}; P.sampleNames[id]=file.name; save(); updateSampleInfo(); renderEditor(); renderPads(); renderLibraryOptions(); if(!playing) preview(id,prevVal(id));
     msg(kept?`Sample „${file.name}“ geladen.`:`Sample geladen, wird aber nur bis zum Schließen gemerkt.`); }
   catch(err){ msg('Das Sample ließ sich nicht laden: '+(err&&err.message?err.message:'unbekanntes Format')+'.'); }
   finally{ e.target.value=''; } };
-$('sampleRemove').onclick=async()=>{ const id=sel; delete samples[id]; delete sampleBytes[id]; if(P.sampleNames) delete P.sampleNames[id]; save(); await delSample(id); updateSampleInfo(); renderEditor(); renderPads(); msg('Sample entfernt. Der eingebaute Sound ist wieder aktiv.'); };
+$('sampleRemove').onclick=async()=>{ const id=sel; delete samples[id]; delete sampleBytes[id]; delete P.params[id].lib; delete P.params[id].libRoot; if(P.sampleNames) delete P.sampleNames[id]; save(); await delSample(id); updateSampleInfo(); renderEditor(); renderPads(); renderLibraryOptions(); msg('Sample entfernt. Der eingebaute Sound ist wieder aktiv.'); };
 
 /* ---------- saving files ---------- */
 let dl=null; (async()=>{ try{ dl=await (window.claude&&window.claude.use?window.claude.use('downloads'):null); }catch(e){ dl=null; } })();
@@ -902,7 +971,7 @@ $('projectFile').onchange=async e=>{const file=e.target.files[0];if(!file)return
   if(playing)stop(); P=json.project; normalize();
   for(const id of Object.keys(samples)){delete samples[id];delete sampleBytes[id];await delSample(id);}
   for(const [id,encoded] of Object.entries(json.samples||{})){if(TR.some(t=>t.id===id)){ try{ await decodeSample(id,unbase64(encoded)); }catch(err){} }}
-  cur=0;sel='kick';save();renderAll();msg('Projekt geöffnet: '+file.name);
+  cur=0;sel='kick';save();renderAll();await loadSampleLibrary();msg('Projekt geöffnet: '+file.name);
 }catch(err){msg('Projekt konnte nicht geöffnet werden. '+err.message+'.');}finally{e.target.value='';}};
 
 /* ---------- PS Melody Composer: seeded, harmonically constrained generation ---------- */
@@ -1069,7 +1138,7 @@ function showView(v){ closeSheets(); $('viewTitle').textContent=VIEWNAMES[v]||''
   try{ localStorage.setItem('beatlab.view',v); }catch(e){} if(v==='mix') renderMixer(); if(v==='song') renderArrangement(); if(v==='file') exportLabel(); if(v==='beat') renderAll(); }
 document.querySelectorAll('.view').forEach(b=>b.onclick=()=>{ showView(b.dataset.view); window.scrollTo(0,0); });
 
-renderAll(); loadSamples(); requestAnimationFrame(raf);
+renderAll(); initializeSoundLibrary(); requestAnimationFrame(raf);
 let v0='beat'; try{ v0=localStorage.getItem('beatlab.view')||'beat'; }catch(e){} if(!document.querySelector(`[data-pane="${v0}"]`)) v0='beat'; showView(v0);
 setTimeout(exportLabel,600);
 })();
