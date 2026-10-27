@@ -45,5 +45,17 @@ test('Audio export and project support are present', () => {
   assert.match(html, /PS-Beatlab-2/);
 });
 
+
+const instrumentEngine = readFileSync(new URL('../instrument-engine.js', import.meta.url), 'utf8');
+test('Procedural instrument engine parses and is loaded by Beatlab', () => {
+  new Function(instrumentEngine);
+  assert.match(html, /src="\.\/instrument-engine\.js"/);
+  assert.match(html, /PSInstrumentEngine\.play/);
+  for (const id of ['grand', 'felt', 'upright', 'cello', 'violin', 'acoustic', 'nylon', 'sax', 'tenorSax', 'trumpet']) {
+    assert.ok(html.includes(id + ':['), 'Missing instrument menu item: ' + id);
+    assert.ok(instrumentEngine.includes(id + ':{'), 'Missing synthesis model: ' + id);
+  }
+});
+
 console.log(`✓ Beatlab checks passed (${checks.length} groups)`);
 for (const item of checks) console.log(`  ✓ ${item}`);
