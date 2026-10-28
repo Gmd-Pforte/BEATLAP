@@ -370,6 +370,13 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
       <div class="row" id="barsRow"><span class="hint">Länge</span><select id="barsSel" aria-label="Länge"><option value="4">4 Takte</option><option value="8" selected>8 Takte</option><option value="16">16 Takte</option><option value="32">32 Takte</option></select></div>
       <button class="btn grad" id="exportBtn">Mix als WAV speichern</button>
       <button class="btn" id="stemBtn">Einzelspuren als WAV</button>
+      <div id="renderProgress" role="status" aria-live="polite" hidden style="margin-top:14px;padding:13px;border:1px solid var(--line2);border-radius:12px;background:var(--s2)">
+        <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:8px">
+          <span id="renderPhase">Export vorbereiten …</span><strong id="renderPercent">0 %</strong>
+        </div>
+        <progress id="renderMeter" max="100" value="0" aria-label="Audio-Export-Fortschritt" style="display:block;width:100%;height:13px;accent-color:#8b5cf6"></progress>
+        <div id="renderDetail" class="hint" style="margin-top:7px">Bitte Beatlap geöffnet lassen.</div>
+      </div>
       <p class="hint" id="exportNote"></p>
     </section>
     <section class="card">
@@ -890,12 +897,12 @@ function startScore(){
   playing=true;scorePlaybackEvents=scoreEvents(P.score);scoreCursor=0;scoreStartTime=ac.currentTime+.08;tickScore();timer=setInterval(tickScore,25);
   $('playBtn').classList.add('on');$('playIcon').setAttribute('d','M6 5h4v14H6zM14 5h4v14h-4z');$('playBtn').setAttribute('aria-label','Stopp');
 }
-async function renderScoreWav(onlyTrack=-1){
+async function renderScoreWav(onlyTrack=-1,onProgress){
   const OC=window.OfflineAudioContext||window.webkitOfflineAudioContext;if(!OC)throw Error('WAV-Export wird hier nicht unterstützt.');
   const secPerBeat=60/P.bpm,sr=44100,duration=P.score.lengthBeats*secPerBeat+2.5;
   const oc=new OC(2,Math.ceil(duration*sr),sr),E=makeEngine(oc);
   for(const ev of scoreEvents(P.score,onlyTrack))playScoreNote(E,ev.track,ev.note,.02+ev.note.start*secPerBeat,secPerBeat);
-  return wav(await oc.startRendering());
+  return wav(await renderOfflineWithProgress(oc,onProgress));
 }
 
 /* ---------- sequencer ---------- */
@@ -1337,6 +1344,44 @@ $('ideaUndo').onclick=()=>{if(!composerUndo)return;if(playing)stop();P=composerU
 
 /* ---------- WAV export ---------- */
 function msg(t){ const el=$('msg'); el.textContent=t; el.hidden=false; clearTimeout(msg._t); msg._t=setTimeout(()=>el.hidden=true,4200); }
+function showRenderProgress(phase,percent,detail='Bitte Beatlap geöffnet lassen.'){
+  const area=$('renderProgress'),meter=$('renderMeter');area.hidden=false;
+  $('renderPhase').textContent=phase;$('renderDetail').textContent=detail;
+  if(Number.isFinite(percent)){
+    const value=Math.max(0,Math.min(100,Math.floor(percent)));
+    meter.value=value;$('renderPercent').textContent=value+' %';
+  }else{
+    meter.removeAttribute('value');$('renderPercent').textContent='läuft …';
+  }
+}
+async function renderOfflineWithProgress(oc,onProgress){
+  // OfflineAudioContext has no native progress event. Its suspend checkpoints
+  // report real rendered positions where supported; otherwise use indeterminate UI.
+  if(typeof onProgress!=='function')return oc.startRendering();
+  const seconds=oc.length/oc.sampleRate;
+  if(typeof oc.suspend!=='function'||typeof oc.resume!=='function'||seconds<.2){
+    onProgress(null);return oc.startRendering();
+  }
+  let checkpoint;
+  try{checkpoint=oc.suspend(seconds/10);}catch(e){onProgress(null);return oc.startRendering();}
+  const rendering=oc.startRendering();
+  for(let i=1;i<=9;i++){
+    try{
+      await checkpoint;
+      onProgress(i/10);
+      if(i<9)checkpoint=oc.suspend(seconds*(i+1)/10);
+      await oc.resume();
+      // Hand control back to the UI so its progress bar can repaint.
+      await new Promise(resolve=>setTimeout(resolve,0));
+    }catch(e){
+      // Some browsers implement suspend inconsistently. Do not claim a fake %.
+      onProgress(null);
+      if(oc.state==='suspended')await oc.resume();
+      break;
+    }
+  }
+  return rendering;
+}
 function wav(buf){ const ch=buf.numberOfChannels, len=buf.length, out=new DataView(new ArrayBuffer(44+len*ch*2)); let o=0;
   const str=s=>{ for(const c of s) out.setUint8(o++,c.charCodeAt(0)); }, u32=v=>{ out.setUint32(o,v,true); o+=4; }, u16=v=>{ out.setUint16(o,v,true); o+=2; };
   str('RIFF'); u32(36+len*ch*2); str('WAVE'); str('fmt '); u32(16); u16(1); u16(ch); u32(buf.sampleRate); u32(buf.sampleRate*ch*2); u16(ch*2); u16(16); str('data'); u32(len*ch*2);
@@ -1345,15 +1390,15 @@ function wav(buf){ const ch=buf.numberOfChannels, len=buf.length, out=new DataVi
 function exportOrder(){ if(P.songMode) return songOrder();
   const bars=+$('barsSel').value, order=[]; if(P.chain){ const u=[0,1,2,3].filter(used), list=u.length?u:[cur]; for(let i=0;i<bars;i++) order.push(list[i%list.length]); } else for(let i=0;i<bars;i++) order.push(cur);
   return order; }
-async function renderWav(order,onlyTrack){
-  if(P.scoreActive&&P.score)return renderScoreWav(typeof onlyTrack==='number'?onlyTrack:-1);
+async function renderWav(order,onlyTrack,onProgress){
+  if(P.scoreActive&&P.score)return renderScoreWav(typeof onlyTrack==='number'?onlyTrack:-1,onProgress);
   const OC=window.OfflineAudioContext||window.webkitOfflineAudioContext; if(!OC) throw Error('Dieser Browser kann nicht exportieren');
   const sr=44100, sd=stepDur(), tailSec=onlyTrack?2.5:2.5, dur=order.length*16*sd+tailSec;
   const oc=new OC(2,Math.ceil(dur*sr),sr), E=makeEngine(oc);
   stemMode=!!onlyTrack;
   try{ order.forEach((pi,b)=>{ const p=P.pats[pi]; for(let s=0;s<16;s++){ const t=.02+(b*16+s)*sd+((s%2)?(P.swing/100)*sd*.5:0); for(const tr of TR){ if(onlyTrack&&tr.id!==onlyTrack) continue; const v=p[tr.id][s]; if(v) play(E,tr.id,t,v,noteLength(pi,s,v,tr.id)); } } }); }
   finally{ stemMode=false; }
-  return wav(await oc.startRendering()); }
+  return wav(await renderOfflineWithProgress(oc,onProgress)); }
 let exporting=false;
 function exportLabel(){ if(P.scoreActive&&P.score){$('barsRow').hidden=true;$('exportScope').textContent=`Notensong: ${P.score.title} · ${P.score.lengthBeats/4} Takte · ${P.score.tracks.length} Spuren · ca. ${Math.round(P.score.lengthBeats*60/P.bpm)} s.`;$('exportNote').textContent='WAV-Mix oder einzelne Spuren als ZIP. Längere Songs benötigen beim Export mehr Zeit.';return;} const order=exportOrder(); $('barsRow').hidden=P.songMode;
   $('exportScope').textContent=P.songMode?`Song-Modus ist an: Exportiert wird der ganze Song (${order.length} Takte, ca. ${Math.round(order.length*16*stepDur())} s).`:(P.chain?`Kette ist an: Die benutzten Muster laufen nacheinander.`:`Exportiert wird Muster ${'ABCD'[cur]}.`);
@@ -1361,15 +1406,29 @@ function exportLabel(){ if(P.scoreActive&&P.score){$('barsRow').hidden=true;$('e
 async function exportAudio(stems){ if(exporting) return; const order=exportOrder(); if(!P.scoreActive&&(!order.length||!order.some(i=>used(i)))){ msg('Die Muster sind leer. Setz erst ein paar Töne.'); return; }
   exporting=true; $('exportBtn').disabled=true; $('stemBtn').disabled=true;
   const base=P.scoreActive&&P.score?'PS-Beatlap-Notensong-'+P.bpm+'bpm':`PS-Beatlab-${P.bpm}bpm-${NN[P.key]}${P.scale==='minor'?'m':''}`;
+  showRenderProgress('Export vorbereiten',0);
   try{ let r;
-    if(!stems){ msg('Mix wird gerendert …'); const bytes=await renderWav(order);
+    if(!stems){
+      showRenderProgress('WAV-Mix rendern',0);
+      const bytes=await renderWav(order,undefined,f=>showRenderProgress('WAV-Mix rendern',f===null?null:f*90));
+      showRenderProgress('Datei speichern',95);
       r=inClaude()?await saveFile(base+'-Mix.zip',zip([{name:base+'-Mix.wav',data:bytes}])):await saveFile(base+'-Mix.wav',new Blob([bytes],{type:'audio/wav'}));
-      if(r!=='declined') msg(`Mix gespeichert: ${order.length} Takte, ${(bytes.length/1048576).toFixed(1)} MB.`); }
+      if(r!=='declined'){showRenderProgress('Export abgeschlossen',100,'WAV-Datei wurde bereitgestellt.');msg(`Mix gespeichert: ${(bytes.length/1048576).toFixed(1)} MB.`);} }
     else{ const tracks=P.scoreActive&&P.score?P.score.tracks.map((tr,i)=>({id:i,n:tr.name})):TR.filter(tr=>order.some(pi=>P.pats[pi][tr.id].some(Boolean))&&!P.params[tr.id].mute); if(!tracks.length) throw Error('Keine Spur hat Töne');
-      const files=[]; for(let i=0;i<tracks.length;i++){ const tr=tracks[i]; msg(`Einzelspur ${i+1} von ${tracks.length}: ${tr.n} …`); files.push({name:`${base}-${String(i+1).padStart(2,'0')}-${tr.n.replace(/\s+/g,'')}.wav`,data:await renderWav(order,tr.id)}); await new Promise(r=>setTimeout(r,20)); }
-      r=await saveFile(base+'-Spuren.zip',zip(files)); if(r!=='declined') msg(`${files.length} Einzelspuren gespeichert (eine ZIP-Datei).`); }
+      const files=[]; for(let i=0;i<tracks.length;i++){
+        const tr=tracks[i],label=`Spur ${i+1} von ${tracks.length}: ${tr.n}`;
+        showRenderProgress(label,Math.floor(i/tracks.length*90));
+        files.push({name:`${base}-${String(i+1).padStart(2,'0')}-${tr.n.replace(/\s+/g,'')}.wav`,data:await renderWav(order,tr.id,f=>showRenderProgress(label,f===null?null:(i+f)*90/tracks.length))});
+        showRenderProgress(label,(i+1)*90/tracks.length);
+        await new Promise(r=>setTimeout(r,20));
+      }
+      showRenderProgress('ZIP-Datei erstellen',94);
+      const archive=zip(files);
+      showRenderProgress('ZIP-Datei speichern',97);
+      r=await saveFile(base+'-Spuren.zip',archive);
+      if(r!=='declined'){showRenderProgress('Export abgeschlossen',100,`${files.length} Einzelspuren bereitgestellt.`);msg(`${files.length} Einzelspuren gespeichert (eine ZIP-Datei).`);} }
     if(r==='declined') msg('Speichern abgebrochen.');
-  }catch(e){ msg('Export hat nicht geklappt. '+(e.message||'Wähle weniger Takte.')); }
+  }catch(e){ showRenderProgress('Export fehlgeschlagen',null,e.message||'Bitte mit weniger Takten erneut versuchen.');msg('Export hat nicht geklappt. '+(e.message||'Wähle weniger Takte.')); }
   finally{ exporting=false; $('exportBtn').disabled=false; $('stemBtn').disabled=false; } }
 $('exportBtn').onclick=()=>exportAudio(false);
 $('stemBtn').onclick=()=>exportAudio(true);
