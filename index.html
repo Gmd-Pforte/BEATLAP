@@ -447,6 +447,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 <div class="toast" id="msg" role="status" aria-live="polite" hidden></div>
 
 <script src="./instrument-engine.js"></script>
+<script src="./samples/real/index.js"></script>
 <script src="./sampler.js"></script>
 <script>
 (function(){
@@ -463,13 +464,15 @@ const DRUMS={
  laser:['Laser','Effekte'],zap:['Zap','Effekte'],riser:['Riser','Effekte'],scratch:['Scratch','Effekte'],vinyl:['Vinyl-Knistern','Effekte'],horn:['Air Horn','Effekte'],drop:['Sub Drop','Effekte'],whoosh:['Whoosh','Effekte'],
 };
 const BASSES={'808':['808 Klassik','Bass'],'808d':['808 verzerrt mit Glide','Bass'],sub:['Sub-Bass','Bass'],reese:['Reese','Bass'],synthb:['Synth-Bass','Bass'],pluckb:['Zupf-Bass','Bass'],acid:['Acid','Bass'],wobble:['Wobble','Bass']};
-const INSTR={grandReal:['Flügel (echt) · Salamander','Real Instruments'],grand:['Konzertflügel · Real Engine','Real Instruments'],felt:['Felt Piano · sanft','Real Instruments'],upright:['Klavier · warm','Real Instruments'],
+const INSTR={grand:['Konzertflügel · Real Engine','Real Instruments'],felt:['Felt Piano · sanft','Real Instruments'],upright:['Klavier · warm','Real Instruments'],
  cello:['Solo Cello','Real Instruments'],violin:['Solo Violine','Real Instruments'],acoustic:['Akustikgitarre','Real Instruments'],nylon:['Nylongitarre','Real Instruments'],sax:['Altsaxofon','Real Instruments'],tenorSax:['Tenorsaxofon','Real Instruments'],trumpet:['Trompete','Real Instruments'],
  piano:['Piano','Tasten'],epiano:['E-Piano','Tasten'],organ:['Orgel','Tasten'],clav:['Clavinet','Tasten'],
  pluck:['Pluck','Synth'],lead:['Synth Lead','Synth'],supersaw:['Supersaw','Synth'],chip:['Chiptune','Synth'],pad:['Pad','Synth'],
  bell:['Glocke','Mallets'],marimba:['Marimba','Mallets'],kalimba:['Kalimba','Mallets'],vibes:['Vibraphon','Mallets'],music:['Spieluhr','Mallets'],
  guitar:['Gitarre','Saiten'],harp:['Harfe','Saiten'],strings:['Streicher','Saiten'],
  flute:['Flöte','Bläser'],brass:['Brass','Bläser'],choir:['Chor','Stimmen']};
+// Echte Instrumente aus samples/real/index.js (Gruppe „Real Instruments“)
+for(const r of (window.PSRealInstruments||[])) INSTR[r.id]=[r.label,'Real Instruments'];
 
 const TR=[
  {id:'kick',n:'Kick',c:'#ff4fa0',k:'drum',d:'kickBoom'},{id:'snare',n:'Snare',c:'#2f9bff',k:'drum',d:'snare'},{id:'clap',n:'Clap',c:'#a77bff',k:'drum',d:'clap'},
@@ -654,8 +657,8 @@ function ksBuf(E,f){ const key=Math.round(f*4); if(E.ks[key]) return E.ks[key]; 
   for(let i=0;i<Nn;i++) d[i]=Math.random()*2-1; for(let i=1;i<Nn;i++) d[i]=(d[i]+d[i-1])*.5; d[Nn]=d[0]; for(let i=Nn+1;i<L;i++) d[i]=.4985*(d[i-Nn]+d[i-Nn-1]); return E.ks[key]=b; }
 function voice(E,o,ins,f,t,dur,v){
   // Modeled instruments are shared by live playback and offline WAV exports.
-  // Echte Samples (sampler.js). Noch nicht geladen oder Fehler → Konzertflügel der Real Engine als Ersatz.
-  if(window.PSSampler?.supports(ins)){ if(window.PSSampler.play(E.ctx,o,ins,f,t,dur,v)) return; ins='grand'; }
+  // Echte Samples (sampler.js). Noch nicht geladen oder Fehler → Ersatzklang aus samples/real/index.js.
+  if(window.PSSampler?.supports(ins)){ if(window.PSSampler.play(E.ctx,o,ins,f,t,dur,v)) return; ins=window.PSSampler.fallback(ins); }
   if(window.PSInstrumentEngine?.supports(ins) && window.PSInstrumentEngine.play(E.ctx,o,ins,f,t,dur,v)) return;
   const C=E.ctx, g=C.createGain(); let end;
   const vib=(os,depth,del)=>{ const l=O(E,'sine',5.5,t,dur+1), lg=C.createGain(); lg.gain.setValueAtTime(0,t); lg.gain.linearRampToValueAtTime(f*depth,t+(del||.2)); l.connect(lg); lg.connect(os.frequency); };
@@ -902,7 +905,7 @@ async function prepareSamplers(){ if(!window.PSSampler) return;
   const ids=TR.filter(t=>t.k==='lead'||t.k==='chord').map(t=>P.params[t.id]?.snd); if(P.scoreActive&&P.score) for(const tr of P.score.tracks) ids.push(tr.instrument);
   if(!ids.some(id=>PSSampler.supports(id))) return;
   msg('Echte Samples werden geladen …'); const failed=await PSSampler.ensure(ids);
-  if(failed.length) msg('Echte Samples konnten nicht geladen werden – der Export nutzt den Ersatzklang (Konzertflügel).'); }
+  if(failed.length) msg('Echte Samples konnten nicht geladen werden ('+failed.map(id=>PSSampler.info(id).label).join(', ')+') – der Export nutzt den Ersatzklang.'); }
 async function renderScoreWav(onlyTrack=-1){
   await prepareSamplers();
   const OC=window.OfflineAudioContext||window.webkitOfflineAudioContext;if(!OC)throw Error('WAV-Export wird hier nicht unterstützt.');
@@ -1021,11 +1024,19 @@ $('muteBtn').onclick=()=>{ P.params[sel].mute=!P.params[sel].mute; save(); rende
 for(const [id,k] of SLIDERS) $(id).oninput=e=>{ P.params[sel][k]=+e.target.value; outs(); save(); };
 for(const [id] of SLIDERS) $(id).onchange=()=>{ if(!playing) preview(sel,prevVal(sel)); };
 function setSnd(key){ P.params[sel].snd=key; save(); renderEditor();
-  if(window.PSSampler?.supports(key)&&PSSampler.status(key)!=='ready'){ msg('Flügel (echt) wird geladen (ca. 3 MB, nur beim ersten Mal) …');
-    PSSampler.load(key).then(()=>{ msg('Flügel (echt) bereit. Salamander Grand Piano von Alexander Holm, CC BY 3.0.'); if(!playing) preview(sel,prevVal(sel)); })
-      .catch(e=>msg('Flügel (echt) konnte nicht geladen werden ('+e.message+'). Es spielt der Konzertflügel als Ersatz.')); return; }
+  if(window.PSSampler?.supports(key)&&PSSampler.status(key)!=='ready'){ const r=PSSampler.info(key), name=r.label.split(' · ')[0];
+    msg(name+' wird geladen (ca. '+String(r.sizeMB).replace('.',',')+' MB, nur beim ersten Mal) …');
+    PSSampler.load(key).then(()=>{ msg(name+' bereit.'+(r.credit?.required?' '+r.credit.work+' von '+r.credit.author+', '+r.credit.license+'.':'')); if(!playing) preview(sel,prevVal(sel)); })
+      .catch(e=>msg(name+' konnte nicht geladen werden ('+e.message+'). Es spielt der Ersatzklang.')); return; }
   if(!playing) preview(sel,prevVal(sel)); }
-// Projekte, die schon „Flügel (echt)“ nutzen: im Hintergrund vorladen
+// Sample-Nachweise aus samples/real/index.js (Datei → Sample-Nachweise)
+(function(){ const box=$('credits'); if(!box||!window.PSRealInstruments) return; box.textContent='';
+  for(const r of PSRealInstruments){ const c=r.credit; if(!c) continue; const line=document.createElement('span'); line.style.display='block'; line.style.marginBottom='6px';
+    const a=document.createElement('a'); a.href=c.url; a.target='_blank'; a.rel='noopener'; a.textContent=c.work;
+    const l=document.createElement('a'); l.href=c.licenseUrl; l.target='_blank'; l.rel='noopener'; l.textContent=c.license;
+    line.append('„'+r.label.split(' · ')[0]+'“: ',a,' von '+c.author+', ',l,c.required?' (bearbeitet).':'.'); box.append(line); }
+  const more=document.createElement('a'); more.href='samples/real/CREDITS.md'; more.target='_blank'; more.rel='noopener'; more.textContent='Alle Details: CREDITS.md'; box.append(more); })();
+// Projekte, die schon echte Instrumente nutzen: im Hintergrund vorladen
 setTimeout(()=>{ if(window.PSSampler){ const ids=TR.map(t=>P.params[t.id]?.snd).concat(P.score?P.score.tracks.map(x=>x.instrument):[]); PSSampler.ensure(ids); } },1500);
 $('sndSel').onchange=e=>setSnd(e.target.value);
 $('sndPrev').onclick=()=>preview(sel,prevVal(sel));

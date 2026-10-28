@@ -1,0 +1,454 @@
+{
+ "format": "beatlab-sampler-2",
+ "id": "fluteReal",
+ "name": "Flöte (echt)",
+ "source": "VS Chamber Orchestra 2 Community Edition, Woodwinds/Flute – https://github.com/sgossner/VSCO-2-CE",
+ "author": "Versilian Studios (Sam Gossner, Simon Dalzell)",
+ "license": "CC0 1.0",
+ "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+ "attribution": "Flöte aus VSCO 2 Community Edition (Versilian Studios), CC0",
+ "changes": "Sustain mit Vibrato (10 Töne C4–C7) mit Haltebereich und eingebackener Überblendung; Staccato in 3 Dynamikstufen × 2 Varianten (A4–C7); Anfang beschnitten, ausgeblendet, gemeinsam auf -1 dBFS normalisiert, MP3 128 kbit/s; Stimmung gemessen und korrigiert; Lautstärkeunterschied zwischen tiefen und hohen Tönen zur Hälfte ausgeglichen (gainDb)",
+ "release": 0.18,
+ "gainDb": 3.0,
+ "shortSkip": 0.1,
+ "articulations": [
+  {
+   "name": "sustain",
+   "layers": [
+    {
+     "name": "vib",
+     "velMax": 99,
+     "notes": [
+      {
+       "midi": 60,
+       "tune": 2,
+       "gainDb": 5.2,
+       "file": "s-C4.mp3",
+       "loopStart": 1.2,
+       "loopEnd": 3.4
+      },
+      {
+       "midi": 64,
+       "tune": 3,
+       "gainDb": 3.5,
+       "file": "s-E4.mp3",
+       "loopStart": 1.2,
+       "loopEnd": 3.4
+      },
+      {
+       "midi": 69,
+       "tune": 1,
+       "gainDb": 3.4,
+       "file": "s-A4.mp3",
+       "loopStart": 1.2,
+       "loopEnd": 3.4
+      },
+      {
+       "midi": 72,
+       "tune": 0,
+       "gainDb": 2.0,
+       "file": "s-C5.mp3",
+       "loopStart": 1.2,
+       "loopEnd": 3.4
+      },
+      {
+       "midi": 76,
+       "tune": 1,
+       "gainDb": 0.2,
+       "file": "s-E5.mp3",
+       "loopStart": 1.2,
+       "loopEnd": 3.4
+      },
+      {
+       "midi": 81,
+       "tune": 0,
+       "gainDb": -0.2,
+       "file": "s-A5.mp3",
+       "loopStart": 1.2,
+       "loopEnd": 3.4
+      },
+      {
+       "midi": 84,
+       "tune": -3,
+       "gainDb": -3.5,
+       "file": "s-C6.mp3",
+       "loopStart": 1.2,
+       "loopEnd": 3.4
+      },
+      {
+       "midi": 88,
+       "tune": 3,
+       "gainDb": -3.2,
+       "file": "s-E6.mp3",
+       "loopStart": 1.2,
+       "loopEnd": 3.4
+      },
+      {
+       "midi": 93,
+       "tune": -2,
+       "gainDb": -4.8,
+       "file": "s-A6.mp3",
+       "loopStart": 1.2,
+       "loopEnd": 3.4
+      },
+      {
+       "midi": 96,
+       "tune": -1,
+       "gainDb": -6.0,
+       "file": "s-C7.mp3",
+       "loopStart": 1.2,
+       "loopEnd": 3.4
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "staccato",
+   "maxDur": 0.22,
+   "minMidi": 68,
+   "layers": [
+    {
+     "name": "v1",
+     "velMax": 0.5,
+     "notes": [
+      {
+       "midi": 69,
+       "tune": -6,
+       "gainDb": 3.4,
+       "file": "t-A4-v1-rr1.mp3",
+       "rr": 1
+      },
+      {
+       "midi": 69,
+       "tune": -11,
+       "gainDb": 3.4,
+       "file": "t-A4-v1-rr2.mp3",
+       "rr": 2
+      },
+      {
+       "midi": 72,
+       "tune": 4,
+       "gainDb": 2.0,
+       "file": "t-C5-v1-rr1.mp3",
+       "rr": 1
+      },
+      {
+       "midi": 72,
+       "tune": -7,
+       "gainDb": 2.0,
+       "file": "t-C5-v1-rr2.mp3",
+       "rr": 2
+      },
+      {
+       "midi": 76,
+       "tune": 7,
+       "gainDb": 0.2,
+       "file": "t-E5-v1-rr1.mp3",
+       "rr": 1
+      },
+      {
+       "midi": 76,
+       "tune": 10,
+       "gainDb": 0.2,
+       "file": "t-E5-v1-rr2.mp3",
+       "rr": 2
+      },
+      {
+       "midi": 81,
+       "tune": 12,
+       "gainDb": -0.2,
+       "file": "t-A5-v1-rr1.mp3",
+       "rr": 1
+      },
+      {
+       "midi": 81,
+       "tune": 0,
+       "gainDb": -0.2,
+       "file": "t-A5-v1-rr2.mp3",
+       "rr": 2
+      },
+      {
+       "midi": 84,
+       "tune": 3,
+       "gainDb": -3.5,
+       "file": "t-C6-v1-rr1.mp3",
+       "rr": 1
+      },
+      {
+       "midi": 84,
+       "tune": 5,
+       "gainDb": -3.5,
+       "file": "t-C6-v1-rr2.mp3",
+       "rr": 2
+      },
+      {
+       "midi": 88,
+       "tune": 12,
+       "gainDb": -3.2,
+       "file": "t-E6-v1-rr1.mp3",
+       "rr": 1
+      },
+      {
+       "midi": 88,
+       "tune": 6,
+       "gainDb": -3.2,
+       "file": "t-E6-v1-rr2.mp3",
+       "rr": 2
+      },
+      {
+       "midi": 93,
+       "tune": -3,
+       "gainDb": -4.8,
+       "file": "t-A6-v1-rr1.mp3",
+       "rr": 1
+      },
+      {
+       "midi": 93,
+       "tune": 3,
+       "gainDb": -4.8,
+       "file": "t-A6-v1-rr2.mp3",
+       "rr": 2
+      },
+      {
+       "midi": 96,
+       "tune": 6,
+       "gainDb": -6.0,
+       "file": "t-C7-v1-rr1.mp3",
+       "rr": 1
+      },
+      {
+       "midi": 96,
+       "tune": 3,
+       "gainDb": -6.0,
+       "file": "t-C7-v1-rr2.mp3",
+       "rr": 2
+      }
+     ]
+    },
+    {
+     "name": "v2",
+     "velMax": 0.85,
+     "notes": [
+      {
+       "midi": 69,
+       "tune": 1,
+       "gainDb": 3.4,
+       "file": "t-A4-v2-rr1.mp3",
+       "rr": 1
+      },
+      {
+       "midi": 69,
+       "tune": 0,
+       "gainDb": 3.4,
+       "file": "t-A4-v2-rr2.mp3",
+       "rr": 2
+      },
+      {
+       "midi": 72,
+       "tune": 6,
+       "gainDb": 2.0,
+       "file": "t-C5-v2-rr1.mp3",
+       "rr": 1
+      },
+      {
+       "midi": 72,
+       "tune": -5,
+       "gainDb": 2.0,
+       "file": "t-C5-v2-rr2.mp3",
+       "rr": 2
+      },
+      {
+       "midi": 76,
+       "tune": 1,
+       "gainDb": 0.2,
+       "file": "t-E5-v2-rr1.mp3",
+       "rr": 1
+      },
+      {
+       "midi": 76,
+       "tune": 1,
+       "gainDb": 0.2,
+       "file": "t-E5-v2-rr2.mp3",
+       "rr": 2
+      },
+      {
+       "midi": 81,
+       "tune": 11,
+       "gainDb": -0.2,
+       "file": "t-A5-v2-rr1.mp3",
+       "rr": 1
+      },
+      {
+       "midi": 81,
+       "tune": 6,
+       "gainDb": -0.2,
+       "file": "t-A5-v2-rr2.mp3",
+       "rr": 2
+      },
+      {
+       "midi": 84,
+       "tune": -5,
+       "gainDb": -3.5,
+       "file": "t-C6-v2-rr1.mp3",
+       "rr": 1
+      },
+      {
+       "midi": 84,
+       "tune": 5,
+       "gainDb": -3.5,
+       "file": "t-C6-v2-rr2.mp3",
+       "rr": 2
+      },
+      {
+       "midi": 88,
+       "tune": 14,
+       "gainDb": -3.2,
+       "file": "t-E6-v2-rr1.mp3",
+       "rr": 1
+      },
+      {
+       "midi": 88,
+       "tune": 18,
+       "gainDb": -3.2,
+       "file": "t-E6-v2-rr2.mp3",
+       "rr": 2
+      },
+      {
+       "midi": 93,
+       "tune": 4,
+       "gainDb": -4.8,
+       "file": "t-A6-v2-rr1.mp3",
+       "rr": 1
+      },
+      {
+       "midi": 93,
+       "tune": 3,
+       "gainDb": -4.8,
+       "file": "t-A6-v2-rr2.mp3",
+       "rr": 2
+      },
+      {
+       "midi": 96,
+       "tune": 0,
+       "gainDb": -6.0,
+       "file": "t-C7-v2-rr1.mp3",
+       "rr": 1
+      },
+      {
+       "midi": 96,
+       "tune": -4,
+       "gainDb": -6.0,
+       "file": "t-C7-v2-rr2.mp3",
+       "rr": 2
+      }
+     ]
+    },
+    {
+     "name": "v3",
+     "velMax": 99,
+     "notes": [
+      {
+       "midi": 69,
+       "tune": 2,
+       "gainDb": 3.4,
+       "file": "t-A4-v3-rr1.mp3",
+       "rr": 1
+      },
+      {
+       "midi": 69,
+       "tune": 1,
+       "gainDb": 3.4,
+       "file": "t-A4-v3-rr2.mp3",
+       "rr": 2
+      },
+      {
+       "midi": 72,
+       "tune": 16,
+       "gainDb": 2.0,
+       "file": "t-C5-v3-rr1.mp3",
+       "rr": 1
+      },
+      {
+       "midi": 72,
+       "tune": 4,
+       "gainDb": 2.0,
+       "file": "t-C5-v3-rr2.mp3",
+       "rr": 2
+      },
+      {
+       "midi": 76,
+       "tune": 6,
+       "gainDb": 0.2,
+       "file": "t-E5-v3-rr1.mp3",
+       "rr": 1
+      },
+      {
+       "midi": 76,
+       "tune": 5,
+       "gainDb": 0.2,
+       "file": "t-E5-v3-rr2.mp3",
+       "rr": 2
+      },
+      {
+       "midi": 81,
+       "tune": -23,
+       "gainDb": -0.2,
+       "file": "t-A5-v3-rr1.mp3",
+       "rr": 1
+      },
+      {
+       "midi": 81,
+       "tune": -19,
+       "gainDb": -0.2,
+       "file": "t-A5-v3-rr2.mp3",
+       "rr": 2
+      },
+      {
+       "midi": 84,
+       "tune": -3,
+       "gainDb": -3.5,
+       "file": "t-C6-v3-rr1.mp3",
+       "rr": 1
+      },
+      {
+       "midi": 84,
+       "tune": -3,
+       "gainDb": -3.5,
+       "file": "t-C6-v3-rr2.mp3",
+       "rr": 2
+      },
+      {
+       "midi": 88,
+       "tune": 11,
+       "gainDb": -3.2,
+       "file": "t-E6-v3-rr1.mp3",
+       "rr": 1
+      },
+      {
+       "midi": 88,
+       "tune": -2,
+       "gainDb": -3.2,
+       "file": "t-E6-v3-rr2.mp3",
+       "rr": 2
+      },
+      {
+       "midi": 93,
+       "tune": 4,
+       "gainDb": -4.8,
+       "file": "t-A6-v3-rr1.mp3",
+       "rr": 1
+      },
+      {
+       "midi": 93,
+       "tune": -4,
+       "gainDb": -4.8,
+       "file": "t-A6-v3-rr2.mp3",
+       "rr": 2
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

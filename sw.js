@@ -1,7 +1,7 @@
-const SHELL='ps-beatlab-shell-v3';
+const SHELL='ps-beatlab-shell-v4';
 const AUDIO='ps-beatlab-audio-v1';
 const REAL='ps-beatlab-real-v1'; // echte Instrumente: klein, fest, ohne Verdrängung
-const SHELL_FILES=['./index.html','./instrument-engine.js','./sampler.js','./samples/samples.json'];
+const SHELL_FILES=['./index.html','./instrument-engine.js','./sampler.js','./samples/real/index.js','./samples/samples.json'];
 
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(SHELL).then(cache=>cache.addAll(SHELL_FILES)).then(()=>self.skipWaiting()));
@@ -27,6 +27,17 @@ self.addEventListener('fetch',event=>{
     return;
   }
 
+  // Verzeichnis und Manifeste: immer frisch holen (offline aus dem Cache), damit neue Instrumente ankommen
+  if(url.pathname.includes('/samples/real/')&&/\.(js|json)$/.test(url.pathname)){
+    event.respondWith((async()=>{
+      const cache=await caches.open(REAL);
+      try{const response=await fetch(request,{cache:'no-store'});if(response.ok)await cache.put(request,response.clone());return response;}
+      catch(e){return (await cache.match(request))||Response.error();}
+    })());
+    return;
+  }
+
+  // Samples selbst: einmal laden, dann dauerhaft aus dem Cache
   if(url.pathname.includes('/samples/real/')){
     event.respondWith((async()=>{
       const cache=await caches.open(REAL);
