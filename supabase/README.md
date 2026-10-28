@@ -28,7 +28,7 @@ beatlab_projects ──┬── beatlab_song_sections ──► beatlab_motifs
   - Direktes Einfügen von Projekten, Ändern von `state`/`revision` sowie jedes direkte Schreiben in Songplan und Versionen ist gesperrt. Interne Helfer sind nicht aufrufbar.
 - **Versionen automatisch und unveränderlich:** höchstens alle 10 Minuten eine automatische Version (mit Songplan), die letzten 50 bleiben. Mit `p_snapshot_label` („Refrain fertig“) merkt Peter sich eine Version dauerhaft. Gelöscht werden Versionen nur mit dem Projekt oder beim automatischen Aufräumen.
 - **Sicherheit:** RLS auf allen Tabellen, nur der Eigentümer (Supabase-Login) sieht seine Daten. Kind-Zeilen und Motiv-Verknüpfungen können nicht an fremde Projekte/Motive gehängt werden, auch nicht per Update. Ohne Login (`anon`) gibt es keinen Tabellenzugriff.
-- **Teilen-Links geben nur Abspieldaten heraus:** `beatlab_get_shared(token)` liefert eine Whitelist (Tempo, Muster, Mixer, Arrangement, Notensong …) und den Songplan ohne interne IDs. Gerätenamen, Sample-Dateinamen und andere private Projektinfos bleiben drin. Tokens erzeugt immer die Datenbank (64 Zeichen).
+- **Teilen-Links geben nur Abspieldaten heraus:** `beatlab_get_shared(token)` liefert eine Whitelist (Tempo, Muster, Mixer, Arrangement, Notensong …) und den Songplan ohne interne IDs. Gerätenamen, Sample-Dateinamen und andere private Projektinfos bleiben draußen. Tokens erzeugt immer die Datenbank (64 Zeichen).
 - **Grenzen:** Projekt-JSON max. ca. 2 MB, 1–64 Blöcke, Energie 1–10, Motive bis 512 Noten.
 
 ## Lokal testen
