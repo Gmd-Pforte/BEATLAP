@@ -447,6 +447,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 <div class="toast" id="msg" role="status" aria-live="polite" hidden></div>
 
 <script src="./instrument-engine.js"></script>
+<script src="./samples/real/index.js"></script>
 <script src="./sampler.js"></script>
 <script>
 (function(){
@@ -463,13 +464,19 @@ const DRUMS={
  laser:['Laser','Effekte'],zap:['Zap','Effekte'],riser:['Riser','Effekte'],scratch:['Scratch','Effekte'],vinyl:['Vinyl-Knistern','Effekte'],horn:['Air Horn','Effekte'],drop:['Sub Drop','Effekte'],whoosh:['Whoosh','Effekte'],
 };
 const BASSES={'808':['808 Klassik','Bass'],'808d':['808 verzerrt mit Glide','Bass'],sub:['Sub-Bass','Bass'],reese:['Reese','Bass'],synthb:['Synth-Bass','Bass'],pluckb:['Zupf-Bass','Bass'],acid:['Acid','Bass'],wobble:['Wobble','Bass']};
-const INSTR={grandReal:['Flügel (echt) · Salamander','Real Instruments'],grand:['Konzertflügel · Real Engine','Real Instruments'],felt:['Felt Piano · sanft','Real Instruments'],upright:['Klavier · warm','Real Instruments'],
+const INSTR={grand:['Konzertflügel · Real Engine','Real Instruments'],felt:['Felt Piano · sanft','Real Instruments'],upright:['Klavier · warm','Real Instruments'],
  cello:['Solo Cello','Real Instruments'],violin:['Solo Violine','Real Instruments'],acoustic:['Akustikgitarre','Real Instruments'],nylon:['Nylongitarre','Real Instruments'],sax:['Altsaxofon','Real Instruments'],tenorSax:['Tenorsaxofon','Real Instruments'],trumpet:['Trompete','Real Instruments'],
  piano:['Piano','Tasten'],epiano:['E-Piano','Tasten'],organ:['Orgel','Tasten'],clav:['Clavinet','Tasten'],
  pluck:['Pluck','Synth'],lead:['Synth Lead','Synth'],supersaw:['Supersaw','Synth'],chip:['Chiptune','Synth'],pad:['Pad','Synth'],
  bell:['Glocke','Mallets'],marimba:['Marimba','Mallets'],kalimba:['Kalimba','Mallets'],vibes:['Vibraphon','Mallets'],music:['Spieluhr','Mallets'],
  guitar:['Gitarre','Saiten'],harp:['Harfe','Saiten'],strings:['Streicher','Saiten'],
  flute:['Flöte','Bläser'],brass:['Brass','Bläser'],choir:['Chor','Stimmen']};
+// Echte Instrumente aus samples/real/index.js (Gruppe „Real Instruments“)
+for(const r of (window.PSRealInstruments||[])) INSTR[r.id]=[r.label,'Real Instruments'];
+// Konvention: IDs echter Instrumente enden auf „Real“. Sie bleiben im Projekt erhalten, auch wenn
+// samples/real/index.js einmal nicht geladen werden konnte; gespielt wird dann der Ersatzklang.
+const isRealId=id=>typeof id==='string'&&/^[A-Za-z0-9]+Real$/.test(id);
+const sndName=(lib,id)=>lib[id]?.[0]||(isRealId(id)?'Echtes Instrument (gerade nicht verfügbar)':String(id));
 
 const TR=[
  {id:'kick',n:'Kick',c:'#ff4fa0',k:'drum',d:'kickBoom'},{id:'snare',n:'Snare',c:'#2f9bff',k:'drum',d:'snare'},{id:'clap',n:'Clap',c:'#a77bff',k:'drum',d:'clap'},
@@ -532,7 +539,7 @@ if(!SCALES[P.scale]) P.scale='minor';
 const defaultArr=()=>[{pat:0,bars:4,name:'Intro'},{pat:1,bars:8,name:'Strophe'},{pat:2,bars:8,name:'Refrain'},{pat:3,bars:4,name:'Outro'}];
 function normalize(){
   if(!SCALES[P.scale]) P.scale='minor'; if(!Array.isArray(P.pats)||P.pats.length!==4) P.pats=JSON.parse(JSON.stringify(PRESETS['Boom Bap'].pats));
-  P.params=P.params||{}; for(const t of TR){ P.params[t.id]={...defParam(t),pan:0,low:0,high:0,delay:0,solo:false,...(P.params[t.id]||{})}; if(!libOf(t)[P.params[t.id].snd]) P.params[t.id].snd=t.d; P.pats.forEach(p=>{ if(!Array.isArray(p[t.id])||p[t.id].length!==16) p[t.id]=Array(16).fill(0); }); }
+  P.params=P.params||{}; for(const t of TR){ P.params[t.id]={...defParam(t),pan:0,low:0,high:0,delay:0,solo:false,...(P.params[t.id]||{})}; if(!libOf(t)[P.params[t.id].snd]&&!isRealId(P.params[t.id].snd)) P.params[t.id].snd=t.d; /* echte Instrumente nie überschreiben, auch wenn das Verzeichnis gerade fehlt */ P.pats.forEach(p=>{ if(!Array.isArray(p[t.id])||p[t.id].length!==16) p[t.id]=Array(16).fill(0); }); }
   P.arrangement=Array.isArray(P.arrangement)&&P.arrangement.length?P.arrangement:defaultArr();
   P.songMode=!!P.songMode; P.scoreActive=!!P.scoreActive&&!!P.score; P.rollLengths=P.rollLengths||{}; P.bassLengths=P.bassLengths||{}; P.master=typeof P.master==='number'?P.master:80; P.bpm=P.bpm||90; P.swing=P.swing||0; P.key=P.key||0;
 }
@@ -654,8 +661,9 @@ function ksBuf(E,f){ const key=Math.round(f*4); if(E.ks[key]) return E.ks[key]; 
   for(let i=0;i<Nn;i++) d[i]=Math.random()*2-1; for(let i=1;i<Nn;i++) d[i]=(d[i]+d[i-1])*.5; d[Nn]=d[0]; for(let i=Nn+1;i<L;i++) d[i]=.4985*(d[i-Nn]+d[i-Nn-1]); return E.ks[key]=b; }
 function voice(E,o,ins,f,t,dur,v){
   // Modeled instruments are shared by live playback and offline WAV exports.
-  // Echte Samples (sampler.js). Noch nicht geladen oder Fehler → Konzertflügel der Real Engine als Ersatz.
-  if(window.PSSampler?.supports(ins)){ if(window.PSSampler.play(E.ctx,o,ins,f,t,dur,v)) return; ins='grand'; }
+  // Echte Samples (sampler.js). Noch nicht geladen oder Fehler → Ersatzklang aus samples/real/index.js.
+  if(window.PSSampler?.supports(ins)){ if(window.PSSampler.play(E.ctx,o,ins,f,t,dur,v,E.rr||(E.rr={}))) return; ins=window.PSSampler.fallback(ins); }
+  else if(isRealId(ins)) ins='piano'; // Verzeichnis fehlt: neutraler Ersatz, Projekt-Einstellung bleibt erhalten
   if(window.PSInstrumentEngine?.supports(ins) && window.PSInstrumentEngine.play(E.ctx,o,ins,f,t,dur,v)) return;
   const C=E.ctx, g=C.createGain(); let end;
   const vib=(os,depth,del)=>{ const l=O(E,'sine',5.5,t,dur+1), lg=C.createGain(); lg.gain.setValueAtTime(0,t); lg.gain.linearRampToValueAtTime(f*depth,t+(del||.2)); l.connect(lg); lg.connect(os.frequency); };
@@ -894,15 +902,15 @@ function tickScore(){
 }
 function startScore(){
   if(!ensureAudio()||!P.score)return;
-  playing=true;scorePlaybackEvents=scoreEvents(P.score);scoreCursor=0;scoreStartTime=ac.currentTime+.08;tickScore();timer=setInterval(tickScore,25);
+  live.rr={};playing=true;scorePlaybackEvents=scoreEvents(P.score);scoreCursor=0;scoreStartTime=ac.currentTime+.08;tickScore();timer=setInterval(tickScore,25);
   $('playBtn').classList.add('on');$('playIcon').setAttribute('d','M6 5h4v14H6zM14 5h4v14h-4z');$('playBtn').setAttribute('aria-label','Stopp');
 }
 /* Vor jedem Export: benutzte Sample-Instrumente fertig laden. Schlägt das fehl, klingt der Ersatz – nie Stille. */
 async function prepareSamplers(){ if(!window.PSSampler) return;
   const ids=TR.filter(t=>t.k==='lead'||t.k==='chord').map(t=>P.params[t.id]?.snd); if(P.scoreActive&&P.score) for(const tr of P.score.tracks) ids.push(tr.instrument);
   if(!ids.some(id=>PSSampler.supports(id))) return;
-  msg('Echte Samples werden geladen …'); const failed=await PSSampler.ensure(ids);
-  if(failed.length) msg('Echte Samples konnten nicht geladen werden – der Export nutzt den Ersatzklang (Konzertflügel).'); }
+  msg('Echte Samples werden geladen …'); const failed=await PSSampler.ensure(ids,true); // Export: alle Dynamikstufen, damit er exakt klingt
+  if(failed.length) msg('Echte Samples konnten nicht geladen werden ('+failed.map(id=>PSSampler.info(id).label).join(', ')+') – der Export nutzt den Ersatzklang.'); }
 async function renderScoreWav(onlyTrack=-1){
   await prepareSamplers();
   const OC=window.OfflineAudioContext||window.webkitOfflineAudioContext;if(!OC)throw Error('WAV-Export wird hier nicht unterstützt.');
@@ -935,7 +943,7 @@ function tick(){
     }
   }
 }
-function start(){ if(P.scoreActive&&P.score){startScore();return;} if(!ensureAudio()) return; playing=true; step=0; songBar=0; playPat=P.songMode?patForBar(0):P.chain&&!used(cur)?nextPat(cur):cur; nextT=ac.currentTime+.06; queue=[]; tick(); timer=setInterval(tick,25);
+function start(){ if(P.scoreActive&&P.score){startScore();return;} if(!ensureAudio()) return; live.rr={}; /* Varianten-Zähler wie beim Export von vorn */ playing=true; step=0; songBar=0; playPat=P.songMode?patForBar(0):P.chain&&!used(cur)?nextPat(cur):cur; nextT=ac.currentTime+.06; queue=[]; tick(); timer=setInterval(tick,25);
   $('playBtn').classList.add('on'); $('playIcon').setAttribute('d','M6 5h4v14H6zM14 5h4v14h-4z'); $('playBtn').setAttribute('aria-label','Stopp'); }
 function stop(){ playing=false; clearInterval(timer); scorePlaybackEvents=[]; scoreCursor=0; lastPos=''; setTimeout(renderMini,0); arrNow=-1; document.querySelectorAll('.arrblock.now').forEach(b=>b.classList.remove('now')); $('playBtn').classList.remove('on'); $('playIcon').setAttribute('d','M7 4.5v15l13-7.5z'); $('playBtn').setAttribute('aria-label','Abspielen'); setPh(-1,-1); }
 $('playBtn').onclick=()=>playing?stop():start();
@@ -975,11 +983,11 @@ function paintMatrix(){ const p=P.pats[cur]; for(const t of TR) mCells[t.id].for
 function renderEditor(){
   const t=trk(sel), p=P.pats[cur][sel], pr=P.params[sel], lib=libOf(t);
   for(const id of ['tName','tName2']){ $(id).querySelector('i').style.background=t.c; $(id).style.setProperty('--tc',t.c); $(id).querySelector('span').textContent=t.n; }
-  $('tName').querySelector('small').textContent=lib[pr.snd][0];
+  $('tName').querySelector('small').textContent=sndName(lib,pr.snd);
   $('muteBtn').setAttribute('aria-pressed',pr.mute);
   const isB=t.k==='bass', isC=t.k==='chord', isL=t.k==='lead';
   $('noteRow').hidden=!isC; $('progRow').hidden=!isC; $('lenRow').hidden=!(isL||isB); $('leadTools').hidden=!isL; $('steps').hidden=isL||isB; $('roll').hidden=!(isL||isB);
-  $('tName').querySelector('small').textContent=samples[sel]?'Eigenes Sample':lib[pr.snd][0];
+  $('tName').querySelector('small').textContent=samples[sel]?'Eigenes Sample':sndName(lib,pr.snd);
   $('stepHint').textContent=isL?'Tippe ins Raster, um einen Ton mit der gewählten Länge zu setzen. Tippe auf den Anfang eines Tons, um ihn zu löschen. Oben sind die hohen Töne.':isB?'Ein Bass-Ton pro Schritt. Tippe ins Raster, um ihn mit der gewählten Länge zu setzen, und auf den Anfang, um ihn zu löschen.':isC?'Wähle oben einen Akkord und tippe auf den Schritt, an dem er beginnen soll. Er klingt etwa einen Takt lang, die Länge stellst du unter „Klang“ ein.':'Einmal tippen setzt den Schlag, zweimal tippen betont ihn, dreimal tippen löscht ihn.';
   if(isL||isB){ const Lr=$('lens'); Lr.innerHTML=''; for(const n of [1,2,4,8,16]){ const b=document.createElement('button'); b.textContent=n===16?'1 Takt':n+(n===1?' Schritt':' Schritte'); b.style.setProperty('--c',t.c); b.setAttribute('aria-pressed',brushLen[sel]===n); b.onclick=()=>{ brushLen[sel]=n; renderEditor(); }; Lr.appendChild(b); } }
   if(isC){ const Nn=$('notes'); Nn.innerHTML=''; const max=7;
@@ -1021,11 +1029,19 @@ $('muteBtn').onclick=()=>{ P.params[sel].mute=!P.params[sel].mute; save(); rende
 for(const [id,k] of SLIDERS) $(id).oninput=e=>{ P.params[sel][k]=+e.target.value; outs(); save(); };
 for(const [id] of SLIDERS) $(id).onchange=()=>{ if(!playing) preview(sel,prevVal(sel)); };
 function setSnd(key){ P.params[sel].snd=key; save(); renderEditor();
-  if(window.PSSampler?.supports(key)&&PSSampler.status(key)!=='ready'){ msg('Flügel (echt) wird geladen (ca. 3 MB, nur beim ersten Mal) …');
-    PSSampler.load(key).then(()=>{ msg('Flügel (echt) bereit. Salamander Grand Piano von Alexander Holm, CC BY 3.0.'); if(!playing) preview(sel,prevVal(sel)); })
-      .catch(e=>msg('Flügel (echt) konnte nicht geladen werden ('+e.message+'). Es spielt der Konzertflügel als Ersatz.')); return; }
+  if(window.PSSampler?.supports(key)&&PSSampler.status(key)!=='ready'){ const r=PSSampler.info(key), name=r.label.split(' · ')[0];
+    msg(name+' wird geladen (ca. '+String(r.sizeMB).replace('.',',')+' MB, nur beim ersten Mal) …');
+    PSSampler.load(key).then(()=>{ msg(name+' bereit.'+(r.credit?.required?' '+r.credit.work+' von '+r.credit.author+', '+r.credit.license+'.':'')); if(!playing) preview(sel,prevVal(sel)); })
+      .catch(e=>msg(name+' konnte nicht geladen werden ('+e.message+'). Es spielt der Ersatzklang.')); return; }
   if(!playing) preview(sel,prevVal(sel)); }
-// Projekte, die schon „Flügel (echt)“ nutzen: im Hintergrund vorladen
+// Sample-Nachweise aus samples/real/index.js (Datei → Sample-Nachweise)
+(function(){ const box=$('credits'); if(!box||!window.PSRealInstruments) return; box.textContent='';
+  for(const r of PSRealInstruments){ const c=r.credit; if(!c) continue; const line=document.createElement('span'); line.style.display='block'; line.style.marginBottom='6px';
+    const a=document.createElement('a'); a.href=c.url; a.target='_blank'; a.rel='noopener'; a.textContent=c.work;
+    const l=document.createElement('a'); l.href=c.licenseUrl; l.target='_blank'; l.rel='noopener'; l.textContent=c.license;
+    line.append('„'+r.label.split(' · ')[0]+'“: ',a,' von '+c.author+', ',l,c.required?' (bearbeitet).':'.'); box.append(line); }
+  const more=document.createElement('a'); more.href='samples/real/CREDITS.md'; more.target='_blank'; more.rel='noopener'; more.textContent='Alle Details: CREDITS.md'; box.append(more); })();
+// Projekte, die schon echte Instrumente nutzen: im Hintergrund vorladen
 setTimeout(()=>{ if(window.PSSampler){ const ids=TR.map(t=>P.params[t.id]?.snd).concat(P.score?P.score.tracks.map(x=>x.instrument):[]); PSSampler.ensure(ids); } },1500);
 $('sndSel').onchange=e=>setSnd(e.target.value);
 $('sndPrev').onclick=()=>preview(sel,prevVal(sel));
@@ -1046,7 +1062,7 @@ document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>showTab(b.dataset.tab
 /* pads */
 let liveRec=false;
 function renderPads(){ const W=$('pads'); W.innerHTML='';
-  TR.forEach(t=>{ const b=document.createElement('button'); b.className='pad'; b.style.setProperty('--c',t.c); b.innerHTML=`${t.n}<small>${samples[t.id]?'Eigenes Sample':libOf(t)[P.params[t.id].snd][0]}</small>`;
+  TR.forEach(t=>{ const b=document.createElement('button'); b.className='pad'; b.style.setProperty('--c',t.c); b.innerHTML=`${t.n}<small>${samples[t.id]?'Eigenes Sample':sndName(libOf(t),P.params[t.id].snd)}</small>`;
     b.addEventListener('pointerdown',e=>{ e.preventDefault(); if(!ensureAudio()) return; const now=ac.currentTime, val=prevVal(t.id);
       play(live,t.id,now+.005,val,t.k==='bass'?brushLen.bass:t.k==='lead'?{[brush.lead-1]:brushLen.lead}:1); b.classList.add('hit'); setTimeout(()=>b.classList.remove('hit'),110);
       if(liveRec&&playing){ const sd=stepDur(); let best=null,bd=1e9; for(const q of queue){ const d=Math.abs(q.t-now); if(d<bd){bd=d;best=q;} }

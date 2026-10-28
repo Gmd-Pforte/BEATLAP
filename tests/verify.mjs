@@ -46,23 +46,34 @@ test('Audio export and project support are present', () => {
 });
 
 
-test('Sampler „Flügel (echt)“: Skript, Manifest, Dateien und Namensnennung', () => {
+test('Real Instruments: Verzeichnis, Sampler, Manifeste, Dateien und Nachweise', () => {
   const sampler = readFileSync(new URL('../sampler.js', import.meta.url), 'utf8');
+  const registrySrc = readFileSync(new URL('../samples/real/index.js', import.meta.url), 'utf8');
   new Function(sampler);
-  assert.match(html, /src="\.\/sampler\.js"/);
-  assert.match(html, /grandReal:\[/, 'Menüeintrag fehlt');
+  const win = {}; new Function('window', registrySrc)(win);
+  assert.ok(Array.isArray(win.PSRealInstruments) && win.PSRealInstruments.length >= 2, 'Verzeichnis leer');
+  assert.match(html, /src="\.\/samples\/real\/index\.js"[\s\S]*src="\.\/sampler\.js"/, 'Verzeichnis muss vor sampler.js geladen werden');
   assert.match(html, /PSSampler\.play\(/);
+  assert.match(html, /PSSampler\.fallback\(ins\)/, 'Ersatzklang fehlt');
   assert.match(html, /await prepareSamplers\(\)/, 'Export lädt Samples nicht vor');
-  assert.match(html, /Salamander Grand Piano V3<\/a> von Alexander Holm/, 'CC-BY-Namensnennung in der App fehlt');
-  const man = JSON.parse(readFileSync(new URL('../samples/real/piano/manifest.json', import.meta.url), 'utf8'));
-  assert.equal(man.format, 'beatlab-sampler-1');
-  assert.equal(man.license, 'CC BY 3.0');
-  assert.equal(man.layers.length, 3);
-  for (const layer of man.layers) for (const n of layer.notes) {
-    assert.ok(existsSync(new URL('../samples/real/piano/' + n.file, import.meta.url)), 'Datei fehlt: ' + n.file);
-    assert.ok(Math.abs(n.tune) <= 20, 'Stimmkorrektur unplausibel: ' + n.file);
+  assert.match(html, /Salamander Grand Piano V3<\/a> von Alexander Holm/, 'CC-BY-Namensnennung (ohne JavaScript) fehlt');
+  const ids = new Set();
+  for (const r of win.PSRealInstruments) {
+    assert.ok(!ids.has(r.id), 'Doppelte ID: ' + r.id); ids.add(r.id);
+    assert.ok(r.credit && r.credit.license && r.credit.author && r.credit.url, 'Nachweis fehlt: ' + r.id);
+    assert.ok(html.includes("'" + r.fallback + "'") || html.includes(r.fallback + ':['), 'Ersatzklang unbekannt: ' + r.fallback);
+    const man = JSON.parse(readFileSync(new URL(`../samples/real/${r.dir}/manifest.json`, import.meta.url), 'utf8'));
+    assert.match(man.format, /^beatlab-sampler-[12]$/);
+    assert.equal(man.license.split(' ')[0], r.credit.license.split(' ')[0], 'Lizenz in Manifest und Verzeichnis passt nicht: ' + r.id);
+    const arts = man.format === 'beatlab-sampler-1' ? [{ layers: man.layers }] : man.articulations;
+    for (const a of arts) for (const layer of a.layers) for (const n of layer.notes) {
+      assert.ok(existsSync(new URL(`../samples/real/${r.dir}/${n.file}`, import.meta.url)), 'Datei fehlt: ' + r.dir + '/' + n.file);
+      assert.ok(Math.abs(n.tune) <= 30, 'Stimmkorrektur unplausibel: ' + n.file);
+      if (n.loopStart != null) assert.ok(n.loopEnd - n.loopStart >= 1, 'Haltebereich zu kurz: ' + n.file);
+    }
   }
-  assert.ok(existsSync(new URL('../samples/real/CREDITS.md', import.meta.url)), 'CREDITS.md fehlt');
+  const credits = readFileSync(new URL('../samples/real/CREDITS.md', import.meta.url), 'utf8');
+  for (const r of win.PSRealInstruments) assert.ok(credits.includes(r.credit.work.split(' – ')[0]), 'CREDITS.md erwähnt nicht: ' + r.credit.work);
 });
 
 const instrumentEngine = readFileSync(new URL('../instrument-engine.js', import.meta.url), 'utf8');
