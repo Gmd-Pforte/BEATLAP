@@ -296,6 +296,8 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
   <div class="pane" data-pane="mix" hidden>
     <section class="card">
       <label class="slider" for="master"><span>Gesamt</span><input type="range" id="master" min="0" max="120"><output id="oMaster"></output></label>
+      <div class="row" id="soundRow" role="group" aria-label="Klang-Engine"><span class="hint" style="margin:0">Klang</span><button class="btn ghost" id="soundAlt" type="button">Alt</button><button class="btn ghost" id="soundNeu" type="button">Neu</button></div>
+      <p class="hint" id="soundHint">A/B-Vergleich: gleiche Vorlage (z. B. Boom Bap), einmal mit Alt und einmal mit Neu als WAV exportieren.</p>
     </section>
     <section class="card">
       <div class="mixer" id="mixer"></div>
@@ -543,18 +545,36 @@ function clearLens(pi,id,s){ if(id==='bass'){ if(P.bassLengths[pi]) delete P.bas
 /* ---------- audio engine ---------- */
 let ac=null, live=null;
 const semi=x=>Math.pow(2,x/12);
+/* Klang-Engine: 'alt' (Standard beim ersten Start) oder 'neu' für den A/B-Vergleich. Gilt für Wiedergabe und WAV-Export,
+   wird pro Gerät gespeichert und ändert keine Projektdaten. */
+let soundV=store.get('beatlab.sound','alt')==='neu'?'neu':'alt'; // Erststart: bisheriger Klang, bis Peter bewusst „Neu“ wählt
+const NEU=()=>soundV==='neu';
 function makeEngine(ctx){
-  const comp=ctx.createDynamicsCompressor(); comp.threshold.value=-14; comp.ratio.value=4; comp.attack.value=.003; comp.release.value=.2;
+  const comp=ctx.createDynamicsCompressor();
+  if(NEU()){ comp.threshold.value=-10; comp.knee.value=8; comp.ratio.value=3; comp.attack.value=.015; comp.release.value=.18; } // Anschläge kommen durch
+  else { comp.threshold.value=-14; comp.ratio.value=4; comp.attack.value=.003; comp.release.value=.2; }
   const out=ctx.createGain(); out.gain.value=masterGain(); const lim=ctx.createDynamicsCompressor(); lim.threshold.value=-3; lim.knee.value=0; lim.ratio.value=20; lim.attack.value=.001; lim.release.value=.08; comp.connect(out); out.connect(lim); lim.connect(ctx.destination);
+  if(NEU()){ lim.threshold.value=-1; lim.release.value=.05; } // Limiter nur noch als Notbremse, nicht als Dauer-Kompressor
   const nb=ctx.createBuffer(1,ctx.sampleRate*2,ctx.sampleRate), d=nb.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1;
   const curve=new Float32Array(1024); for(let i=0;i<1024;i++){ const x=i/512-1; curve[i]=Math.tanh(x*2.2); }
   const rev=ctx.createConvolver(), L=Math.floor(ctx.sampleRate*2.4), ir=ctx.createBuffer(2,L,ctx.sampleRate);
-  for(let c=0;c<2;c++){ const ch=ir.getChannelData(c); for(let i=0;i<L;i++) ch[i]=(Math.random()*2-1)*Math.pow(1-i/L,3.2); }
+  if(NEU()) makeRoomIR(ir,ctx.sampleRate);
+  else for(let c=0;c<2;c++){ const ch=ir.getChannelData(c); for(let i=0;i<L;i++) ch[i]=(Math.random()*2-1)*Math.pow(1-i/L,3.2); }
   rev.buffer=ir; const rg=ctx.createGain(); rg.gain.value=.55; rev.connect(rg); rg.connect(comp);
   const delay=ctx.createDelay(1),feedback=ctx.createGain(),wet=ctx.createGain();delay.delayTime.value=Math.min(.95,stepDur()*3);feedback.gain.value=.22;wet.gain.value=.38;delay.connect(feedback);feedback.connect(delay);delay.connect(wet);wet.connect(comp);
   return {ctx,bus:comp,out,curve,rev,delay,noise:nb,openG:null,bassG:null,bassF:0,bassT:-9,ks:{}};
 }
-const masterGain=()=>.7*(P.master??80)/80;
+/* Raum-Impuls: frühe Reflexionen + Nachhall, der mit der Zeit dunkler wird (wie echte Räume) */
+function makeRoomIR(ir,sr){
+  const L=ir.length, taps=[[.007,.5],[.013,.36],[.019,.3],[.027,.24],[.036,.18],[.047,.13]];
+  for(let c=0;c<2;c++){ const ch=ir.getChannelData(c); let lp=0;
+    for(let i=0;i<L;i++){ const x=i/L, n=Math.random()*2-1;
+      const a=.75*Math.pow(1-x,2.6)*Math.min(1,i/(sr*.012));           // weicher Einsatz nach den Reflexionen
+      const coef=.08+.84*Math.min(1,x*2.2);                              // Tiefpass schließt mit der Zeit
+      lp=lp+(n-lp)*(1-coef); ch[i]=lp*a*(1+coef*1.6); }
+    for(const [tt,g] of taps){ const j=Math.floor(sr*tt*(c?1.07:1)); if(j<L) ch[j]+=g*(c?-1:1); } }
+}
+const masterGain=()=>(NEU()?.66:.7)*(P.master??80)/80; // Neu: etwas Luft vor dem Limiter
 function SH(E,o){ if(!o._sh){ const s=E.ctx.createWaveShaper(); s.curve=E.curve; s.connect(o); o._sh=s; } return o._sh; }
 function G(E,t,v,dec,att){ const g=E.ctx.createGain(); g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(Math.max(.0002,v),t+(att||.002)); g.gain.exponentialRampToValueAtTime(.0001,t+(att||.002)+dec); return g; }
 function N(E,t,dur){ const n=E.ctx.createBufferSource(); n.buffer=E.noise; n.start(t,Math.random()*.8); n.stop(t+dur+.05); return n; }
@@ -563,12 +583,20 @@ function O(E,type,f,t,dur){ const o=E.ctx.createOscillator(); o.type=type; o.fre
 function chain(...n){ for(let i=0;i<n.length-1;i++) n[i].connect(n[i+1]); return n[n.length-1]; }
 
 /* drum generators: (E, out, t, vol, pitchSemis, decayMul) */
-function kickG(E,o,t,v,p,k,f0,f1,dec,click,sat,lp){ const os=O(E,'sine',f0*semi(p),t,dec*k+.1); os.frequency.exponentialRampToValueAtTime(f1*semi(p),t+.09);
-  const g=G(E,t,v*1.1,dec*k); const dst=sat?SH(E,o):o; if(lp){ chain(os,g,F(E,'lowpass',lp),dst); } else chain(os,g,dst);
+function kickG(E,o,t,v,p,k,f0,f1,dec,click,sat,lp){ const os=O(E,'sine',f0*semi(p),t,dec*k+.1); os.frequency.exponentialRampToValueAtTime(f1*semi(p),t+(NEU()?.12:.09));
+  if(NEU()){ const sub=O(E,'sine',f1*1.35*semi(p),t,dec*k*1.25+.1); sub.frequency.exponentialRampToValueAtTime(f1*semi(p),t+.06); // Sub-Schicht = Körper
+    const sg=E.ctx.createGain(); sg.gain.setValueAtTime(.0001,t); sg.gain.linearRampToValueAtTime(v*.5,t+.006); sg.gain.exponentialRampToValueAtTime(.0001,t+dec*k*1.25);
+    chain(sub,sg,lp?F(E,'lowpass',Math.max(lp,180)):F(E,'lowpass',180),o); }
+  const g=G(E,t,v*1.1*(NEU()?.78:1),dec*k); /* Neu: Platz für die Sub-Schicht */ const dst=sat?SH(E,o):o; if(lp){ chain(os,g,F(E,'lowpass',lp),dst); } else chain(os,g,dst);
   if(click){ chain(N(E,t,.02),F(E,'highpass',3500),G(E,t,v*click,.012),o); } }
 function snareG(E,o,t,v,p,k,tone,tdec,hp,ndec,nv,lp){ const os=O(E,'triangle',tone*semi(p),t,.3); os.frequency.exponentialRampToValueAtTime(tone*.73*semi(p),t+.06); chain(os,G(E,t,v*.5,tdec*k),o);
   const n=N(E,t,ndec*k+.05); const last=lp?chain(n,F(E,'highpass',hp*semi(p)),F(E,'lowpass',lp)):chain(n,F(E,'highpass',hp*semi(p))); chain(last,G(E,t,v*nv,ndec*k),o); }
 function hatG(E,o,t,v,p,k,hp,dur,vv,lp,isOpen){ if(E.openG){ try{ E.openG.gain.cancelScheduledValues(t); E.openG.gain.setTargetAtTime(.0001,t,.008);}catch(e){} E.openG=null; }
+  if(NEU()){ // metallische Teiltöne (wie 808/909) + leises, gefiltertes Rauschen, keine 10-kHz-Spitze
+    const g=G(E,t,v*vv*1.3,dur*k), bp=F(E,'bandpass',9500*semi(p),.9), hi=F(E,'highpass',hp*semi(p)), top=F(E,'lowpass',lp||12500), mg=E.ctx.createGain(); mg.gain.value=.55;
+    for(const r of [205.3,304.4,369.6,522.7,540,800]) chain(O(E,'square',r*1.7*semi(p),t,dur*k+.05),bp);
+    chain(bp,mg,hi); const ng=E.ctx.createGain(); ng.gain.value=.5; chain(N(E,t,dur*k),F(E,'highpass',hp*1.1*semi(p)),ng,hi);
+    chain(hi,top,g,o); if(isOpen) E.openG=g; return; }
   const f2=F(E,'peaking',10000*semi(p),1); f2.gain.value=6; let n=chain(N(E,t,dur*k),F(E,'highpass',hp*semi(p)),f2); if(lp) n=chain(n,F(E,'lowpass',lp)); const g=G(E,t,v*vv,dur*k); chain(n,g,o); if(isOpen) E.openG=g; }
 function metal(E,o,t,v,p,dur,bp){ const g=G(E,t,v,dur), f=F(E,'bandpass',bp*semi(p),.8), h=F(E,'highpass',5000); for(const r of [205.3,304.4,369.6,522.7,540,800]){ chain(O(E,'square',r*1.7*semi(p),t,dur),f); } chain(f,h,g,o); }
 function tomG(E,o,t,v,p,k,f0,f1,dec){ const os=O(E,'sine',f0*semi(p),t,dec*k+.1); os.frequency.exponentialRampToValueAtTime(f1*semi(p),t+dec*.7); chain(os,G(E,t,v*.85,dec*k),o); chain(N(E,t,.02),F(E,'bandpass',2500),G(E,t,v*.12,.015),o); }
@@ -1086,6 +1114,10 @@ function renderMixer(){ const area=$('mixer'); area.innerHTML=''; const so=anySo
     const s=document.createElement('button'); s.className='ms s'; s.textContent='S'; s.setAttribute('aria-pressed',!!p.solo); s.setAttribute('aria-label',tr.n+' solo'); s.onclick=()=>{ p.solo=!p.solo; save(); renderMixer(); };
     const m=document.createElement('button'); m.className='ms m'; m.textContent='M'; m.setAttribute('aria-pressed',!!p.mute); m.setAttribute('aria-label',tr.n+' stumm'); m.onclick=()=>{ p.mute=!p.mute; save(); renderMixer(); renderMatrix(); };
     row.append(nm,fader,s,m); area.append(row); } }
+function renderSound(){ for(const [id,v] of [['soundAlt','alt'],['soundNeu','neu']]){ const b=$(id); b.className='btn '+(soundV===v?'grad':'ghost'); b.setAttribute('aria-pressed',soundV===v); } }
+function setSound(v){ if(v===soundV) return; const was=playing; if(was) stop(); soundV=v; store.set('beatlab.sound',v);
+  if(ac){ try{ ac.close(); }catch(e){} ac=null; live=null; } renderSound(); msg(v==='neu'?'Klang: Neu (sanfterer Kompressor, neue Hi-Hats, Kick mit Sub, wärmerer Raum).':'Klang: Alt (bisherige Engine).'); }
+$('soundAlt').onclick=()=>setSound('alt'); $('soundNeu').onclick=()=>setSound('neu'); renderSound();
 $('master').oninput=e=>{ P.master=+e.target.value; $('oMaster').textContent=P.master; if(live) live.out.gain.value=masterGain(); save(); };
 
 /* ---------- own samples (IndexedDB) ---------- */

@@ -46,6 +46,14 @@ test('Audio export and project support are present', () => {
 });
 
 
+test('Klang-Engine A/B: Schalter und beide Varianten vorhanden', () => {
+  for (const id of ['soundAlt', 'soundNeu']) assert.ok(html.includes(`id="${id}"`), 'Missing sound toggle: ' + id);
+  assert.match(html, /store\.get\('beatlab\.sound'/, 'Sound setting is not persisted per device');
+  assert.match(html, /function makeRoomIR\(/, 'New room impulse missing');
+  assert.match(html, /if\(NEU\(\)\)\{ \/\/ metallische/, 'New hi-hat path missing');
+  assert.match(html, /comp\.threshold\.value=-14; comp\.ratio\.value=4; comp\.attack\.value=\.003/, 'Old engine settings must stay available for A/B');
+});
+
 const instrumentEngine = readFileSync(new URL('../instrument-engine.js', import.meta.url), 'utf8');
 test('Procedural instrument engine parses and is loaded by Beatlab', () => {
   new Function(instrumentEngine);
