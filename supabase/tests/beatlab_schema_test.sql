@@ -7,7 +7,7 @@
 
 insert into auth.users values (:'peter'), (:'fremd');
 
--- Kleine Hilfe: erwartet, dass ein Befehl mit Fehler scheitert
+-- Hilfe: erwartet, dass ein Befehl abgelehnt wird
 create or replace function pg_temp.muss_scheitern(sql text, was text) returns void language plpgsql as $$
 begin
   begin
@@ -20,89 +20,116 @@ begin
 end $$;
 grant execute on function pg_temp.muss_scheitern(text, text) to anon, authenticated;
 
+create temp table t (name text primary key, val text);
+grant all on t to anon, authenticated;
+
 -- ===================== Peter legt ein Projekt an =====================
 set role authenticated;
 select set_config('request.jwt.claim.sub', :'peter', false);
 
-insert into public.beatlab_projects (id, title, bpm, music_key, scale, style, state)
-values ('aaaaaaaa-0000-0000-0000-000000000001', 'Erster Beat', 90, 9, 'minor', 'Boom Bap',
-        '{"bpm":90,"pats":[],"score":{"format":"PS-Beatlap-Score-1","tracks":[{"name":"Klavier","notes":[]}]}}');
+-- Direktes Anlegen (mit manipulierter Revision) ist gesperrt
+select pg_temp.muss_scheitern($$insert into public.beatlab_projects (title, state, revision) values ('Trick', '{}', 999)$$,
+  'Projekt direkt anlegen mit Revision 999');
+
+insert into t
+select 'projekt', project_id::text from public.beatlab_create_project(
+  'Erster Beat',
+  '{"bpm":90,"pats":[],"sampleNames":{"kick":"privat_aufnahme.wav"},"score":{"format":"PS-Beatlap-Score-1","tracks":[{"name":"Klavier","notes":[]}]}}',
+  '[{"kind":"intro","name":"Intro","bars":4,"energy":2},
+    {"kind":"verse","name":"Strophe","bars":8,"energy":4},
+    {"kind":"chorus","name":"Refrain","bars":8,"energy":8}]',
+  p_bpm => 90::smallint, p_music_key => 9::smallint, p_scale => 'minor', p_style => 'Boom Bap', p_saved_from => 'Samsung');
 
 do $$ begin
-  assert (select owner_id from public.beatlab_projects) = auth.uid(), 'owner_id automatisch gesetzt';
-  assert (select revision from public.beatlab_projects) = 1, 'Start-Revision 1';
-  raise notice 'OK: Projekt angelegt, Eigentümer automatisch Peter';
+  assert (select owner_id from public.beatlab_projects) = auth.uid(), 'Eigentümer Peter';
+  assert (select revision from public.beatlab_projects) = 1, 'Start-Revision immer 1';
+  assert (select string_agg(name, ',' order by position) from public.beatlab_song_sections) = 'Intro,Strophe,Refrain', 'Songplan angelegt';
+  assert (select count(*) from public.beatlab_project_versions) = 1, 'erste Version sofort angelegt';
+  raise notice 'OK: Projekt über Funktion angelegt (Revision 1, Songplan, erste Version)';
 end $$;
 
--- ===================== Songplan-Blöcke =====================
-insert into public.beatlab_song_sections (project_id, position, kind, name, bars, energy) values
-  ('aaaaaaaa-0000-0000-0000-000000000001', 0, 'intro',  'Intro',   4, 2),
-  ('aaaaaaaa-0000-0000-0000-000000000001', 1, 'verse',  'Strophe', 8, 4),
-  ('aaaaaaaa-0000-0000-0000-000000000001', 2, 'chorus', 'Refrain', 8, 8);
+select pg_temp.muss_scheitern($$select public.beatlab_create_project('x', '[]'::jsonb)$$, 'Zustand ist kein Objekt');
+select pg_temp.muss_scheitern($$select public.beatlab_create_project('x', '{"score":{"format":"fremd"}}'::jsonb)$$, 'falsches Notensong-Format');
+select pg_temp.muss_scheitern($$select public.beatlab_create_project('x', jsonb_build_object('blob', repeat('x', 2100000)))$$, 'Zustand über 2 MB');
 
--- Umsortieren in einer Transaktion (Positionen tauschen) muss klappen
-begin;
-update public.beatlab_song_sections set position = 1 where name = 'Refrain';
-update public.beatlab_song_sections set position = 2 where name = 'Strophe';
-commit;
+-- ===================== Songplan und Versionen nur lesbar =====================
+select pg_temp.muss_scheitern($$update public.beatlab_song_sections set energy = 10$$, 'Songplan direkt ändern');
+select pg_temp.muss_scheitern($$delete from public.beatlab_song_sections$$, 'Songplan direkt löschen');
+select pg_temp.muss_scheitern(format($$insert into public.beatlab_song_sections (project_id, position, name) values (%L, 9, 'x')$$,
+  (select val from t where name = 'projekt')), 'Songplan-Block direkt einfügen');
+select pg_temp.muss_scheitern($$update public.beatlab_project_versions set label = 'geschummelt'$$, 'Version ändern');
+select pg_temp.muss_scheitern($$delete from public.beatlab_project_versions$$, 'Version löschen');
+select pg_temp.muss_scheitern(format($$insert into public.beatlab_project_versions (project_id, revision, state) values (%L, 1, '{}')$$,
+  (select val from t where name = 'projekt')), 'Version direkt einfügen');
 
-do $$ begin
-  assert (select string_agg(name, ',' order by position) from public.beatlab_song_sections) = 'Intro,Refrain,Strophe',
-    'Blöcke umsortiert';
-  raise notice 'OK: Songplan-Blöcke angelegt und umsortiert';
-end $$;
-
-select pg_temp.muss_scheitern($$insert into public.beatlab_song_sections (project_id, position, name, energy)
-  values ('aaaaaaaa-0000-0000-0000-000000000001', 5, 'Zu laut', 11)$$, 'Energie über 10');
-
--- ===================== Motiv =====================
-insert into public.beatlab_motifs (id, project_id, name, music_key, scale, length_beats, notes, favorite)
-values ('cccccccc-0000-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000001', 'Hook-Melodie', 9, 'minor', 8,
-        '[{"pitch":"A4","start":0,"duration":1,"velocity":0.8},{"pitch":"C5","start":1,"duration":1,"velocity":0.8}]', true);
-update public.beatlab_song_sections set motif_id = 'cccccccc-0000-0000-0000-000000000001' where kind = 'chorus';
-do $$ begin raise notice 'OK: Motiv gespeichert und an Refrain angeheftet'; end $$;
-
--- ===================== Autosave mit Revision =====================
-do $$
-declare r int;
-begin
-  r := public.beatlab_save_project('aaaaaaaa-0000-0000-0000-000000000001', 1, '{"bpm":92}'::jsonb, p_bpm => 92::smallint, p_saved_from => 'Samsung');
-  assert r = 2, 'Revision 2 nach erstem Speichern';
-  assert (select count(*) from public.beatlab_project_versions) = 1, 'erste automatische Version angelegt';
-  assert (select jsonb_array_length(sections) from public.beatlab_project_versions) = 3, 'Songplan in Version enthalten';
-
-  r := public.beatlab_save_project('aaaaaaaa-0000-0000-0000-000000000001', 2, '{"bpm":93}'::jsonb);
-  assert r = 3, 'Revision 3';
-  assert (select count(*) from public.beatlab_project_versions) = 1, 'innerhalb 10 Min. keine neue Auto-Version';
-
-  r := public.beatlab_save_project('aaaaaaaa-0000-0000-0000-000000000001', 3, '{"bpm":94}'::jsonb, p_snapshot_label => 'Refrain fertig');
-  assert (select count(*) from public.beatlab_project_versions where not is_auto and label = 'Refrain fertig') = 1, 'gemerkte Version';
-  assert (select bpm from public.beatlab_projects) = 92, 'BPM-Spalte aus erstem Speichern';
-  raise notice 'OK: Autosave zählt Revision hoch und legt Versionen an';
-end $$;
-
--- Veralteter Stand von einem zweiten Gerät darf NICHT überschreiben
-select pg_temp.muss_scheitern($$select public.beatlab_save_project('aaaaaaaa-0000-0000-0000-000000000001', 2, '{"alt":true}'::jsonb)$$,
-  'Speichern mit veralteter Revision (Konflikt)');
-
--- Zustand und Revision nicht direkt änderbar, nur über save_project
-select pg_temp.muss_scheitern($$update public.beatlab_projects set state = '{}'::jsonb$$, 'direktes Ändern von state');
-select pg_temp.muss_scheitern($$update public.beatlab_projects set revision = 99$$, 'direktes Ändern von revision');
+-- Zustand, Revision, Eigentümer nicht direkt änderbar; Titel schon
+select pg_temp.muss_scheitern($$update public.beatlab_projects set state = '{}'::jsonb$$, 'state direkt ändern');
+select pg_temp.muss_scheitern($$update public.beatlab_projects set revision = 99$$, 'revision direkt ändern');
 select pg_temp.muss_scheitern($$update public.beatlab_projects set owner_id = gen_random_uuid()$$, 'Eigentümer ändern');
 update public.beatlab_projects set title = 'Erster Beat (neu)';
 do $$ begin raise notice 'OK: Titel direkt änderbar'; end $$;
 
--- Versionen sind unveränderlich
-select pg_temp.muss_scheitern($$update public.beatlab_project_versions set label = 'geschummelt'$$, 'Version nachträglich ändern');
+-- ===================== Motiv =====================
+insert into public.beatlab_motifs (id, project_id, name, music_key, scale, length_beats, notes, favorite)
+select 'cccccccc-0000-0000-0000-000000000001', val::uuid, 'Hook-Melodie', 9, 'minor', 8,
+       '[{"pitch":"A4","start":0,"duration":1,"velocity":0.8},{"pitch":"C5","start":1,"duration":1,"velocity":0.8}]', true
+  from t where name = 'projekt';
+
+-- ===================== Autosave: Zustand + Songplan atomar =====================
+do $$
+declare r int; p uuid := (select val::uuid from t where name = 'projekt');
+begin
+  -- Refrain nach vorn, Motiv anheften – in einem Schritt mit dem Zustand
+  r := public.beatlab_save_project(p, 1, '{"bpm":92}'::jsonb,
+         '[{"kind":"intro","name":"Intro","bars":4,"energy":2},
+           {"kind":"chorus","name":"Refrain","bars":8,"energy":9,"motif_id":"cccccccc-0000-0000-0000-000000000001"},
+           {"kind":"verse","name":"Strophe","bars":8,"energy":4}]'::jsonb,
+         p_bpm => 92::smallint);
+  assert r = 2, 'Revision 2';
+  assert (select string_agg(name, ',' order by position) from public.beatlab_song_sections) = 'Intro,Refrain,Strophe', 'Songplan umsortiert';
+  assert (select motif_id from public.beatlab_song_sections where kind = 'chorus') = 'cccccccc-0000-0000-0000-000000000001', 'Motiv angeheftet';
+
+  -- Ohne Songplan speichern lässt Songplan unverändert
+  r := public.beatlab_save_project(p, 2, '{"bpm":93}'::jsonb);
+  assert r = 3 and (select count(*) from public.beatlab_song_sections) = 3, 'Songplan bleibt bei null';
+  assert (select count(*) from public.beatlab_project_versions) = 1, 'innerhalb 10 Min. keine neue Auto-Version';
+
+  r := public.beatlab_save_project(p, 3, '{"bpm":94}'::jsonb, p_snapshot_label => 'Refrain fertig');
+  assert (select count(*) from public.beatlab_project_versions where not is_auto and label = 'Refrain fertig') = 1, 'gemerkte Version';
+  assert (select sections->1->>'name' from public.beatlab_project_versions where label = 'Refrain fertig') = 'Refrain', 'Songplan steckt in der Version';
+  raise notice 'OK: Autosave schreibt Zustand und Songplan gemeinsam, Versionen entstehen automatisch';
+end $$;
+
+-- Ungültiger Block → GAR NICHTS wird gespeichert (weder Zustand noch Songplan noch Revision)
+select pg_temp.muss_scheitern(format($$select public.beatlab_save_project(%L, 4, '{"bpm":150}'::jsonb,
+  '[{"name":"Laut","energy":11}]'::jsonb)$$, (select val from t where name = 'projekt')), 'Speichern mit ungültigem Block');
+do $$ begin
+  assert (select revision from public.beatlab_projects) = 4, 'Revision unverändert';
+  assert (select state->>'bpm' from public.beatlab_projects) = '94', 'Zustand unverändert';
+  assert (select count(*) from public.beatlab_song_sections) = 3, 'Songplan unverändert';
+  raise notice 'OK: Fehler beim Songplan → nichts gespeichert (atomar)';
+end $$;
+
+-- Zwei Geräte: Handy speichert Songplan, Tablet hat noch alten Stand → Konflikt, nichts überschrieben
+select public.beatlab_save_project((select val::uuid from t where name = 'projekt'), 4, '{"bpm":95}'::jsonb,
+  '[{"kind":"intro","name":"Intro (Handy)","energy":3}]'::jsonb, p_saved_from => 'Handy');
+select pg_temp.muss_scheitern(format($$select public.beatlab_save_project(%L, 4, '{"bpm":80}'::jsonb,
+  '[{"kind":"outro","name":"Outro (Tablet)"}]'::jsonb, p_saved_from => 'Tablet')$$, (select val from t where name = 'projekt')),
+  'Tablet speichert veralteten Songplan (Konflikt)');
+do $$ begin
+  assert (select string_agg(name, ',') from public.beatlab_song_sections) = 'Intro (Handy)', 'Songplan vom Handy bleibt';
+  raise notice 'OK: Konkurrierende Songplan-Änderung wird als Konflikt erkannt';
+end $$;
 
 -- ===================== Aufräumen alter Auto-Versionen =====================
 reset role;
 insert into public.beatlab_project_versions (project_id, owner_id, revision, is_auto, state, created_at)
-select 'aaaaaaaa-0000-0000-0000-000000000001', :'peter', g, true, '{}'::jsonb, now() - interval '2 days' + g * interval '1 minute'
-from generate_series(1, 60) g;
-update public.beatlab_project_versions set created_at = now() - interval '1 hour' where is_auto and revision = 2;
+select (select val::uuid from t where name = 'projekt'), :'peter', g, true, '{}'::jsonb,
+       now() - interval '2 days' + g * interval '1 minute'
+  from generate_series(1, 60) g;
+update public.beatlab_project_versions set created_at = now() - interval '3 days' where is_auto and revision = 1 and state <> '{}'::jsonb;
 set role authenticated;
-select public.beatlab_save_project('aaaaaaaa-0000-0000-0000-000000000001', 4, '{"bpm":95}'::jsonb);
+select public.beatlab_save_project((select val::uuid from t where name = 'projekt'), 5, '{"bpm":96}'::jsonb);
 do $$ begin
   assert (select count(*) from public.beatlab_project_versions where is_auto) = 50, 'max. 50 Auto-Versionen';
   assert (select count(*) from public.beatlab_project_versions where not is_auto) = 1, 'gemerkte Version bleibt';
@@ -110,37 +137,63 @@ do $$ begin
 end $$;
 
 -- ===================== Freigabe-Link =====================
+select pg_temp.muss_scheitern(format($$insert into public.beatlab_shares (version_id, token) values (%L, 'leicht-zu-raten')$$,
+  (select id from public.beatlab_project_versions where label = 'Refrain fertig')), 'eigenen (schwachen) Token setzen');
 insert into public.beatlab_shares (version_id)
 select id from public.beatlab_project_versions where label = 'Refrain fertig';
 
 -- ===================== Fremder Nutzer =====================
 select set_config('request.jwt.claim.sub', :'fremd', false);
 do $$ begin
-  assert (select count(*) from public.beatlab_projects) = 0, 'Fremder sieht keine Projekte';
-  assert (select count(*) from public.beatlab_project_versions) = 0, 'Fremder sieht keine Versionen';
-  assert (select count(*) from public.beatlab_shares) = 0, 'Fremder sieht keine Freigaben';
+  assert (select count(*) from public.beatlab_projects) = 0, 'sieht keine Projekte';
+  assert (select count(*) from public.beatlab_song_sections) = 0, 'sieht keine Blöcke';
+  assert (select count(*) from public.beatlab_project_versions) = 0, 'sieht keine Versionen';
+  assert (select count(*) from public.beatlab_motifs) = 0, 'sieht keine Motive';
+  assert (select count(*) from public.beatlab_shares) = 0, 'sieht keine Freigaben';
   raise notice 'OK: Fremder Nutzer sieht nichts von Peter';
 end $$;
-select pg_temp.muss_scheitern($$select public.beatlab_save_project('aaaaaaaa-0000-0000-0000-000000000001', 5, '{"gehackt":true}'::jsonb)$$,
-  'Fremder speichert in Peters Projekt');
-select pg_temp.muss_scheitern($$insert into public.beatlab_song_sections (project_id, position, name)
-  values ('aaaaaaaa-0000-0000-0000-000000000001', 9, 'Untergeschoben')$$, 'Fremder hängt Block an Peters Projekt');
-select pg_temp.muss_scheitern($$insert into public.beatlab_motifs (project_id, name, length_beats, notes)
-  values ('aaaaaaaa-0000-0000-0000-000000000001', 'x', 1, '[{"pitch":"C4"}]')$$, 'Fremder hängt Motiv an Peters Projekt');
+select pg_temp.muss_scheitern(format($$select public.beatlab_save_project(%L, 6, '{"gehackt":true}'::jsonb)$$,
+  (select val from t where name = 'projekt')), 'Fremder speichert in Peters Projekt');
+select pg_temp.muss_scheitern(format($$insert into public.beatlab_motifs (project_id, name, length_beats, notes) values (%L, 'x', 1, '[{"pitch":"C4"}]')$$,
+  (select val from t where name = 'projekt')), 'Fremder hängt Motiv an Peters Projekt');
+
+-- Fremder legt eigenes Projekt an und versucht, Peters Motiv anzuheften
+insert into t select 'fremdprojekt', project_id::text from public.beatlab_create_project('Fremd', '{}'::jsonb);
+select pg_temp.muss_scheitern(format($$select public.beatlab_save_project(%L, 1, '{}'::jsonb,
+  '[{"name":"Klau","motif_id":"cccccccc-0000-0000-0000-000000000001"}]'::jsonb)$$, (select val from t where name = 'fremdprojekt')),
+  'Fremder heftet Peters Motiv an');
+select pg_temp.muss_scheitern($$select public.beatlab_create_project('Fremd 2', '{}'::jsonb,
+  '[{"name":"Klau","motif_id":"cccccccc-0000-0000-0000-000000000001"}]'::jsonb)$$, 'Fremder heftet Peters Motiv beim Anlegen an');
+-- Interne Helfer sind auch für angemeldete Nutzer gesperrt (sonst Umgehung der Revision)
+select pg_temp.muss_scheitern(format($$select public.beatlab_write_sections(%L, auth.uid(), '[]')$$,
+  (select val from t where name = 'fremdprojekt')), 'angemeldet: internen Songplan-Helfer direkt aufrufen');
+select pg_temp.muss_scheitern(format($$select public.beatlab_snapshot(%L, auth.uid(), 1, '{}', 'x', true)$$,
+  (select val from t where name = 'fremdprojekt')), 'angemeldet: Version über internen Helfer erzeugen');
+-- Fremdes Motiv per Update auf Peters Projekt umhängen
+insert into public.beatlab_motifs (id, name, length_beats, notes) values ('dddddddd-0000-0000-0000-000000000001', 'Fremd-Motiv', 1, '[{"pitch":"C4"}]');
+select pg_temp.muss_scheitern(format($$update public.beatlab_motifs set project_id = %L where id = 'dddddddd-0000-0000-0000-000000000001'$$,
+  (select val from t where name = 'projekt')), 'Fremdes Motiv per Update an Peters Projekt hängen');
 
 -- ===================== Nicht angemeldet (anon) =====================
 reset role;
-create temp table share_token as select token from public.beatlab_shares;
-grant select on share_token to anon;
+insert into t select 'token', token from public.beatlab_shares;
 set role anon;
 select set_config('request.jwt.claim.sub', '', false);
 select pg_temp.muss_scheitern($$select * from public.beatlab_projects$$, 'anon liest Projekte');
-select pg_temp.muss_scheitern($$select public.beatlab_save_project('aaaaaaaa-0000-0000-0000-000000000001', 5, '{}'::jsonb)$$, 'anon speichert');
-do $$ begin
-  assert (select count(*) from public.beatlab_get_shared((select token from share_token))) = 1, 'gültiger Link liefert Beat';
-  assert (select title from public.beatlab_get_shared((select token from share_token))) = 'Erster Beat (neu)', 'Titel stimmt';
+select pg_temp.muss_scheitern($$select * from public.beatlab_project_versions$$, 'anon liest Versionen');
+select pg_temp.muss_scheitern($$select public.beatlab_create_project('x', '{}'::jsonb)$$, 'anon legt Projekt an');
+select pg_temp.muss_scheitern($$select public.beatlab_write_sections(gen_random_uuid(), gen_random_uuid(), '[]')$$, 'anon ruft internen Helfer');
+do $$
+declare r record;
+begin
+  select * into r from public.beatlab_get_shared((select val from t where name = 'token'));
+  assert r.title = 'Erster Beat (neu)', 'Titel stimmt';
+  assert r.player->>'bpm' = '94', 'Abspieldaten der gemerkten Version';
+  assert not (r.player ? 'sampleNames'), 'private Sample-Namen NICHT enthalten';
+  assert r.player::text not like '%privat_aufnahme%', 'kein privater Dateiname im Link';
+  assert jsonb_array_length(r.sections) = 3 and not (r.sections->0 ? 'motif_id'), 'Songplan ohne interne IDs';
   assert (select count(*) from public.beatlab_get_shared('falsch')) = 0, 'falscher Token liefert nichts';
-  raise notice 'OK: Geteilter Link funktioniert ohne Login, falscher Token liefert nichts';
+  raise notice 'OK: Geteilter Link liefert nur Abspieldaten, keine privaten Infos';
 end $$;
 
 -- Widerrufen → Link tot
@@ -150,7 +203,7 @@ select set_config('request.jwt.claim.sub', :'peter', false);
 update public.beatlab_shares set revoked = true;
 set role anon;
 do $$ begin
-  assert (select count(*) from public.beatlab_get_shared((select token from share_token))) = 0, 'widerrufener Link liefert nichts';
+  assert (select count(*) from public.beatlab_get_shared((select val from t where name = 'token'))) = 0, 'widerrufener Link liefert nichts';
   raise notice 'OK: Widerrufener Link funktioniert nicht mehr';
 end $$;
 
@@ -162,8 +215,9 @@ delete from public.beatlab_projects;
 do $$ begin
   assert (select count(*) from public.beatlab_song_sections) = 0, 'Blöcke mitgelöscht';
   assert (select count(*) from public.beatlab_project_versions) = 0, 'Versionen mitgelöscht';
-  assert (select count(*) from public.beatlab_motifs) = 1, 'Motiv bleibt in der Bibliothek erhalten';
-  assert (select project_id from public.beatlab_motifs) is null, 'Motiv-Herkunft auf null gesetzt';
+  assert (select count(*) from public.beatlab_shares) = 0, 'Freigaben mitgelöscht';
+  assert (select count(*) from public.beatlab_motifs) = 1, 'Motiv bleibt in der Bibliothek';
+  assert (select project_id from public.beatlab_motifs) is null, 'Motiv-Herkunft auf null';
   raise notice 'OK: Projekt löschen räumt auf, Motive bleiben in der Bibliothek';
 end $$;
 
