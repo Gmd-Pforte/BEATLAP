@@ -1,12 +1,13 @@
-const SHELL='ps-beatlab-shell-v2';
+const SHELL='ps-beatlab-shell-v3';
 const AUDIO='ps-beatlab-audio-v1';
-const SHELL_FILES=['./index.html','./instrument-engine.js','./samples/samples.json'];
+const REAL='ps-beatlab-real-v1'; // echte Instrumente: klein, fest, ohne Verdrängung
+const SHELL_FILES=['./index.html','./instrument-engine.js','./sampler.js','./samples/samples.json'];
 
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(SHELL).then(cache=>cache.addAll(SHELL_FILES)).then(()=>self.skipWaiting()));
 });
 self.addEventListener('activate',event=>{
-  event.waitUntil(Promise.all([caches.keys().then(keys=>Promise.all(keys.filter(k=>![SHELL,AUDIO].includes(k)).map(k=>caches.delete(k)))),self.clients.claim()]));
+  event.waitUntil(Promise.all([caches.keys().then(keys=>Promise.all(keys.filter(k=>![SHELL,AUDIO,REAL].includes(k)).map(k=>caches.delete(k)))),self.clients.claim()]));
 });
 self.addEventListener('fetch',event=>{
   const request=event.request;
@@ -22,6 +23,18 @@ self.addEventListener('fetch',event=>{
         if(response.ok)await cache.put('./index.html',response.clone());
         return response;
       }catch(e){return (await cache.match('./index.html'))||Response.error();}
+    })());
+    return;
+  }
+
+  if(url.pathname.includes('/samples/real/')){
+    event.respondWith((async()=>{
+      const cache=await caches.open(REAL);
+      const cached=await cache.match(request);
+      if(cached)return cached;
+      const response=await fetch(request);
+      if(response.ok)await cache.put(request,response.clone());
+      return response;
     })());
     return;
   }

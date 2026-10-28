@@ -1,0 +1,334 @@
+{
+ "format": "beatlab-sampler-1",
+ "id": "grandReal",
+ "name": "Flügel (echt)",
+ "source": "Salamander Grand Piano V3 (Yamaha C5), https://github.com/sfzinstruments/SalamanderGrandPiano",
+ "author": "Alexander Holm",
+ "license": "CC BY 3.0",
+ "licenseUrl": "https://creativecommons.org/licenses/by/3.0/",
+ "attribution": "Salamander Grand Piano V3 von Alexander Holm, CC BY 3.0 (bearbeitet: gekürzt, ausgeblendet, normalisiert, MP3)",
+ "changes": "3 von 16 Dynamikstufen (v4, v9, v14), 20 Grundtöne A1–F#6 in kleinen Terzen, auf 3,5 s gekürzt mit 1,2 s Ausblendung, gemeinsam normalisiert (-1 dBFS), 44,1 kHz Stereo, MP3 128 kbit/s, Stimmung je Grundton gemessen und auf gleichstufig korrigiert (tune in Cent)",
+ "gainDb": 0,
+ "release": 0.35,
+ "maxShift": 2,
+ "layers": [
+  {
+   "name": "p",
+   "velMax": 0.5,
+   "notes": [
+    {
+     "midi": 33,
+     "tune": 8,
+     "file": "A1-p.mp3"
+    },
+    {
+     "midi": 36,
+     "tune": 11,
+     "file": "C2-p.mp3"
+    },
+    {
+     "midi": 39,
+     "tune": 11,
+     "file": "Ds2-p.mp3"
+    },
+    {
+     "midi": 42,
+     "tune": 6,
+     "file": "Fs2-p.mp3"
+    },
+    {
+     "midi": 45,
+     "tune": 6,
+     "file": "A2-p.mp3"
+    },
+    {
+     "midi": 48,
+     "tune": 4,
+     "file": "C3-p.mp3"
+    },
+    {
+     "midi": 51,
+     "tune": 2,
+     "file": "Ds3-p.mp3"
+    },
+    {
+     "midi": 54,
+     "tune": 3,
+     "file": "Fs3-p.mp3"
+    },
+    {
+     "midi": 57,
+     "tune": -1,
+     "file": "A3-p.mp3"
+    },
+    {
+     "midi": 60,
+     "tune": 0,
+     "file": "C4-p.mp3"
+    },
+    {
+     "midi": 63,
+     "tune": -1,
+     "file": "Ds4-p.mp3"
+    },
+    {
+     "midi": 66,
+     "tune": 3,
+     "file": "Fs4-p.mp3"
+    },
+    {
+     "midi": 69,
+     "tune": 0,
+     "file": "A4-p.mp3"
+    },
+    {
+     "midi": 72,
+     "tune": -5,
+     "file": "C5-p.mp3"
+    },
+    {
+     "midi": 75,
+     "tune": -3,
+     "file": "Ds5-p.mp3"
+    },
+    {
+     "midi": 78,
+     "tune": -5,
+     "file": "Fs5-p.mp3"
+    },
+    {
+     "midi": 81,
+     "tune": -7,
+     "file": "A5-p.mp3"
+    },
+    {
+     "midi": 84,
+     "tune": -8,
+     "file": "C6-p.mp3"
+    },
+    {
+     "midi": 87,
+     "tune": -9,
+     "file": "Ds6-p.mp3"
+    },
+    {
+     "midi": 90,
+     "tune": -14,
+     "file": "Fs6-p.mp3"
+    }
+   ]
+  },
+  {
+   "name": "mf",
+   "velMax": 0.85,
+   "notes": [
+    {
+     "midi": 33,
+     "tune": 8,
+     "file": "A1-mf.mp3"
+    },
+    {
+     "midi": 36,
+     "tune": 11,
+     "file": "C2-mf.mp3"
+    },
+    {
+     "midi": 39,
+     "tune": 11,
+     "file": "Ds2-mf.mp3"
+    },
+    {
+     "midi": 42,
+     "tune": 6,
+     "file": "Fs2-mf.mp3"
+    },
+    {
+     "midi": 45,
+     "tune": 6,
+     "file": "A2-mf.mp3"
+    },
+    {
+     "midi": 48,
+     "tune": 4,
+     "file": "C3-mf.mp3"
+    },
+    {
+     "midi": 51,
+     "tune": 2,
+     "file": "Ds3-mf.mp3"
+    },
+    {
+     "midi": 54,
+     "tune": 3,
+     "file": "Fs3-mf.mp3"
+    },
+    {
+     "midi": 57,
+     "tune": -1,
+     "file": "A3-mf.mp3"
+    },
+    {
+     "midi": 60,
+     "tune": 0,
+     "file": "C4-mf.mp3"
+    },
+    {
+     "midi": 63,
+     "tune": -1,
+     "file": "Ds4-mf.mp3"
+    },
+    {
+     "midi": 66,
+     "tune": 3,
+     "file": "Fs4-mf.mp3"
+    },
+    {
+     "midi": 69,
+     "tune": 0,
+     "file": "A4-mf.mp3"
+    },
+    {
+     "midi": 72,
+     "tune": -5,
+     "file": "C5-mf.mp3"
+    },
+    {
+     "midi": 75,
+     "tune": -3,
+     "file": "Ds5-mf.mp3"
+    },
+    {
+     "midi": 78,
+     "tune": -5,
+     "file": "Fs5-mf.mp3"
+    },
+    {
+     "midi": 81,
+     "tune": -7,
+     "file": "A5-mf.mp3"
+    },
+    {
+     "midi": 84,
+     "tune": -8,
+     "file": "C6-mf.mp3"
+    },
+    {
+     "midi": 87,
+     "tune": -9,
+     "file": "Ds6-mf.mp3"
+    },
+    {
+     "midi": 90,
+     "tune": -14,
+     "file": "Fs6-mf.mp3"
+    }
+   ]
+  },
+  {
+   "name": "f",
+   "velMax": 99,
+   "notes": [
+    {
+     "midi": 33,
+     "tune": 8,
+     "file": "A1-f.mp3"
+    },
+    {
+     "midi": 36,
+     "tune": 11,
+     "file": "C2-f.mp3"
+    },
+    {
+     "midi": 39,
+     "tune": 11,
+     "file": "Ds2-f.mp3"
+    },
+    {
+     "midi": 42,
+     "tune": 6,
+     "file": "Fs2-f.mp3"
+    },
+    {
+     "midi": 45,
+     "tune": 6,
+     "file": "A2-f.mp3"
+    },
+    {
+     "midi": 48,
+     "tune": 4,
+     "file": "C3-f.mp3"
+    },
+    {
+     "midi": 51,
+     "tune": 2,
+     "file": "Ds3-f.mp3"
+    },
+    {
+     "midi": 54,
+     "tune": 3,
+     "file": "Fs3-f.mp3"
+    },
+    {
+     "midi": 57,
+     "tune": -1,
+     "file": "A3-f.mp3"
+    },
+    {
+     "midi": 60,
+     "tune": 0,
+     "file": "C4-f.mp3"
+    },
+    {
+     "midi": 63,
+     "tune": -1,
+     "file": "Ds4-f.mp3"
+    },
+    {
+     "midi": 66,
+     "tune": 3,
+     "file": "Fs4-f.mp3"
+    },
+    {
+     "midi": 69,
+     "tune": 0,
+     "file": "A4-f.mp3"
+    },
+    {
+     "midi": 72,
+     "tune": -5,
+     "file": "C5-f.mp3"
+    },
+    {
+     "midi": 75,
+     "tune": -3,
+     "file": "Ds5-f.mp3"
+    },
+    {
+     "midi": 78,
+     "tune": -5,
+     "file": "Fs5-f.mp3"
+    },
+    {
+     "midi": 81,
+     "tune": -7,
+     "file": "A5-f.mp3"
+    },
+    {
+     "midi": 84,
+     "tune": -8,
+     "file": "C6-f.mp3"
+    },
+    {
+     "midi": 87,
+     "tune": -9,
+     "file": "Ds6-f.mp3"
+    },
+    {
+     "midi": 90,
+     "tune": -14,
+     "file": "Fs6-f.mp3"
+    }
+   ]
+  }
+ ]
+}
