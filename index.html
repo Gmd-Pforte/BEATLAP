@@ -345,7 +345,15 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
         <button class="btn grad" type="submit" id="cloudAuthSubmit">Anmeldelink senden</button>
       </form>
       <button class="btn" id="cloudAuthLogout" type="button" hidden>Abmelden</button>
-      <p class="hint">Deine Beats bleiben auf diesem Gerät gespeichert. Die Cloud-Speicherung wird separat eingerichtet.</p>
+      <div class="sub" id="cloudProjects" hidden>
+        <label class="hint" for="cloudProjectTitle">Projektname</label>
+        <input id="cloudProjectTitle" maxlength="100" value="Mein Beat" style="min-height:44px;background:var(--s2);color:var(--ink);border:1px solid var(--line2);border-radius:12px;padding:0 12px">
+        <button class="btn grad" id="cloudSave" type="button">In Cloud speichern</button>
+        <button class="btn" id="cloudRefresh" type="button">Cloud-Projekte anzeigen</button>
+        <div id="cloudProjectList" class="sub"></div>
+        <p class="hint" id="cloudProjectStatus" role="status" aria-live="polite">Cloud-Projekte sind nur für dein Konto sichtbar. Eigene Samples werden mitgespeichert (bis 5 MB je Projekt).</p>
+      </div>
+      <p class="hint">Deine lokale Speicherung und der JSON-Export bleiben unverändert. Cloud-Projekte werden nur auf Knopfdruck geladen.</p>
     </section>
 
     <section class="card" id="scoreCard">
@@ -1155,6 +1163,11 @@ $('projectFile').onchange=async e=>{const file=e.target.files[0];if(!file)return
   cur=0;sel='kick';save();renderAll();scorePreview();exportLabel();await loadSampleLibrary();msg('Projekt geöffnet: '+file.name);
 }catch(err){msg('Projekt konnte nicht geöffnet werden. '+err.message+'.');}finally{e.target.value='';}};
 
+window.BeatlabCloudBridge={
+  snapshot(){const embedded={};for(const [id,bytes] of Object.entries(sampleBytes))embedded[id]=base64(bytes);return {format:'PS-Beatlab-2',project:JSON.parse(JSON.stringify(P)),samples:embedded};},
+  async open(data){const file=new File([JSON.stringify(data)],'Cloud-Projekt.json',{type:'application/json'});await $('projectFile').onchange({target:{files:[file],value:''}});}
+};
+
 /* ---------- PS Melody Composer: seeded, harmonically constrained generation ---------- */
 const GENRES={
  piano:{bpm:[60,78],groove:'ballad',density:.43,swing:3,lead:'piano',chord:'piano',bass:'sub',kick:'kickLofi',snare:'snareBrush'},
@@ -1408,9 +1421,56 @@ if(location.protocol==='https:'&&'serviceWorker' in navigator){
   const client=window.supabase.createClient('https://bmdhsvfppwtwsfokihzu.supabase.co',"sb_publishable_2_6EKNDycqJQK3T9fRNUqQ_w8i_x3A7",{
     auth:{detectSessionInUrl:true,persistSession:true,autoRefreshToken:true}
   });
+  const cloudPanel=document.getElementById('cloudProjects');
+  const cloudTitle=document.getElementById('cloudProjectTitle');
+  const cloudSave=document.getElementById('cloudSave');
+  const cloudRefresh=document.getElementById('cloudRefresh');
+  const cloudList=document.getElementById('cloudProjectList');
+  const cloudStatus=document.getElementById('cloudProjectStatus');
+  let activeCloudId=null;
+  async function signedUser(){const {data,error}=await client.auth.getUser();if(error)throw error;if(!data.user)throw Error('Bitte melde dich zuerst an.');return data.user;}
+  function cloudMessage(value){cloudStatus.textContent=value;}
+  async function refreshProjects(){
+    const user=await signedUser();cloudList.replaceChildren();cloudMessage('Cloud-Projekte werden geladen …');
+    const {data,error}=await client.from('beatlab_projects').select('id,title,updated_at').eq('owner_id',user.id).eq('archived',false).order('updated_at',{ascending:false}).limit(50);
+    if(error)throw error;
+    if(!data.length){cloudMessage('Noch keine Cloud-Projekte gespeichert.');return;}
+    for(const item of data){
+      const btn=document.createElement('button');btn.type='button';btn.className='btn';btn.textContent=item.title+' · '+new Date(item.updated_at).toLocaleDateString('de-DE');
+      btn.addEventListener('click',async()=>{
+        if(!confirm('Cloud-Projekt „'+item.title+'“ öffnen? Der aktuelle Beat im Editor wird ersetzt.'))return;
+        btn.disabled=true;
+        try{
+          const {data:row,error:e}=await client.from('beatlab_projects').select('state').eq('id',item.id).eq('owner_id',user.id).single();
+          if(e)throw e;
+          if(row.state?.format!=='PS-Beatlab-2')throw Error('Unbekanntes Projektformat.');
+          await window.BeatlabCloudBridge.open(row.state);
+          activeCloudId=item.id;cloudTitle.value=item.title;cloudMessage('Cloud-Projekt geladen: '+item.title);
+        }catch(e){cloudMessage('Laden fehlgeschlagen: '+e.message);}
+        finally{btn.disabled=false;}
+      });cloudList.append(btn);
+    }
+    cloudMessage(data.length+' Cloud-Projekt(e) gefunden.');
+  }
+  cloudRefresh.addEventListener('click',async()=>{cloudRefresh.disabled=true;try{await refreshProjects();}catch(e){cloudMessage('Abruf fehlgeschlagen: '+e.message);}finally{cloudRefresh.disabled=false;}});
+  cloudSave.addEventListener('click',async()=>{
+    cloudSave.disabled=true;
+    try{
+      const user=await signedUser();const title=cloudTitle.value.trim();
+      if(!title)throw Error('Bitte einen Projektnamen eingeben.');
+      const state=window.BeatlabCloudBridge.snapshot();
+      if(new Blob([JSON.stringify(state)]).size>5*1024*1024)throw Error('Projekt ist über 5 MB. Bitte als JSON-Datei speichern.');
+      const row={owner_id:user.id,title,bpm:state.project.bpm,music_key:state.project.key,scale:state.project.scale,state,state_format:'PS-Beatlab-2',saved_from:'beatlab-web',updated_at:new Date().toISOString()};
+      if(activeCloudId)row.id=activeCloudId;
+      const {data,error}=await client.from('beatlab_projects').upsert(row).select('id').single();
+      if(error)throw error;
+      activeCloudId=data.id;cloudMessage('In deinem Konto gespeichert: '+title);await refreshProjects();
+    }catch(e){cloudMessage('Cloud-Speichern fehlgeschlagen: '+e.message);}
+    finally{cloudSave.disabled=false;}
+  });
   function show(session){
     const signedIn=!!session?.user;
-    form.hidden=signedIn;logout.hidden=!signedIn;
+    form.hidden=signedIn;logout.hidden=!signedIn;cloudPanel.hidden=!signedIn;
     status.textContent=signedIn?'Angemeldet: '+(session.user.email||'Beatlab-Konto'):'Nicht angemeldet – du kannst deine Beats weiterhin lokal nutzen.';
   }
   client.auth.getSession().then(({data,error})=>{
