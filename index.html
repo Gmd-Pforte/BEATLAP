@@ -545,9 +545,9 @@ function clearLens(pi,id,s){ if(id==='bass'){ if(P.bassLengths[pi]) delete P.bas
 /* ---------- audio engine ---------- */
 let ac=null, live=null;
 const semi=x=>Math.pow(2,x/12);
-/* Klang-Engine: 'neu' (Standard) oder 'alt' für den A/B-Vergleich. Gilt für Wiedergabe und WAV-Export,
+/* Klang-Engine: 'alt' (Standard beim ersten Start) oder 'neu' für den A/B-Vergleich. Gilt für Wiedergabe und WAV-Export,
    wird pro Gerät gespeichert und ändert keine Projektdaten. */
-let soundV=store.get('beatlab.sound','neu')==='alt'?'alt':'neu';
+let soundV=store.get('beatlab.sound','alt')==='neu'?'neu':'alt'; // Erststart: bisheriger Klang, bis Peter bewusst „Neu“ wählt
 const NEU=()=>soundV==='neu';
 function makeEngine(ctx){
   const comp=ctx.createDynamicsCompressor();
@@ -585,9 +585,9 @@ function chain(...n){ for(let i=0;i<n.length-1;i++) n[i].connect(n[i+1]); return
 /* drum generators: (E, out, t, vol, pitchSemis, decayMul) */
 function kickG(E,o,t,v,p,k,f0,f1,dec,click,sat,lp){ const os=O(E,'sine',f0*semi(p),t,dec*k+.1); os.frequency.exponentialRampToValueAtTime(f1*semi(p),t+(NEU()?.12:.09));
   if(NEU()){ const sub=O(E,'sine',f1*1.35*semi(p),t,dec*k*1.25+.1); sub.frequency.exponentialRampToValueAtTime(f1*semi(p),t+.06); // Sub-Schicht = Körper
-    const sg=E.ctx.createGain(); sg.gain.setValueAtTime(.0001,t); sg.gain.linearRampToValueAtTime(v*.85,t+.006); sg.gain.exponentialRampToValueAtTime(.0001,t+dec*k*1.25);
+    const sg=E.ctx.createGain(); sg.gain.setValueAtTime(.0001,t); sg.gain.linearRampToValueAtTime(v*.5,t+.006); sg.gain.exponentialRampToValueAtTime(.0001,t+dec*k*1.25);
     chain(sub,sg,lp?F(E,'lowpass',Math.max(lp,180)):F(E,'lowpass',180),o); }
-  const g=G(E,t,v*1.1,dec*k); const dst=sat?SH(E,o):o; if(lp){ chain(os,g,F(E,'lowpass',lp),dst); } else chain(os,g,dst);
+  const g=G(E,t,v*1.1*(NEU()?.78:1),dec*k); /* Neu: Platz für die Sub-Schicht */ const dst=sat?SH(E,o):o; if(lp){ chain(os,g,F(E,'lowpass',lp),dst); } else chain(os,g,dst);
   if(click){ chain(N(E,t,.02),F(E,'highpass',3500),G(E,t,v*click,.012),o); } }
 function snareG(E,o,t,v,p,k,tone,tdec,hp,ndec,nv,lp){ const os=O(E,'triangle',tone*semi(p),t,.3); os.frequency.exponentialRampToValueAtTime(tone*.73*semi(p),t+.06); chain(os,G(E,t,v*.5,tdec*k),o);
   const n=N(E,t,ndec*k+.05); const last=lp?chain(n,F(E,'highpass',hp*semi(p)),F(E,'lowpass',lp)):chain(n,F(E,'highpass',hp*semi(p))); chain(last,G(E,t,v*nv,ndec*k),o); }
