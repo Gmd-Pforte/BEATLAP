@@ -902,7 +902,7 @@ async function renderScoreWav(onlyTrack=-1,onProgress){
   const secPerBeat=60/P.bpm,sr=44100,duration=P.score.lengthBeats*secPerBeat+2.5;
   const oc=new OC(2,Math.ceil(duration*sr),sr),E=makeEngine(oc);
   for(const ev of scoreEvents(P.score,onlyTrack))playScoreNote(E,ev.track,ev.note,.02+ev.note.start*secPerBeat,secPerBeat);
-  return wav(await renderOfflineWithProgress(oc,onProgress));
+  return encodeRenderedWav(oc,onProgress);
 }
 
 /* ---------- sequencer ---------- */
@@ -1344,6 +1344,7 @@ $('ideaUndo').onclick=()=>{if(!composerUndo)return;if(playing)stop();P=composerU
 
 /* ---------- WAV export ---------- */
 function msg(t){ const el=$('msg'); el.textContent=t; el.hidden=false; clearTimeout(msg._t); msg._t=setTimeout(()=>el.hidden=true,4200); }
+let renderStartedAt=0,renderClock=null;
 function showRenderProgress(phase,percent,detail='Bitte Beatlap geöffnet lassen.'){
   const area=$('renderProgress'),meter=$('renderMeter');area.hidden=false;
   $('renderPhase').textContent=phase;$('renderDetail').textContent=detail;
@@ -1351,42 +1352,47 @@ function showRenderProgress(phase,percent,detail='Bitte Beatlap geöffnet lassen
     const value=Math.max(0,Math.min(100,Math.floor(percent)));
     meter.value=value;$('renderPercent').textContent=value+' %';
   }else{
-    meter.removeAttribute('value');$('renderPercent').textContent='läuft …';
+    meter.removeAttribute('value');$('renderPercent').textContent='wird berechnet …';
   }
 }
-async function renderOfflineWithProgress(oc,onProgress){
-  // OfflineAudioContext has no native progress event. Its suspend checkpoints
-  // report real rendered positions where supported; otherwise use indeterminate UI.
-  if(typeof onProgress!=='function')return oc.startRendering();
-  const seconds=oc.length/oc.sampleRate;
-  if(typeof oc.suspend!=='function'||typeof oc.resume!=='function'||seconds<.2){
-    onProgress(null);return oc.startRendering();
-  }
-  let checkpoint;
-  try{checkpoint=oc.suspend(seconds/10);}catch(e){onProgress(null);return oc.startRendering();}
-  const rendering=oc.startRendering();
-  for(let i=1;i<=9;i++){
-    try{
-      await checkpoint;
-      onProgress(i/10);
-      if(i<9)checkpoint=oc.suspend(seconds*(i+1)/10);
-      await oc.resume();
-      // Hand control back to the UI so its progress bar can repaint.
-      await new Promise(resolve=>setTimeout(resolve,0));
-    }catch(e){
-      // Some browsers implement suspend inconsistently. Do not claim a fake %.
-      onProgress(null);
-      if(oc.state==='suspended')await oc.resume();
-      break;
-    }
-  }
-  return rendering;
+function startRenderClock(){
+  renderStartedAt=Date.now();clearInterval(renderClock);
+  renderClock=setInterval(()=>{
+    if(!exporting)return;
+    const seconds=Math.floor((Date.now()-renderStartedAt)/1000);
+    const time=`${Math.floor(seconds/60)}:${String(seconds%60).padStart(2,'0')}`;
+    $('renderDetail').textContent=`Verstrichene Zeit: ${time} · Bitte Beatlap geöffnet lassen.`;
+  },1000);
+}
+async function encodeRenderedWav(oc,onProgress){
+  // Web Audio exposes no reliable rendering percentage. Avoid suspend/resume:
+  // on some Android WebViews these checkpoints can stall offline rendering.
+  if(onProgress)onProgress(null);
+  const buffer=await oc.startRendering();
+  if(onProgress)onProgress(.9);
+  return wavAsync(buffer,p=>onProgress?.(.9+p*.09));
 }
 function wav(buf){ const ch=buf.numberOfChannels, len=buf.length, out=new DataView(new ArrayBuffer(44+len*ch*2)); let o=0;
   const str=s=>{ for(const c of s) out.setUint8(o++,c.charCodeAt(0)); }, u32=v=>{ out.setUint32(o,v,true); o+=4; }, u16=v=>{ out.setUint16(o,v,true); o+=2; };
   str('RIFF'); u32(36+len*ch*2); str('WAVE'); str('fmt '); u32(16); u16(1); u16(ch); u32(buf.sampleRate); u32(buf.sampleRate*ch*2); u16(ch*2); u16(16); str('data'); u32(len*ch*2);
   const data=[...Array(ch)].map((_,i)=>buf.getChannelData(i)); for(let i=0;i<len;i++) for(let c=0;c<ch;c++){ const v=Math.max(-1,Math.min(1,data[c][i])); out.setInt16(o,v<0?v*32768:v*32767,true); o+=2; }
   return new Uint8Array(out.buffer); }
+async function wavAsync(buf,onProgress){
+  const ch=buf.numberOfChannels,len=buf.length,out=new DataView(new ArrayBuffer(44+len*ch*2));let o=0;
+  const str=s=>{for(const c of s)out.setUint8(o++,c.charCodeAt(0));};
+  const u32=v=>{out.setUint32(o,v,true);o+=4;},u16=v=>{out.setUint16(o,v,true);o+=2;};
+  str('RIFF');u32(36+len*ch*2);str('WAVE');str('fmt ');u32(16);u16(1);u16(ch);
+  u32(buf.sampleRate);u32(buf.sampleRate*ch*2);u16(ch*2);u16(16);str('data');u32(len*ch*2);
+  const data=[...Array(ch)].map((_,i)=>buf.getChannelData(i));
+  for(let start=0;start<len;start+=32768){
+    for(let i=start;i<Math.min(len,start+32768);i++)for(let c=0;c<ch;c++){
+      const v=Math.max(-1,Math.min(1,data[c][i]));out.setInt16(o,v<0?v*32768:v*32767,true);o+=2;
+    }
+    onProgress?.(Math.min(1,(start+32768)/len));
+    await new Promise(resolve=>setTimeout(resolve,0));
+  }
+  return new Uint8Array(out.buffer);
+}
 function exportOrder(){ if(P.songMode) return songOrder();
   const bars=+$('barsSel').value, order=[]; if(P.chain){ const u=[0,1,2,3].filter(used), list=u.length?u:[cur]; for(let i=0;i<bars;i++) order.push(list[i%list.length]); } else for(let i=0;i<bars;i++) order.push(cur);
   return order; }
@@ -1398,7 +1404,7 @@ async function renderWav(order,onlyTrack,onProgress){
   stemMode=!!onlyTrack;
   try{ order.forEach((pi,b)=>{ const p=P.pats[pi]; for(let s=0;s<16;s++){ const t=.02+(b*16+s)*sd+((s%2)?(P.swing/100)*sd*.5:0); for(const tr of TR){ if(onlyTrack&&tr.id!==onlyTrack) continue; const v=p[tr.id][s]; if(v) play(E,tr.id,t,v,noteLength(pi,s,v,tr.id)); } } }); }
   finally{ stemMode=false; }
-  return wav(await renderOfflineWithProgress(oc,onProgress)); }
+  return encodeRenderedWav(oc,onProgress); }
 let exporting=false;
 function exportLabel(){ if(P.scoreActive&&P.score){$('barsRow').hidden=true;$('exportScope').textContent=`Notensong: ${P.score.title} · ${P.score.lengthBeats/4} Takte · ${P.score.tracks.length} Spuren · ca. ${Math.round(P.score.lengthBeats*60/P.bpm)} s.`;$('exportNote').textContent='WAV-Mix oder einzelne Spuren als ZIP. Längere Songs benötigen beim Export mehr Zeit.';return;} const order=exportOrder(); $('barsRow').hidden=P.songMode;
   $('exportScope').textContent=P.songMode?`Song-Modus ist an: Exportiert wird der ganze Song (${order.length} Takte, ca. ${Math.round(order.length*16*stepDur())} s).`:(P.chain?`Kette ist an: Die benutzten Muster laufen nacheinander.`:`Exportiert wird Muster ${'ABCD'[cur]}.`);
@@ -1406,11 +1412,11 @@ function exportLabel(){ if(P.scoreActive&&P.score){$('barsRow').hidden=true;$('e
 async function exportAudio(stems){ if(exporting) return; const order=exportOrder(); if(!P.scoreActive&&(!order.length||!order.some(i=>used(i)))){ msg('Die Muster sind leer. Setz erst ein paar Töne.'); return; }
   exporting=true; $('exportBtn').disabled=true; $('stemBtn').disabled=true;
   const base=P.scoreActive&&P.score?'PS-Beatlap-Notensong-'+P.bpm+'bpm':`PS-Beatlab-${P.bpm}bpm-${NN[P.key]}${P.scale==='minor'?'m':''}`;
-  showRenderProgress('Export vorbereiten',0);
+  showRenderProgress('Export vorbereiten',0);startRenderClock();
   try{ let r;
     if(!stems){
       showRenderProgress('WAV-Mix rendern',0);
-      const bytes=await renderWav(order,undefined,f=>showRenderProgress('WAV-Mix rendern',f===null?null:f*90));
+      const bytes=await renderWav(order,undefined,f=>showRenderProgress(f!==null&&f>=.9?'WAV-Datei schreiben':'WAV-Mix rendern',f===null?null:f*95));
       showRenderProgress('Datei speichern',95);
       r=inClaude()?await saveFile(base+'-Mix.zip',zip([{name:base+'-Mix.wav',data:bytes}])):await saveFile(base+'-Mix.wav',new Blob([bytes],{type:'audio/wav'}));
       if(r!=='declined'){showRenderProgress('Export abgeschlossen',100,'WAV-Datei wurde bereitgestellt.');msg(`Mix gespeichert: ${(bytes.length/1048576).toFixed(1)} MB.`);} }
@@ -1429,7 +1435,7 @@ async function exportAudio(stems){ if(exporting) return; const order=exportOrder
       if(r!=='declined'){showRenderProgress('Export abgeschlossen',100,`${files.length} Einzelspuren bereitgestellt.`);msg(`${files.length} Einzelspuren gespeichert (eine ZIP-Datei).`);} }
     if(r==='declined') msg('Speichern abgebrochen.');
   }catch(e){ showRenderProgress('Export fehlgeschlagen',null,e.message||'Bitte mit weniger Takten erneut versuchen.');msg('Export hat nicht geklappt. '+(e.message||'Wähle weniger Takte.')); }
-  finally{ exporting=false; $('exportBtn').disabled=false; $('stemBtn').disabled=false; } }
+  finally{ clearInterval(renderClock);renderClock=null;exporting=false; $('exportBtn').disabled=false; $('stemBtn').disabled=false; } }
 $('exportBtn').onclick=()=>exportAudio(false);
 $('stemBtn').onclick=()=>exportAudio(true);
 $('barsSel').onchange=exportLabel;
