@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import assert from 'node:assert/strict';
 
 const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
@@ -45,6 +45,25 @@ test('Audio export and project support are present', () => {
   assert.match(html, /PS-Beatlab-2/);
 });
 
+
+test('Sampler „Flügel (echt)“: Skript, Manifest, Dateien und Namensnennung', () => {
+  const sampler = readFileSync(new URL('../sampler.js', import.meta.url), 'utf8');
+  new Function(sampler);
+  assert.match(html, /src="\.\/sampler\.js"/);
+  assert.match(html, /grandReal:\[/, 'Menüeintrag fehlt');
+  assert.match(html, /PSSampler\.play\(/);
+  assert.match(html, /await prepareSamplers\(\)/, 'Export lädt Samples nicht vor');
+  assert.match(html, /Salamander Grand Piano V3<\/a> von Alexander Holm/, 'CC-BY-Namensnennung in der App fehlt');
+  const man = JSON.parse(readFileSync(new URL('../samples/real/piano/manifest.json', import.meta.url), 'utf8'));
+  assert.equal(man.format, 'beatlab-sampler-1');
+  assert.equal(man.license, 'CC BY 3.0');
+  assert.equal(man.layers.length, 3);
+  for (const layer of man.layers) for (const n of layer.notes) {
+    assert.ok(existsSync(new URL('../samples/real/piano/' + n.file, import.meta.url)), 'Datei fehlt: ' + n.file);
+    assert.ok(Math.abs(n.tune) <= 20, 'Stimmkorrektur unplausibel: ' + n.file);
+  }
+  assert.ok(existsSync(new URL('../samples/real/CREDITS.md', import.meta.url)), 'CREDITS.md fehlt');
+});
 
 const instrumentEngine = readFileSync(new URL('../instrument-engine.js', import.meta.url), 'utf8');
 test('Procedural instrument engine parses and is loaded by Beatlab', () => {

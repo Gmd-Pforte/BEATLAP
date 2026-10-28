@@ -377,6 +377,10 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
       <div class="row"><button class="btn" id="projectSave">Projekt speichern</button><label class="btn file">Projekt öffnen<input type="file" accept="application/json,.json" id="projectFile"></label></div>
       <p class="hint">Eine Projektdatei (.json) enthält Muster, Sounds, Mixer, Song-Aufbau und eigene Samples. So machst du an einem anderen Gerät weiter oder behältst eine Sicherung.</p>
     </section>
+    <section class="card">
+      <div class="label">Sample-Nachweise</div>
+      <p class="hint" id="credits">„Flügel (echt)“: <a href="https://github.com/sfzinstruments/SalamanderGrandPiano" target="_blank" rel="noopener">Salamander Grand Piano V3</a> von Alexander Holm, lizenziert unter <a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noopener">CC BY 3.0</a>. Für Beatlab bearbeitet: Auswahl von Tönen und Dynamikstufen, gekürzt, ausgeblendet, normalisiert, als MP3 kodiert. Details: <a href="samples/real/CREDITS.md" target="_blank" rel="noopener">CREDITS.md</a>.</p>
+    </section>
     <p class="hint">Kein Ton auf dem iPhone? Prüfe den Stummschalter an der Seite.</p>
   </div>
 </div>
@@ -443,6 +447,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 <div class="toast" id="msg" role="status" aria-live="polite" hidden></div>
 
 <script src="./instrument-engine.js"></script>
+<script src="./sampler.js"></script>
 <script>
 (function(){
 const $=id=>document.getElementById(id);
@@ -458,7 +463,7 @@ const DRUMS={
  laser:['Laser','Effekte'],zap:['Zap','Effekte'],riser:['Riser','Effekte'],scratch:['Scratch','Effekte'],vinyl:['Vinyl-Knistern','Effekte'],horn:['Air Horn','Effekte'],drop:['Sub Drop','Effekte'],whoosh:['Whoosh','Effekte'],
 };
 const BASSES={'808':['808 Klassik','Bass'],'808d':['808 verzerrt mit Glide','Bass'],sub:['Sub-Bass','Bass'],reese:['Reese','Bass'],synthb:['Synth-Bass','Bass'],pluckb:['Zupf-Bass','Bass'],acid:['Acid','Bass'],wobble:['Wobble','Bass']};
-const INSTR={grand:['Konzertflügel · Real Engine','Real Instruments'],felt:['Felt Piano · sanft','Real Instruments'],upright:['Klavier · warm','Real Instruments'],
+const INSTR={grandReal:['Flügel (echt) · Salamander','Real Instruments'],grand:['Konzertflügel · Real Engine','Real Instruments'],felt:['Felt Piano · sanft','Real Instruments'],upright:['Klavier · warm','Real Instruments'],
  cello:['Solo Cello','Real Instruments'],violin:['Solo Violine','Real Instruments'],acoustic:['Akustikgitarre','Real Instruments'],nylon:['Nylongitarre','Real Instruments'],sax:['Altsaxofon','Real Instruments'],tenorSax:['Tenorsaxofon','Real Instruments'],trumpet:['Trompete','Real Instruments'],
  piano:['Piano','Tasten'],epiano:['E-Piano','Tasten'],organ:['Orgel','Tasten'],clav:['Clavinet','Tasten'],
  pluck:['Pluck','Synth'],lead:['Synth Lead','Synth'],supersaw:['Supersaw','Synth'],chip:['Chiptune','Synth'],pad:['Pad','Synth'],
@@ -649,6 +654,8 @@ function ksBuf(E,f){ const key=Math.round(f*4); if(E.ks[key]) return E.ks[key]; 
   for(let i=0;i<Nn;i++) d[i]=Math.random()*2-1; for(let i=1;i<Nn;i++) d[i]=(d[i]+d[i-1])*.5; d[Nn]=d[0]; for(let i=Nn+1;i<L;i++) d[i]=.4985*(d[i-Nn]+d[i-Nn-1]); return E.ks[key]=b; }
 function voice(E,o,ins,f,t,dur,v){
   // Modeled instruments are shared by live playback and offline WAV exports.
+  // Echte Samples (sampler.js). Noch nicht geladen oder Fehler → Konzertflügel der Real Engine als Ersatz.
+  if(window.PSSampler?.supports(ins)){ if(window.PSSampler.play(E.ctx,o,ins,f,t,dur,v)) return; ins='grand'; }
   if(window.PSInstrumentEngine?.supports(ins) && window.PSInstrumentEngine.play(E.ctx,o,ins,f,t,dur,v)) return;
   const C=E.ctx, g=C.createGain(); let end;
   const vib=(os,depth,del)=>{ const l=O(E,'sine',5.5,t,dur+1), lg=C.createGain(); lg.gain.setValueAtTime(0,t); lg.gain.linearRampToValueAtTime(f*depth,t+(del||.2)); l.connect(lg); lg.connect(os.frequency); };
@@ -890,7 +897,14 @@ function startScore(){
   playing=true;scorePlaybackEvents=scoreEvents(P.score);scoreCursor=0;scoreStartTime=ac.currentTime+.08;tickScore();timer=setInterval(tickScore,25);
   $('playBtn').classList.add('on');$('playIcon').setAttribute('d','M6 5h4v14H6zM14 5h4v14h-4z');$('playBtn').setAttribute('aria-label','Stopp');
 }
+/* Vor jedem Export: benutzte Sample-Instrumente fertig laden. Schlägt das fehl, klingt der Ersatz – nie Stille. */
+async function prepareSamplers(){ if(!window.PSSampler) return;
+  const ids=TR.filter(t=>t.k==='lead'||t.k==='chord').map(t=>P.params[t.id]?.snd); if(P.scoreActive&&P.score) for(const tr of P.score.tracks) ids.push(tr.instrument);
+  if(!ids.some(id=>PSSampler.supports(id))) return;
+  msg('Echte Samples werden geladen …'); const failed=await PSSampler.ensure(ids);
+  if(failed.length) msg('Echte Samples konnten nicht geladen werden – der Export nutzt den Ersatzklang (Konzertflügel).'); }
 async function renderScoreWav(onlyTrack=-1){
+  await prepareSamplers();
   const OC=window.OfflineAudioContext||window.webkitOfflineAudioContext;if(!OC)throw Error('WAV-Export wird hier nicht unterstützt.');
   const secPerBeat=60/P.bpm,sr=44100,duration=P.score.lengthBeats*secPerBeat+2.5;
   const oc=new OC(2,Math.ceil(duration*sr),sr),E=makeEngine(oc);
@@ -1006,7 +1020,13 @@ function toggle(id,s){ const a=P.pats[cur][id], t=trk(id);
 $('muteBtn').onclick=()=>{ P.params[sel].mute=!P.params[sel].mute; save(); renderAll(); };
 for(const [id,k] of SLIDERS) $(id).oninput=e=>{ P.params[sel][k]=+e.target.value; outs(); save(); };
 for(const [id] of SLIDERS) $(id).onchange=()=>{ if(!playing) preview(sel,prevVal(sel)); };
-function setSnd(key){ P.params[sel].snd=key; save(); renderEditor(); if(!playing) preview(sel,prevVal(sel)); }
+function setSnd(key){ P.params[sel].snd=key; save(); renderEditor();
+  if(window.PSSampler?.supports(key)&&PSSampler.status(key)!=='ready'){ msg('Flügel (echt) wird geladen (ca. 3 MB, nur beim ersten Mal) …');
+    PSSampler.load(key).then(()=>{ msg('Flügel (echt) bereit. Salamander Grand Piano von Alexander Holm, CC BY 3.0.'); if(!playing) preview(sel,prevVal(sel)); })
+      .catch(e=>msg('Flügel (echt) konnte nicht geladen werden ('+e.message+'). Es spielt der Konzertflügel als Ersatz.')); return; }
+  if(!playing) preview(sel,prevVal(sel)); }
+// Projekte, die schon „Flügel (echt)“ nutzen: im Hintergrund vorladen
+setTimeout(()=>{ if(window.PSSampler){ const ids=TR.map(t=>P.params[t.id]?.snd).concat(P.score?P.score.tracks.map(x=>x.instrument):[]); PSSampler.ensure(ids); } },1500);
 $('sndSel').onchange=e=>setSnd(e.target.value);
 $('sndPrev').onclick=()=>preview(sel,prevVal(sel));
 for(const [id,d] of [['sndBack',-1],['sndNext',1]]) $(id).onclick=()=>{ const keys=Object.keys(libOf(trk(sel))); const i=keys.indexOf(P.params[sel].snd); setSnd(keys[(i+d+keys.length)%keys.length]); };
@@ -1347,6 +1367,7 @@ function exportOrder(){ if(P.songMode) return songOrder();
   return order; }
 async function renderWav(order,onlyTrack){
   if(P.scoreActive&&P.score)return renderScoreWav(typeof onlyTrack==='number'?onlyTrack:-1);
+  await prepareSamplers();
   const OC=window.OfflineAudioContext||window.webkitOfflineAudioContext; if(!OC) throw Error('Dieser Browser kann nicht exportieren');
   const sr=44100, sd=stepDur(), tailSec=onlyTrack?2.5:2.5, dur=order.length*16*sd+tailSec;
   const oc=new OC(2,Math.ceil(dur*sr),sr), E=makeEngine(oc);
