@@ -55,3 +55,10 @@ Vanilla HTML, CSS und JavaScript mit Web Audio API – keine Serverpflicht und k
 - `Beatlab-Boom-Bap-Akkorde-NACHHER-Fluegel-echt.wav` – gleiche Vorlage, Akkorde mit „Flügel (echt)“
 
 Beide mit der bisherigen Klang-Engine (ohne PR #12), 8 Takte. Flügel: Salamander Grand Piano V3 von Alexander Holm, CC BY 3.0.
+
+## Flöte (echt) – Real Instruments 1
+
+- `Beatlab-Boom-Bap-Melodie-VORHER-Synth-Floete.wav` – Vorlage Boom Bap, Melodie mit der bisherigen Synth-Flöte
+- `Beatlab-Boom-Bap-Melodie-NACHHER-Floete-echt.wav` – gleiche Vorlage, Melodie mit „Flöte (echt)“ (VSCO 2 CE, CC0)
+
+8 Takte, bisherige Klang-Engine, Akkorde unverändert (E-Piano).
