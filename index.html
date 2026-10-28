@@ -336,6 +336,18 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 
   <!-- FILE -->
   <div class="pane" data-pane="file" hidden>
+    <section class="card" id="cloudAuthCard" aria-label="Beatlab Konto">
+      <div class="label">☁️ Beatlab-Konto</div>
+      <p class="hint" id="cloudAuthStatus" role="status" aria-live="polite">Anmeldung wird vorbereitet …</p>
+      <form id="cloudAuthForm" class="sub">
+        <label class="hint" for="cloudAuthEmail">E-Mail-Adresse</label>
+        <input id="cloudAuthEmail" type="email" autocomplete="email" required placeholder="name@beispiel.de" style="min-height:44px;background:var(--s2);color:var(--ink);border:1px solid var(--line2);border-radius:12px;padding:0 12px">
+        <button class="btn grad" type="submit" id="cloudAuthSubmit">Anmeldelink senden</button>
+      </form>
+      <button class="btn" id="cloudAuthLogout" type="button" hidden>Abmelden</button>
+      <p class="hint">Deine Beats bleiben auf diesem Gerät gespeichert. Die Cloud-Speicherung wird separat eingerichtet.</p>
+    </section>
+
     <section class="card" id="scoreCard">
       <div class="label">🎼 Song aus Noten importieren</div>
       <p class="hint">Komplette mehrspurige Kompositionen als Beatlap-JSON oder einfache Noten-TXT laden. Notenlängen, Instrumente und Tempo bleiben erhalten.</p>
@@ -1380,4 +1392,50 @@ if(location.protocol==='https:'&&'serviceWorker' in navigator){
 })();
 </script>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.76.1/dist/umd/supabase.min.js"></script>
+<script>
+(function(){
+  const status=document.getElementById('cloudAuthStatus');
+  const form=document.getElementById('cloudAuthForm');
+  const submit=document.getElementById('cloudAuthSubmit');
+  const logout=document.getElementById('cloudAuthLogout');
+  const email=document.getElementById('cloudAuthEmail');
+  if(!status||!form||!logout)return;
+  if(!window.supabase?.createClient){
+    status.textContent='Anmeldung momentan nicht verfügbar. Bitte prüfe deine Internetverbindung.';
+    submit.disabled=true;return;
+  }
+  const client=window.supabase.createClient('https://bmdhsvfppwtwsfokihzu.supabase.co',"sb_publishable_2_6EKNDycqJQK3T9fRNUqQ_w8i_x3A7",{
+    auth:{detectSessionInUrl:true,persistSession:true,autoRefreshToken:true}
+  });
+  function show(session){
+    const signedIn=!!session?.user;
+    form.hidden=signedIn;logout.hidden=!signedIn;
+    status.textContent=signedIn?'Angemeldet: '+(session.user.email||'Beatlab-Konto'):'Nicht angemeldet – du kannst deine Beats weiterhin lokal nutzen.';
+  }
+  client.auth.getSession().then(({data,error})=>{
+    if(error)status.textContent='Anmeldung konnte nicht geprüft werden: '+error.message;
+    else show(data.session);
+  }).catch(()=>{status.textContent='Verbindung zur Anmeldung fehlgeschlagen.';});
+  client.auth.onAuthStateChange((_event,session)=>show(session));
+  form.addEventListener('submit',async event=>{
+    event.preventDefault();submit.disabled=true;
+    status.textContent='Anmeldelink wird gesendet …';
+    try{
+      const {error}=await client.auth.signInWithOtp({
+        email:email.value.trim(),
+        options:{emailRedirectTo:'https://gmd-pforte.github.io/BEATLAP/'}
+      });
+      status.textContent=error?'Anmeldung fehlgeschlagen: '+error.message:'Prüfe deine E-Mails und öffne den Anmeldelink auf diesem Gerät.';
+    }catch(error){status.textContent='Verbindungsfehler: '+error.message;}
+    finally{submit.disabled=false;}
+  });
+  logout.addEventListener('click',async()=>{
+    logout.disabled=true;
+    const {error}=await client.auth.signOut();
+    if(error)status.textContent='Abmelden fehlgeschlagen: '+error.message;
+    logout.disabled=false;
+  });
+})();
+</script>
 </body></html>
