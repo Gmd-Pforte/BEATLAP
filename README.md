@@ -48,3 +48,10 @@ Die gesamte Anwendung steckt derzeit in [index.html](index.html).
 ## Technik
 
 Vanilla HTML, CSS und JavaScript mit Web Audio API – keine Serverpflicht und keine externen JavaScript-Abhängigkeiten. Browser-Funktionen wie lokale Sample-Speicherung und Dateidownload sind vom jeweiligen Browser abhängig.
+
+## Flügel (echt) – PR #13
+
+- `Beatlab-Boom-Bap-Akkorde-VORHER-E-Piano.wav` – Vorlage Boom Bap, Akkorde mit E-Piano (Standard)
+- `Beatlab-Boom-Bap-Akkorde-NACHHER-Fluegel-echt.wav` – gleiche Vorlage, Akkorde mit „Flügel (echt)“
+
+Beide mit der bisherigen Klang-Engine (ohne PR #12), 8 Takte. Flügel: Salamander Grand Piano V3 von Alexander Holm, CC BY 3.0.
