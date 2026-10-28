@@ -4,7 +4,10 @@ const REAL='ps-beatlab-real-v1'; // echte Instrumente: klein, fest, ohne Verdrä
 const SHELL_FILES=['./index.html','./instrument-engine.js','./sampler.js','./samples/real/index.js','./samples/samples.json'];
 
 self.addEventListener('install',event=>{
-  event.waitUntil(caches.open(SHELL).then(cache=>cache.addAll(SHELL_FILES)).then(()=>self.skipWaiting()));
+  event.waitUntil(Promise.all([
+    caches.open(SHELL).then(cache=>cache.addAll(SHELL_FILES)),
+    caches.open(REAL).then(cache=>cache.add('./samples/real/index.js')).catch(()=>{}) // Verzeichnis auch hier, für den Offline-Fall
+  ]).then(()=>self.skipWaiting()));
 });
 self.addEventListener('activate',event=>{
   event.waitUntil(Promise.all([caches.keys().then(keys=>Promise.all(keys.filter(k=>![SHELL,AUDIO,REAL].includes(k)).map(k=>caches.delete(k)))),self.clients.claim()]));
@@ -32,7 +35,8 @@ self.addEventListener('fetch',event=>{
     event.respondWith((async()=>{
       const cache=await caches.open(REAL);
       try{const response=await fetch(request,{cache:'no-store'});if(response.ok)await cache.put(request,response.clone());return response;}
-      catch(e){return (await cache.match(request))||Response.error();}
+      // offline: erst REAL, dann alle Caches (index.js liegt nach der Installation im SHELL-Cache)
+      catch(e){return (await cache.match(request))||(await caches.match(request))||Response.error();}
     })());
     return;
   }
@@ -72,5 +76,13 @@ self.addEventListener('fetch',event=>{
       try{const response=await fetch(request,{cache:'no-store'});if(response.ok)await cache.put(request,response.clone());return response;}
       catch(e){return (await cache.match(request))||Response.error();}
     })());
+    return;
   }
+
+  // Alle übrigen eigenen Dateien (z. B. sampler.js, instrument-engine.js): Netz zuerst, offline aus dem Cache.
+  // Vorher fehlte dieser Zweig, dadurch waren die vorab gespeicherten Skripte offline nicht erreichbar.
+  event.respondWith((async()=>{
+    try{return await fetch(request);}
+    catch(e){return (await caches.match(request,{ignoreSearch:true}))||Response.error();}
+  })());
 });

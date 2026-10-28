@@ -3,7 +3,7 @@
  * - Lädt erst bei Bedarf (lazy); AudioBuffer werden einmal dekodiert und für Live-Wiedergabe
  *   UND Offline-WAV-Export geteilt (AudioBuffer sind nicht an einen AudioContext gebunden).
  * - Spielweisen (z. B. sustain/staccato) nach Notenlänge, Dynamikstufe nach Lautstärke,
- *   Varianten (Round-Robin) im Wechsel, nächster Grundton wird gepitcht.
+ *   Varianten (Round-Robin) im Wechsel per Zähler (Live = Export), nächster Grundton wird gepitcht.
  * - Gehaltene Instrumente: Haltebereich (loopStart/loopEnd) mit eingebackener Überblendung.
  * - Ist ein Instrument (noch) nicht geladen, gibt play() false zurück → Beatlab nutzt den Ersatzklang.
  * Manifest-Formate: beatlab-sampler-1 (nur layers) und beatlab-sampler-2 (articulations).
@@ -34,7 +34,12 @@
   }
 
   async function fetchBuffer(dec, url) {
-    const res = await fetch(url);
+    const ctl = root.AbortController ? new AbortController() : null;
+    const timer = ctl && setTimeout(() => ctl.abort(), 30000);   // hängende Downloads nicht ewig abwarten
+    let res;
+    try { res = await fetch(url, ctl ? { signal: ctl.signal } : undefined); }
+    catch (e) { throw new Error((e && e.name === 'AbortError' ? 'Zeitüberschreitung: ' : 'Netzwerkfehler: ') + url); }
+    finally { if (timer) clearTimeout(timer); }
     if (!res.ok) throw new Error('Sample fehlt: ' + url + ' (HTTP ' + res.status + ')');
     const ab = await res.arrayBuffer();
     return await new Promise((ok, fail) => {
@@ -49,30 +54,40 @@
     throw new Error('Unbekanntes Sampler-Format: ' + manifest.format);
   }
 
-  async function loadInstrument(id) {
-    const dir = BASE + REGISTRY[id].dir + '/';
-    const res = await fetch(dir + 'manifest.json');
+  // Eine Dynamikstufe (Layer) laden. Layer werden einzeln und erst bei Bedarf geladen,
+  // das spart Arbeitsspeicher (dekodiertes Audio ist ~10× größer als die MP3s).
+  function loadLayer(s, layer) {
+    if (layer.status === 'ready') return Promise.resolve(layer);
+    if (layer.status === 'loading') return layer.promise;
+    layer.status = 'loading';
+    layer.promise = (async () => {
+      const notes = [], queue = layer.src.map(n => async () => {
+        const buffer = await fetchBuffer(s.dec, s.dir + encodeURIComponent(n.file));
+        notes.push({ midi: n.midi, tune: n.tune || 0, gain: Math.pow(10, (n.gainDb || 0) / 20), rr: n.rr || 1, buffer, offset: onsetOf(buffer),
+                     loopStart: n.loopStart, loopEnd: n.loopEnd });
+      });
+      await Promise.all(Array.from({ length: 6 }, async () => { while (queue.length) await queue.shift()(); }));   // max. 6 Downloads gleichzeitig
+      notes.sort((a, b) => a.midi - b.midi || a.rr - b.rr);
+      layer.notes = notes; layer.status = 'ready';
+      return layer;
+    })().catch(e => { layer.status = 'error'; layer.error = e; throw e; });
+    return layer.promise;
+  }
+
+  // Hauptstufe einer Spielweise: „mf“ bzw. „v2“, sonst die mittlere
+  const primaryOf = art => art.layers.find(l => /^(mf|v2)$/.test(l.name)) || art.layers[Math.floor((art.layers.length - 1) / 2)];
+
+  async function loadInstrument(id, s) {
+    s.dir = BASE + REGISTRY[id].dir + '/';
+    const res = await fetch(s.dir + 'manifest.json');
     if (!res.ok) throw new Error('Manifest fehlt (HTTP ' + res.status + ')');
     const manifest = await res.json();
-    const dec = decoderContext();
-    const arts = [];
-    for (const art of articulationsOf(manifest)) {
-      const layers = [];
-      // Mittlere Stufe zuerst, damit früh etwas spielbar ist; max. 6 Downloads gleichzeitig
-      const order = [...art.layers].sort((a, b) => (/^(mf|v2)$/.test(a.name) ? -1 : /^(mf|v2)$/.test(b.name) ? 1 : 0));
-      for (const layer of order) {
-        const notes = [], queue = layer.notes.map(n => async () => {
-          const buffer = await fetchBuffer(dec, dir + encodeURIComponent(n.file));
-          notes.push({ midi: n.midi, tune: n.tune || 0, gain: Math.pow(10, (n.gainDb || 0) / 20), rr: n.rr || 1, buffer, offset: onsetOf(buffer),
-                       loopStart: n.loopStart, loopEnd: n.loopEnd });
-        });
-        await Promise.all(Array.from({ length: 6 }, async () => { while (queue.length) await queue.shift()(); }));
-        notes.sort((a, b) => a.midi - b.midi || a.rr - b.rr);
-        layers.push({ name: layer.name, velMax: layer.velMax, notes });
-      }
-      layers.sort((a, b) => a.velMax - b.velMax);
-      arts.push({ name: art.name, maxDur: art.maxDur, minMidi: art.minMidi, maxMidi: art.maxMidi, layers });
-    }
+    s.dec = decoderContext();
+    const arts = articulationsOf(manifest).map(art => ({
+      name: art.name, maxDur: art.maxDur, minMidi: art.minMidi, maxMidi: art.maxMidi,
+      layers: art.layers.map(l => ({ name: l.name, velMax: l.velMax, src: l.notes, notes: null, status: 'idle' })).sort((a, b) => a.velMax - b.velMax)
+    }));
+    await Promise.all(arts.map(a => loadLayer(s, primaryOf(a))));   // sofort spielbar mit der Hauptstufe
     return { manifest, articulations: arts };
   }
 
@@ -82,7 +97,7 @@
     if (s.status === 'ready') return Promise.resolve(s);
     if (s.status === 'loading') return s.promise;
     s.status = 'loading';
-    s.promise = loadInstrument(id).then(r => {
+    s.promise = loadInstrument(id, s).then(r => {
       Object.assign(s, r, { status: 'ready', error: null });
       try { root.dispatchEvent(new CustomEvent('ps-sampler', { detail: { id, status: 'ready' } })); } catch (e) {}
       return s;
@@ -101,24 +116,33 @@
     return short || arts.find(a => a.maxDur == null) || arts[0];
   }
 
-  // Nächster Grundton; bei mehreren Varianten (rr) im Wechsel – deterministisch, damit Live = Export
-  function pickNote(id, art, layer, midi, t) {
+  // Nächster Grundton; bei mehreren Varianten (rr) im Wechsel. Der Zähler liegt im Engine-Objekt
+  // (rrState) und startet bei Wiedergabe und Export bei null: gleiche Noten = gleiche Varianten.
+  function pickNote(id, art, layer, midi, rrState) {
     let best = null;
     for (const n of layer.notes) if (!best || Math.abs(n.midi - midi) < Math.abs(best.midi - midi)) best = n;
     const variants = layer.notes.filter(n => n.midi === best.midi);
     if (variants.length < 2) return best;
-    return variants[Math.floor(t * 1000) % variants.length];   // abhängig vom Zeitpunkt, nicht vom Zufall
+    const k = id + '|' + art.name + '|' + layer.name + '|' + best.midi, st = rrState || {};
+    const i = st[k] = ((st[k] == null ? -1 : st[k]) + 1) % variants.length;
+    return variants[i];
   }
 
   /* v: Beatlab-Lautstärke (typisch 0,1–0,45). Wird auf 0–1 normiert für die Dynamikstufe. */
-  function play(ctx, out, id, freq, t, dur, v) {
+  function play(ctx, out, id, freq, t, dur, v, rrState) {
     const s = state[id];
     if (!s || s.status !== 'ready') { if (!s || s.status === 'idle') load(id).catch(() => {}); return false; }
     const midi = 69 + 12 * Math.log2(freq / 440);
     const vel = Math.max(0, Math.min(1.2, v / 0.3));
     const art = pickArticulation(s.articulations, midi, dur);
-    const layer = art.layers.find(l => vel <= l.velMax) || art.layers[art.layers.length - 1];
-    const n = pickNote(id, art, layer, midi, t);
+    const wanted = art.layers.find(l => vel <= l.velMax) || art.layers[art.layers.length - 1];
+    if (wanted.status === 'idle') loadLayer(s, wanted).catch(() => {});
+    // Gewünschte Stufe noch nicht da → nächstgelegene geladene Stufe (klingt echt, nur andere Dynamik)
+    const wi = art.layers.indexOf(wanted);
+    const layer = wanted.status === 'ready' ? wanted
+      : art.layers.filter(l => l.status === 'ready').sort((a, b) => Math.abs(art.layers.indexOf(a) - wi) - Math.abs(art.layers.indexOf(b) - wi))[0];
+    if (!layer) return false;
+    const n = pickNote(id, art, layer, midi, rrState);
     const src = ctx.createBufferSource();
     src.buffer = n.buffer;
     src.detune.value = (midi - n.midi) * 100 + n.tune;          // tune: gemessene Korrektur in Cent
@@ -162,10 +186,18 @@
     status: id => (state[id] && state[id].status) || 'idle',
     error: id => state[id] && state[id].error,
     manifest: id => state[id] && state[id].manifest,
+    // Arbeitsspeicher der dekodierten Samples (Float32, alle Kanäle) in MB
+    decodedMB: id => { const s = state[id]; if (!s || !s.articulations) return 0; let b = 0;
+      for (const a of s.articulations) for (const l of a.layers) for (const n of (l.notes || [])) b += n.buffer.length * n.buffer.numberOfChannels * 4;
+      return b / 1048576; },
     load,
-    ensure: async ids => {
+    // Für den Export: Instrumente laden; mit all=true auch alle Dynamikstufen (exakt wie geplant, braucht mehr Speicher)
+    ensure: async (ids, all) => {
       const wanted = [...new Set(ids)].filter(id => REGISTRY[id]);
-      const results = await Promise.allSettled(wanted.map(load));
+      const results = await Promise.allSettled(wanted.map(async id => {
+        const s = await load(id);
+        if (all) await Promise.all(s.articulations.flatMap(a => a.layers.map(l => loadLayer(s, l))));
+      }));
       return wanted.filter((id, i) => results[i].status === 'rejected');   // fehlgeschlagene IDs
     },
     play
