@@ -1,6 +1,6 @@
 # Letzter Testlauf
 
-PostgreSQL 16.15, lokal mit `supabase_stub.sql`, 28.10.2026 (Claude).
+PostgreSQL 16.15, lokal mit `supabase_stub.sql`, 28.10.2026 (Claude), Fassung 3.
 
 ```text
 OK (abgelehnt): Projekt direkt anlegen mit Revision 999 → permission denied for table beatlab_projects
@@ -28,17 +28,26 @@ OK (abgelehnt): eigenen (schwachen) Token setzen → permission denied for table
 OK: Fremder Nutzer sieht nichts von Peter
 OK (abgelehnt): Fremder speichert in Peters Projekt → Projekt nicht gefunden.
 OK (abgelehnt): Fremder hängt Motiv an Peters Projekt → Zugehöriges Projekt/Version gehört nicht diesem Nutzer.
+OK: Neues Projekt mit leerem Songplan erlaubt (wie dokumentiert)
 OK (abgelehnt): Fremder heftet Peters Motiv an → Motiv gehört nicht diesem Nutzer.
 OK (abgelehnt): Fremder heftet Peters Motiv beim Anlegen an → Motiv gehört nicht diesem Nutzer.
-OK (abgelehnt): angemeldet: internen Songplan-Helfer direkt aufrufen → permission denied for function beatlab_write_sections
-OK (abgelehnt): angemeldet: Version über internen Helfer erzeugen → permission denied for function beatlab_snapshot
+OK (abgelehnt): angemeldet: internen Songplan-Helfer direkt aufrufen → permission denied for schema beatlab_private
+OK (abgelehnt): angemeldet: Version über internen Helfer erzeugen → permission denied for schema beatlab_private
 OK (abgelehnt): Fremdes Motiv per Update an Peters Projekt hängen → Zugehöriges Projekt/Version gehört nicht diesem Nutzer.
 OK (abgelehnt): anon liest Projekte → permission denied for table beatlab_projects
 OK (abgelehnt): anon liest Versionen → permission denied for table beatlab_project_versions
 OK (abgelehnt): anon legt Projekt an → permission denied for function beatlab_create_project
-OK (abgelehnt): anon ruft internen Helfer → permission denied for function beatlab_write_sections
+OK (abgelehnt): anon ruft internen Helfer → permission denied for schema beatlab_private
+OK (abgelehnt): anon nutzt privates Schema → permission denied for schema beatlab_private
 OK: Geteilter Link liefert nur Abspieldaten, keine privaten Infos
 OK: Widerrufener Link funktioniert nicht mehr
 OK: Projekt löschen räumt auf, Motive bleiben in der Bibliothek
 ======== ALLE TESTS BESTANDEN ========
+
+Rechte-Audit nach dem Lauf:
+public.beatlab_create_project  anon: nein  authenticated: ja
+public.beatlab_get_shared      anon: ja    authenticated: ja
+public.beatlab_save_project    anon: nein  authenticated: ja
+Schema beatlab_private         anon: kein Zugriff  authenticated: kein Zugriff
+SECURITY DEFINER ohne search_path: keine
 ```

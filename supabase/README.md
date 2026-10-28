@@ -28,8 +28,9 @@ beatlab_projects ──┬── beatlab_song_sections ──► beatlab_motifs
   - Direktes Einfügen von Projekten, Ändern von `state`/`revision` sowie jedes direkte Schreiben in Songplan und Versionen ist gesperrt. Interne Helfer sind nicht aufrufbar.
 - **Versionen automatisch und unveränderlich:** höchstens alle 10 Minuten eine automatische Version (mit Songplan), die letzten 50 bleiben. Mit `p_snapshot_label` („Refrain fertig“) merkt Peter sich eine Version dauerhaft. Gelöscht werden Versionen nur mit dem Projekt oder beim automatischen Aufräumen.
 - **Sicherheit:** RLS auf allen Tabellen, nur der Eigentümer (Supabase-Login) sieht seine Daten. Kind-Zeilen und Motiv-Verknüpfungen können nicht an fremde Projekte/Motive gehängt werden, auch nicht per Update. Ohne Login (`anon`) gibt es keinen Tabellenzugriff.
-- **Teilen-Links geben nur Abspieldaten heraus:** `beatlab_get_shared(token)` liefert eine Whitelist (Tempo, Muster, Mixer, Arrangement, Notensong …) und den Songplan ohne interne IDs. Gerätenamen, Sample-Dateinamen und andere private Projektinfos bleiben draußen. Tokens erzeugt immer die Datenbank (64 Zeichen).
-- **Grenzen:** Projekt-JSON max. ca. 2 MB, 1–64 Blöcke, Energie 1–10, Motive bis 512 Noten.
+- **Teilen-Links mit festem öffentlichem Format `beatlab-player-1`:** `beatlab_get_shared(token)` gibt nicht den gespeicherten Zustand weiter, sondern baut die Abspieldaten **Feld für Feld neu** auf: Zahlen in festen Bereichen, Wahrheitswerte, Sound-/Instrument-Kennungen (nur `A–Z a–z 0–9 _ -`, max. 32 Zeichen) und nur bekannte Spuren. Freitext gibt es nur bei Spur-, Abschnitts- und Songnamen (max. 40 Zeichen), weil sie Teil der Musik sind. Alles Unbekannte, auch tief verschachtelt, fällt weg. Tokens erzeugt immer die Datenbank (64 Zeichen).
+- **Privates Schema `beatlab_private`** für alle internen Helfer (Trigger, Prüfungen, Songplan schreiben, Versionen, Abspielformat). Es ist nicht in der Supabase-Daten-API freigegeben und für `anon`/`authenticated` gesperrt. In der Daten-API sichtbar sind nur die Tabellen und die drei Funktionen `beatlab_create_project`, `beatlab_save_project`, `beatlab_get_shared`.
+- **Grenzen:** Projekt-JSON max. ca. 2 MB, 0–64 Blöcke (ein neues Projekt darf noch leer sein), Energie 1–10, Motive bis 512 Noten.
 
 ## Lokal testen
 
@@ -42,7 +43,7 @@ psql -v ON_ERROR_STOP=1 -d beatlab_test -f supabase/migrations/20261028000000_be
 psql -v ON_ERROR_STOP=1 -d beatlab_test -f supabase/tests/beatlab_schema_test.sql
 ```
 
-37 Prüfungen, u. a.: manipulierte Startrevision, direktes Schreiben in Songplan/Versionen, atomares Speichern (ungültiger Block → nichts gespeichert), konkurrierende Songplan-Änderung zweier Geräte, fremde Motiv-Verknüpfungen (auch per Update), interne Helfer gesperrt, Teilen-Link ohne private Daten, Widerruf, Löschen. Letzter Testlauf: [`tests/TESTLAUF.md`](tests/TESTLAUF.md).
+39 Prüfungen, u. a.: Teilen-Link mit tief verschachtelten privaten Testwerten (nichts davon kommt durch), privates Schema gesperrt, leerer Songplan beim Anlegen, manipulierte Startrevision, direktes Schreiben in Songplan/Versionen, atomares Speichern (ungültiger Block → nichts gespeichert), konkurrierende Songplan-Änderung zweier Geräte, fremde Motiv-Verknüpfungen (auch per Update), interne Helfer gesperrt, Teilen-Link ohne private Daten, Widerruf, Löschen. Letzter Testlauf: [`tests/TESTLAUF.md`](tests/TESTLAUF.md).
 
 ## Nächste Schritte (nach Freigabe)
 

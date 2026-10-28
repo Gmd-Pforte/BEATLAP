@@ -94,7 +94,21 @@ begin
   assert r = 3 and (select count(*) from public.beatlab_song_sections) = 3, 'Songplan bleibt bei null';
   assert (select count(*) from public.beatlab_project_versions) = 1, 'innerhalb 10 Min. keine neue Auto-Version';
 
-  r := public.beatlab_save_project(p, 3, '{"bpm":94}'::jsonb, p_snapshot_label => 'Refrain fertig');
+  r := public.beatlab_save_project(p, 3, '{
+      "bpm":94, "swing":20, "key":9, "scale":"minor", "chain":true,
+      "sampleNames":{"kick":"privat_aufnahme.wav"},
+      "notiz":"GEHEIM-NOTIZ",
+      "pats":[{"kick":[1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0],"snare":["GEHEIM-STEP",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"meinespur":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]}],
+      "params":{"kick":{"vol":80,"snd":"kickBoom","quelle":"GEHEIM-PFAD"},"lead":{"vol":70,"snd":"C:/Users/Peter/GEHEIM.wav"},"spion":{"vol":1}},
+      "rollLengths":{"0":{"3":{"5":2,"x":"GEHEIM-LEN"}},"y":{"1":{"1":1}}},
+      "arrangement":[{"pat":0,"bars":4,"name":"Intro","kommentar":"GEHEIM-ARR"}],
+      "score":{"format":"PS-Beatlap-Score-1","title":"Song","bpm":94,"beatsPerBar":4,"lengthBeats":8,
+               "sections":[{"name":"Intro","start":0,"x":"GEHEIM-SEC"}],
+               "tracks":[{"name":"Klavier","instrument":"piano","volume":0.8,"datei":"GEHEIM-TRACK",
+                          "notes":[{"pitch":"A3","start":0,"duration":2,"velocity":0.8,"meta":"GEHEIM-NOTE"},
+                                   {"pitch":"GEHEIM-PITCH","start":1,"duration":1,"velocity":0.5}]}]},
+      "scoreActive":true
+    }'::jsonb, p_snapshot_label => 'Refrain fertig');
   assert (select count(*) from public.beatlab_project_versions where not is_auto and label = 'Refrain fertig') = 1, 'gemerkte Version';
   assert (select sections->1->>'name' from public.beatlab_project_versions where label = 'Refrain fertig') = 'Refrain', 'Songplan steckt in der Version';
   raise notice 'OK: Autosave schreibt Zustand und Songplan gemeinsam, Versionen entstehen automatisch';
@@ -159,15 +173,19 @@ select pg_temp.muss_scheitern(format($$insert into public.beatlab_motifs (projec
 
 -- Fremder legt eigenes Projekt an und versucht, Peters Motiv anzuheften
 insert into t select 'fremdprojekt', project_id::text from public.beatlab_create_project('Fremd', '{}'::jsonb);
+do $$ begin
+  assert (select count(*) from public.beatlab_song_sections) = 0, 'leerer Songplan beim Anlegen erlaubt';
+  raise notice 'OK: Neues Projekt mit leerem Songplan erlaubt (wie dokumentiert)';
+end $$;
 select pg_temp.muss_scheitern(format($$select public.beatlab_save_project(%L, 1, '{}'::jsonb,
   '[{"name":"Klau","motif_id":"cccccccc-0000-0000-0000-000000000001"}]'::jsonb)$$, (select val from t where name = 'fremdprojekt')),
   'Fremder heftet Peters Motiv an');
 select pg_temp.muss_scheitern($$select public.beatlab_create_project('Fremd 2', '{}'::jsonb,
   '[{"name":"Klau","motif_id":"cccccccc-0000-0000-0000-000000000001"}]'::jsonb)$$, 'Fremder heftet Peters Motiv beim Anlegen an');
 -- Interne Helfer sind auch für angemeldete Nutzer gesperrt (sonst Umgehung der Revision)
-select pg_temp.muss_scheitern(format($$select public.beatlab_write_sections(%L, auth.uid(), '[]')$$,
+select pg_temp.muss_scheitern(format($$select beatlab_private.write_sections(%L, auth.uid(), '[]')$$,
   (select val from t where name = 'fremdprojekt')), 'angemeldet: internen Songplan-Helfer direkt aufrufen');
-select pg_temp.muss_scheitern(format($$select public.beatlab_snapshot(%L, auth.uid(), 1, '{}', 'x', true)$$,
+select pg_temp.muss_scheitern(format($$select beatlab_private.snapshot(%L, auth.uid(), 1, '{}', 'x', true)$$,
   (select val from t where name = 'fremdprojekt')), 'angemeldet: Version über internen Helfer erzeugen');
 -- Fremdes Motiv per Update auf Peters Projekt umhängen
 insert into public.beatlab_motifs (id, name, length_beats, notes) values ('dddddddd-0000-0000-0000-000000000001', 'Fremd-Motiv', 1, '[{"pitch":"C4"}]');
@@ -182,16 +200,31 @@ select set_config('request.jwt.claim.sub', '', false);
 select pg_temp.muss_scheitern($$select * from public.beatlab_projects$$, 'anon liest Projekte');
 select pg_temp.muss_scheitern($$select * from public.beatlab_project_versions$$, 'anon liest Versionen');
 select pg_temp.muss_scheitern($$select public.beatlab_create_project('x', '{}'::jsonb)$$, 'anon legt Projekt an');
-select pg_temp.muss_scheitern($$select public.beatlab_write_sections(gen_random_uuid(), gen_random_uuid(), '[]')$$, 'anon ruft internen Helfer');
+select pg_temp.muss_scheitern($$select beatlab_private.write_sections(gen_random_uuid(), gen_random_uuid(), '[]')$$, 'anon ruft internen Helfer');
+select pg_temp.muss_scheitern($$select beatlab_private.public_player('{}')$$, 'anon nutzt privates Schema');
 do $$
 declare r record;
 begin
   select * into r from public.beatlab_get_shared((select val from t where name = 'token'));
   assert r.title = 'Erster Beat (neu)', 'Titel stimmt';
+  assert r.player->>'format' = 'beatlab-player-1', 'öffentliches Format';
   assert r.player->>'bpm' = '94', 'Abspieldaten der gemerkten Version';
-  assert not (r.player ? 'sampleNames'), 'private Sample-Namen NICHT enthalten';
-  assert r.player::text not like '%privat_aufnahme%', 'kein privater Dateiname im Link';
-  assert jsonb_array_length(r.sections) = 3 and not (r.sections->0 ? 'motif_id'), 'Songplan ohne interne IDs';
+  assert r.player::text not like '%GEHEIM%', 'KEINE verschachtelten privaten Werte: ' || r.player::text;
+  assert r.player::text not like '%privat_aufnahme%', 'kein privater Dateiname';
+  assert not (r.player ? 'sampleNames') and not (r.player ? 'notiz'), 'unbekannte Felder fehlen';
+  assert r.player->'pats'->0->'kick' = '[1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0]', 'Muster bleibt abspielbar';
+  assert r.player->'pats'->0->'snare'->>0 = '0', 'Text im Muster wird zu 0';
+  assert not (r.player->'pats'->0 ? 'meinespur'), 'unbekannte Spur fehlt';
+  assert r.player->'params'->'kick'->>'snd' = 'kickBoom', 'gültige Sound-ID bleibt';
+  assert not (r.player->'params'->'lead' ? 'snd'), 'Dateipfad als Sound-ID fällt weg';
+  assert not (r.player->'params' ? 'spion'), 'unbekannte Mixer-Spur fehlt';
+  assert r.player->'rollLengths' = '{"0":{"3":{"5":2}}}', 'Notenlängen nur Zahlen';
+  assert r.player->'arrangement'->0 = '{"pat":0,"bars":4,"name":"Intro"}', 'Arrangement bereinigt';
+  assert r.player->'score'->'tracks'->0->'notes'->0 = '{"pitch":"A3","start":0,"duration":2,"velocity":0.8}', 'Note bereinigt';
+  assert jsonb_array_length(r.player->'score'->'tracks'->0->'notes') = 1, 'Note mit ungültiger Tonhöhe fällt ganz weg';
+  assert jsonb_array_length(r.sections) = 3, 'Songplan dabei';
+  assert not (r.sections->0 ? 'id') and not (r.sections->0 ? 'motif_id') and not (r.sections->0 ? 'settings'), 'Songplan ohne interne Felder';
+  assert r.sections->1->>'name' = 'Refrain', 'Songplan-Reihenfolge stimmt';
   assert (select count(*) from public.beatlab_get_shared('falsch')) = 0, 'falscher Token liefert nichts';
   raise notice 'OK: Geteilter Link liefert nur Abspieldaten, keine privaten Infos';
 end $$;

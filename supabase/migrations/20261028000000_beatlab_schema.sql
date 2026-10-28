@@ -15,9 +15,17 @@
 begin;
 
 -- ---------------------------------------------------------------------------
+-- Privates Schema für interne Helfer. Es ist NICHT in der Supabase-Daten-API
+-- freigegeben und für anon/authenticated nicht nutzbar.
+-- ---------------------------------------------------------------------------
+create schema if not exists beatlab_private;
+revoke all on schema beatlab_private from public, anon, authenticated;
+alter default privileges in schema beatlab_private revoke execute on functions from public;
+
+-- ---------------------------------------------------------------------------
 -- Hilfsfunktion: updated_at automatisch setzen
 -- ---------------------------------------------------------------------------
-create or replace function public.beatlab_touch_updated_at()
+create or replace function beatlab_private.touch_updated_at()
 returns trigger
 language plpgsql
 set search_path = ''
@@ -56,7 +64,7 @@ create index beatlab_projects_owner_idx on public.beatlab_projects (owner_id, ar
 
 create trigger beatlab_projects_touch
   before update on public.beatlab_projects
-  for each row execute function public.beatlab_touch_updated_at();
+  for each row execute function beatlab_private.touch_updated_at();
 
 -- ---------------------------------------------------------------------------
 -- 2. Songplan-Blöcke (Intro, Strophe, Refrain … mit Energie 1–10)
@@ -84,7 +92,7 @@ create index beatlab_song_sections_owner_idx on public.beatlab_song_sections (ow
 
 create trigger beatlab_song_sections_touch
   before update on public.beatlab_song_sections
-  for each row execute function public.beatlab_touch_updated_at();
+  for each row execute function beatlab_private.touch_updated_at();
 
 -- ---------------------------------------------------------------------------
 -- 3. Versionen (Schnappschüsse für Verlauf und Wiederherstellen)
@@ -130,7 +138,7 @@ create index beatlab_motifs_project_idx on public.beatlab_motifs (project_id);
 
 create trigger beatlab_motifs_touch
   before update on public.beatlab_motifs
-  for each row execute function public.beatlab_touch_updated_at();
+  for each row execute function beatlab_private.touch_updated_at();
 
 alter table public.beatlab_song_sections
   add constraint beatlab_song_sections_motif_fk
@@ -159,7 +167,7 @@ create index beatlab_shares_version_idx on public.beatlab_shares (version_id);
 -- Eigentum über Tabellen hinweg absichern
 -- (Kind-Zeilen dürfen nur an eigene Projekte/Versionen gehängt werden)
 -- ---------------------------------------------------------------------------
-create or replace function public.beatlab_check_parent_owner()
+create or replace function beatlab_private.check_parent_owner()
 returns trigger
 language plpgsql
 security definer
@@ -191,13 +199,13 @@ end;
 $$;
 
 create trigger beatlab_sections_owner_check before insert or update on public.beatlab_song_sections
-  for each row execute function public.beatlab_check_parent_owner();
+  for each row execute function beatlab_private.check_parent_owner();
 create trigger beatlab_versions_owner_check before insert or update on public.beatlab_project_versions
-  for each row execute function public.beatlab_check_parent_owner();
+  for each row execute function beatlab_private.check_parent_owner();
 create trigger beatlab_motifs_owner_check before insert or update on public.beatlab_motifs
-  for each row execute function public.beatlab_check_parent_owner();
+  for each row execute function beatlab_private.check_parent_owner();
 create trigger beatlab_shares_owner_check before insert or update on public.beatlab_shares
-  for each row execute function public.beatlab_check_parent_owner();
+  for each row execute function beatlab_private.check_parent_owner();
 
 -- ---------------------------------------------------------------------------
 -- Row Level Security: nur der Eigentümer
@@ -250,15 +258,15 @@ grant select, delete            on public.beatlab_shares           to authentica
 grant insert (version_id, expires_at) on public.beatlab_shares     to authenticated; -- Token erzeugt immer die DB
 grant update (revoked, expires_at)    on public.beatlab_shares     to authenticated;
 
-revoke execute on function public.beatlab_touch_updated_at()      from public, anon, authenticated;
-revoke execute on function public.beatlab_check_parent_owner()    from public, anon, authenticated;
+revoke execute on function beatlab_private.touch_updated_at()      from public, anon, authenticated;
+revoke execute on function beatlab_private.check_parent_owner()    from public, anon, authenticated;
 
 -- ---------------------------------------------------------------------------
 -- Interne Helfer (nicht von außen aufrufbar)
 -- ---------------------------------------------------------------------------
 
 -- Prüft den App-Zustand: Objekt, Größe, Format
-create or replace function public.beatlab_assert_state(p_state jsonb)
+create or replace function beatlab_private.assert_state(p_state jsonb)
 returns void
 language plpgsql
 immutable
@@ -279,7 +287,7 @@ end;
 $$;
 
 -- Ersetzt den Songplan eines Projekts vollständig (Position = Reihenfolge im Array)
-create or replace function public.beatlab_write_sections(p_project_id uuid, p_owner uuid, p_sections jsonb)
+create or replace function beatlab_private.write_sections(p_project_id uuid, p_owner uuid, p_sections jsonb)
 returns void
 language plpgsql
 security definer
@@ -309,7 +317,7 @@ end;
 $$;
 
 -- Legt eine Version an (Projektstand + Songplan) und räumt alte Auto-Versionen auf
-create or replace function public.beatlab_snapshot(p_project_id uuid, p_owner uuid, p_revision integer,
+create or replace function beatlab_private.snapshot(p_project_id uuid, p_owner uuid, p_revision integer,
                                                    p_state jsonb, p_label text, p_force boolean)
 returns void
 language plpgsql
@@ -342,9 +350,9 @@ begin
 end;
 $$;
 
-revoke execute on function public.beatlab_assert_state(jsonb)                      from public, anon, authenticated;
-revoke execute on function public.beatlab_write_sections(uuid, uuid, jsonb)        from public, anon, authenticated;
-revoke execute on function public.beatlab_snapshot(uuid, uuid, integer, jsonb, text, boolean) from public, anon, authenticated;
+revoke execute on function beatlab_private.assert_state(jsonb)                      from public, anon, authenticated;
+revoke execute on function beatlab_private.write_sections(uuid, uuid, jsonb)        from public, anon, authenticated;
+revoke execute on function beatlab_private.snapshot(uuid, uuid, integer, jsonb, text, boolean) from public, anon, authenticated;
 
 -- ---------------------------------------------------------------------------
 -- Projekt anlegen: Revision startet immer bei 1, Zustand wird geprüft,
@@ -372,15 +380,15 @@ begin
   if uid is null then
     raise exception 'Nicht angemeldet.' using errcode = '42501';
   end if;
-  perform public.beatlab_assert_state(p_state);
+  perform beatlab_private.assert_state(p_state);
 
   insert into public.beatlab_projects (owner_id, title, bpm, music_key, scale, style, state, revision, saved_from)
   values (uid, coalesce(nullif(p_title, ''), 'Unbenannter Beat'), p_bpm, p_music_key, p_scale, p_style,
           p_state, 1, p_saved_from)
   returning id into new_id;
 
-  perform public.beatlab_write_sections(new_id, uid, coalesce(p_sections, '[]'::jsonb));
-  perform public.beatlab_snapshot(new_id, uid, 1, p_state, null, true);
+  perform beatlab_private.write_sections(new_id, uid, coalesce(p_sections, '[]'::jsonb));
+  perform beatlab_private.snapshot(new_id, uid, 1, p_state, null, true);
 
   return query select new_id, 1;
 end;
@@ -422,7 +430,7 @@ begin
   if uid is null then
     raise exception 'Nicht angemeldet.' using errcode = '42501';
   end if;
-  perform public.beatlab_assert_state(p_state);
+  perform beatlab_private.assert_state(p_state);
 
   update public.beatlab_projects p
      set state      = p_state,
@@ -447,10 +455,10 @@ begin
   end if;
 
   if p_sections is not null then
-    perform public.beatlab_write_sections(p_project_id, uid, p_sections);
+    perform beatlab_private.write_sections(p_project_id, uid, p_sections);
   end if;
 
-  perform public.beatlab_snapshot(p_project_id, uid, new_revision, p_state, p_snapshot_label, false);
+  perform beatlab_private.snapshot(p_project_id, uid, new_revision, p_state, p_snapshot_label, false);
 
   return new_revision;
 end;
@@ -460,9 +468,170 @@ revoke execute on function public.beatlab_save_project(uuid, integer, jsonb, jso
 grant  execute on function public.beatlab_save_project(uuid, integer, jsonb, jsonb, text, smallint, smallint, text, text, text, text) to authenticated;
 
 -- ---------------------------------------------------------------------------
+-- Öffentliches Abspielformat „beatlab-player-1“
+-- Wird Feld für Feld aus dem Projektzustand AUFGEBAUT (nicht gefiltert).
+-- Nur Zahlen, Wahrheitswerte und geprüfte kurze Kennungen kommen durch.
+-- Freitext nur dort, wo er Teil der Musik ist (Spur- und Abschnittsnamen),
+-- gekürzt auf 40 Zeichen. Alles Unbekannte fällt weg.
+-- ---------------------------------------------------------------------------
+
+-- Zahl in Bereich oder null
+create or replace function beatlab_private.num(v jsonb, lo numeric, hi numeric)
+returns numeric language sql immutable set search_path = '' as $$
+  select case when jsonb_typeof(v) = 'number' and (v #>> '{}')::numeric between lo and hi
+              then (v #>> '{}')::numeric end
+$$;
+
+-- Kennung (z. B. Sound-ID „kickBoom“) oder null
+create or replace function beatlab_private.ident(v jsonb)
+returns text language sql immutable set search_path = '' as $$
+  select case when jsonb_typeof(v) = 'string' and (v #>> '{}') ~ '^[A-Za-z0-9_-]{1,32}$' then v #>> '{}' end
+$$;
+
+-- Kurzer Anzeigename (Spur, Abschnitt): max. 40 Zeichen, keine Steuerzeichen
+create or replace function beatlab_private.label(v jsonb)
+returns text language sql immutable set search_path = '' as $$
+  select case when jsonb_typeof(v) = 'string'
+              then nullif(left(regexp_replace(v #>> '{}', '[[:cntrl:]]', '', 'g'), 40), '') end
+$$;
+
+-- Schritt-Werte eines Musters: genau 16 Zahlen
+create or replace function beatlab_private.steps16(v jsonb)
+returns jsonb language sql immutable set search_path = '' as $$
+  select case when jsonb_typeof(v) = 'array' and jsonb_array_length(v) = 16 then
+    (select jsonb_agg(coalesce(beatlab_private.num(e, -128, 128), 0) order by o)
+       from jsonb_array_elements(v) with ordinality as x(e, o)) end
+$$;
+
+-- Notenlängen { muster: { schritt: { reihe: länge } } } – nur Ziffern-Schlüssel und Zahlen
+create or replace function beatlab_private.lengths(v jsonb)
+returns jsonb language sql immutable set search_path = '' as $$
+  select coalesce(jsonb_object_agg(a.k, a.v2), '{}'::jsonb) from (
+    select k1 as k, (select coalesce(jsonb_object_agg(k2, (
+              select coalesce(jsonb_object_agg(k3, beatlab_private.num(v3, 0, 64)), '{}'::jsonb)
+                from jsonb_each(v2) as l3(k3, v3)
+               where k3 ~ '^[0-9]{1,3}$' and beatlab_private.num(v3, 0, 64) is not null)), '{}'::jsonb)
+           from jsonb_each(v1) as l2(k2, v2)
+          where k2 ~ '^[0-9]{1,3}$' and jsonb_typeof(v2) = 'object') as v2
+      from jsonb_each(case when jsonb_typeof(v) = 'object' then v else '{}'::jsonb end) as l1(k1, v1)
+     where k1 ~ '^[0-9]{1,3}$' and jsonb_typeof(v1) = 'object'
+  ) a
+$$;
+
+create or replace function beatlab_private.public_player(st jsonb)
+returns jsonb
+language plpgsql
+immutable
+set search_path = ''
+as $$
+declare
+  tracks constant text[] := array['kick','snare','clap','hat','open','rim','tom','shaker','bass','chords','lead'];
+  out jsonb := jsonb_build_object('format', 'beatlab-player-1');
+  pats jsonb; params jsonb; arr jsonb; score jsonb; sc jsonb;
+begin
+  out := out || jsonb_strip_nulls(jsonb_build_object(
+    'bpm',    beatlab_private.num(st->'bpm', 40, 200),
+    'swing',  beatlab_private.num(st->'swing', 0, 100),
+    'key',    beatlab_private.num(st->'key', 0, 11),
+    'scale',  beatlab_private.ident(st->'scale'),
+    'master', beatlab_private.num(st->'master', 0, 150),
+    'chain',  case when jsonb_typeof(st->'chain') = 'boolean' then st->'chain' end,
+    'songMode', case when jsonb_typeof(st->'songMode') = 'boolean' then st->'songMode' end
+  ));
+
+  -- Muster A–D: nur bekannte Spuren, je 16 Zahlen
+  if jsonb_typeof(st->'pats') = 'array' then
+    select jsonb_agg(
+             (select coalesce(jsonb_object_agg(t, beatlab_private.steps16(pat->t)), '{}'::jsonb)
+                from unnest(tracks) t where beatlab_private.steps16(pat->t) is not null)
+             order by o)
+      into pats
+      from jsonb_array_elements(st->'pats') with ordinality as x(pat, o)
+     where o <= 4 and jsonb_typeof(pat) = 'object';
+    out := out || jsonb_build_object('pats', coalesce(pats, '[]'::jsonb));
+  end if;
+
+  -- Mixer: nur bekannte Spuren und bekannte Regler
+  if jsonb_typeof(st->'params') = 'object' then
+    select coalesce(jsonb_object_agg(t, jsonb_strip_nulls(jsonb_build_object(
+             'vol',   beatlab_private.num(st->'params'->t->'vol', 0, 150),
+             'pitch', beatlab_private.num(st->'params'->t->'pitch', -48, 48),
+             'decay', beatlab_private.num(st->'params'->t->'decay', 0, 200),
+             'hall',  beatlab_private.num(st->'params'->t->'hall', 0, 100),
+             'delay', beatlab_private.num(st->'params'->t->'delay', 0, 100),
+             'pan',   beatlab_private.num(st->'params'->t->'pan', -100, 100),
+             'low',   beatlab_private.num(st->'params'->t->'low', -24, 24),
+             'high',  beatlab_private.num(st->'params'->t->'high', -24, 24),
+             'oct',   beatlab_private.num(st->'params'->t->'oct', -4, 4),
+             'mute',  case when jsonb_typeof(st->'params'->t->'mute') = 'boolean' then st->'params'->t->'mute' end,
+             'solo',  case when jsonb_typeof(st->'params'->t->'solo') = 'boolean' then st->'params'->t->'solo' end,
+             'snd',   beatlab_private.ident(st->'params'->t->'snd')))), '{}'::jsonb)
+      into params
+      from unnest(tracks) t
+     where jsonb_typeof(st->'params'->t) = 'object';
+    out := out || jsonb_build_object('params', params);
+  end if;
+
+  out := out || jsonb_build_object('rollLengths', beatlab_private.lengths(st->'rollLengths'),
+                                   'bassLengths', beatlab_private.lengths(st->'bassLengths'));
+
+  -- Arrangement
+  if jsonb_typeof(st->'arrangement') = 'array' then
+    select jsonb_agg(jsonb_strip_nulls(jsonb_build_object(
+             'pat',  beatlab_private.num(a->'pat', 0, 3),
+             'bars', beatlab_private.num(a->'bars', 1, 64),
+             'name', beatlab_private.label(a->'name'))) order by o)
+      into arr
+      from jsonb_array_elements(st->'arrangement') with ordinality as x(a, o)
+     where o <= 64 and jsonb_typeof(a) = 'object';
+    out := out || jsonb_build_object('arrangement', coalesce(arr, '[]'::jsonb));
+  end if;
+
+  -- Notensong (PS-Beatlap-Score-1): Spuren und Noten neu aufgebaut
+  sc := st->'score';
+  if jsonb_typeof(sc) = 'object' and sc->>'format' = 'PS-Beatlap-Score-1' then
+    select jsonb_build_object(
+             'format', 'PS-Beatlap-Score-1',
+             'title', beatlab_private.label(sc->'title'),
+             'bpm', beatlab_private.num(sc->'bpm', 40, 200),
+             'beatsPerBar', beatlab_private.num(sc->'beatsPerBar', 1, 12),
+             'lengthBeats', beatlab_private.num(sc->'lengthBeats', 0, 256),
+             'sections', coalesce((select jsonb_agg(jsonb_build_object(
+                              'name', beatlab_private.label(se->'name'),
+                              'start', beatlab_private.num(se->'start', 0, 256)) order by o)
+                            from jsonb_array_elements(case when jsonb_typeof(sc->'sections') = 'array' then sc->'sections' else '[]' end)
+                                 with ordinality as y(se, o) where o <= 64), '[]'::jsonb),
+             'tracks', coalesce((select jsonb_agg(jsonb_strip_nulls(jsonb_build_object(
+                              'name', beatlab_private.label(tr->'name'),
+                              'instrument', beatlab_private.ident(tr->'instrument'),
+                              'volume', beatlab_private.num(tr->'volume', 0, 1),
+                              'pan', beatlab_private.num(tr->'pan', -1, 1),
+                              'notes', coalesce((select jsonb_agg(jsonb_build_object(
+                                           'pitch', case
+                                                      when jsonb_typeof(n->'pitch') = 'number' then to_jsonb(beatlab_private.num(n->'pitch', 24, 108))
+                                                      when (n->>'pitch') ~ '^[A-G](#|b)?[0-9]$' then n->'pitch' end,
+                                           'start', beatlab_private.num(n->'start', 0, 256),
+                                           'duration', beatlab_private.num(n->'duration', 0, 256),
+                                           'velocity', beatlab_private.num(n->'velocity', 0, 1)) order by no)
+                                         from jsonb_array_elements(case when jsonb_typeof(tr->'notes') = 'array' then tr->'notes' else '[]' end)
+                                              with ordinality as z(n, no)
+                                        where no <= 6000   -- Noten ohne gültige Tonhöhe/Startzeit fallen ganz weg
+                                          and (beatlab_private.num(n->'pitch', 24, 108) is not null or (n->>'pitch') ~ '^[A-G](#|b)?[0-9]$')
+                                          and beatlab_private.num(n->'start', 0, 256) is not null), '[]'::jsonb))) order by o)
+                            from jsonb_array_elements(case when jsonb_typeof(sc->'tracks') = 'array' then sc->'tracks' else '[]' end)
+                                 with ordinality as w(tr, o) where o <= 16), '[]'::jsonb))
+      into score;
+    out := out || jsonb_build_object('score', score,
+                                     'scoreActive', coalesce((st->'scoreActive') = 'true'::jsonb, false));
+  end if;
+
+  return out;
+end;
+$$;
+
+-- ---------------------------------------------------------------------------
 -- Geteilten Beat abrufen (ohne Login, nur mit gültigem Token)
--- Gibt NUR Abspieldaten heraus (Whitelist), keine Gerätenamen, Sample-
--- Dateinamen oder sonstigen privaten Projektinfos.
+-- Gibt NUR das öffentliche Abspielformat und einen bereinigten Songplan heraus.
 -- ---------------------------------------------------------------------------
 create or replace function public.beatlab_get_shared(p_token text)
 returns table (title text, bpm smallint, player jsonb, sections jsonb, created_at timestamptz)
@@ -471,13 +640,16 @@ stable
 security definer
 set search_path = ''
 as $$
-  select p.title, p.bpm,
-         (select coalesce(jsonb_object_agg(k, v.state -> k), '{}'::jsonb)
-            from unnest(array['bpm','swing','key','scale','chain','pats','params','arrangement','songMode',
-                              'score','scoreActive','rollLengths','bassLengths','master']) as k
-           where v.state ? k) as player,
-         (select coalesce(jsonb_agg(sec - 'id' - 'motif_id' - 'settings'), '[]'::jsonb)
-            from jsonb_array_elements(v.sections) as sec) as sections,
+  select left(p.title, 90), p.bpm,
+         beatlab_private.public_player(v.state),
+         (select coalesce(jsonb_agg(jsonb_strip_nulls(jsonb_build_object(
+                    'kind',   beatlab_private.ident(sec->'kind'),
+                    'name',   beatlab_private.label(sec->'name'),
+                    'bars',   beatlab_private.num(sec->'bars', 1, 64),
+                    'energy', beatlab_private.num(sec->'energy', 1, 10),
+                    'color',  case when (sec->>'color') ~ '^#[0-9a-fA-F]{6}$' then sec->'color' end))
+                  order by (sec->>'position')::int), '[]'::jsonb)
+            from jsonb_array_elements(v.sections) as sec),
          v.created_at
     from public.beatlab_shares s
     join public.beatlab_project_versions v on v.id = s.version_id
@@ -490,5 +662,8 @@ $$;
 
 revoke execute on function public.beatlab_get_shared(text) from public;
 grant  execute on function public.beatlab_get_shared(text) to anon, authenticated;
+
+-- Sicherheitsnetz: alles im privaten Schema für Nutzerrollen sperren
+revoke all on all functions in schema beatlab_private from public, anon, authenticated;
 
 commit;
