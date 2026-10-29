@@ -296,6 +296,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
   <div class="pane" data-pane="mix" hidden>
     <section class="card">
       <label class="slider" for="master"><span>Gesamt</span><input type="range" id="master" min="0" max="120"><output id="oMaster"></output></label>
+      <button class="btn" id="audioPanic" type="button">⏹ Ton sofort stoppen</button>
     </section>
     <section class="card">
       <div class="mixer" id="mixer"></div>
@@ -987,7 +988,20 @@ function tick(){
 }
 function start(){ if(P.scoreActive&&P.score){startScore();return;} if(!ensureAudio()) return; playing=true; step=0; songBar=0; playPat=P.songMode?patForBar(0):P.chain&&!used(cur)?nextPat(cur):cur; nextT=ac.currentTime+.06; queue=[]; tick(); timer=setInterval(tick,25);
   $('playBtn').classList.add('on'); $('playIcon').setAttribute('d','M6 5h4v14H6zM14 5h4v14h-4z'); $('playBtn').setAttribute('aria-label','Stopp'); }
-function stop(){ playing=false; clearInterval(timer); scorePlaybackEvents=[]; scoreCursor=0; lastPos=''; setTimeout(renderMini,0); arrNow=-1; document.querySelectorAll('.arrblock.now').forEach(b=>b.classList.remove('now')); $('playBtn').classList.remove('on'); $('playIcon').setAttribute('d','M7 4.5v15l13-7.5z'); $('playBtn').setAttribute('aria-label','Abspielen'); setPh(-1,-1); }
+function stop(){
+  playing=false;clearInterval(timer);timer=null;scorePlaybackEvents=[];scoreCursor=0;lastPos='';
+  // Release every active oscillator, sample and FX feedback loop. Stopping the
+  // sequencer alone does not silence nodes already scheduled in Web Audio.
+  const oldContext=ac;ac=null;live=null;
+  if(oldContext&&oldContext.state!=='closed'){
+    try{oldContext.close().catch(err=>console.warn('Audio stop:',err));}
+    catch(err){console.warn('Audio stop:',err);}
+  }
+  setTimeout(renderMini,0);arrNow=-1;
+  document.querySelectorAll('.arrblock.now').forEach(b=>b.classList.remove('now'));
+  $('playBtn').classList.remove('on');$('playIcon').setAttribute('d','M7 4.5v15l13-7.5z');
+  $('playBtn').setAttribute('aria-label','Abspielen');setPh(-1,-1);
+}
 $('playBtn').onclick=()=>playing?stop():start();
 function bpm(v){ P.bpm=Math.max(50,Math.min(200,Math.round(v))); $('bpmVal').textContent=P.bpm; $('bpmMini').textContent=P.bpm; if(live) live.delay.delayTime.setTargetAtTime(Math.min(.95,stepDur()*3),ac.currentTime,.05); save(); }
 let holdT=null;
@@ -1152,6 +1166,7 @@ function renderMixer(){ const area=$('mixer'); area.innerHTML=''; const so=anySo
     const m=document.createElement('button'); m.className='ms m'; m.textContent='M'; m.setAttribute('aria-pressed',!!p.mute); m.setAttribute('aria-label',tr.n+' stumm'); m.onclick=()=>{ p.mute=!p.mute; save(); renderMixer(); renderMatrix(); };
     row.append(nm,fader,s,m); area.append(row); } }
 $('master').oninput=e=>{ P.master=+e.target.value; $('oMaster').textContent=P.master; if(live) live.out.gain.value=masterGain(); save(); };
+$('audioPanic').onclick=()=>{stop();msg('Audio vollständig gestoppt.');};
 
 /* ---------- own samples (IndexedDB) ---------- */
 let decCtx=null;
