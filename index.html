@@ -733,6 +733,17 @@ async function useLibrarySample(trackId,entry){
 async function loadSampleLibrary(){
   try{const res=await fetch('samples/samples.json');if(!res.ok)throw Error(String(res.status));const data=await res.json();if(!Array.isArray(data.samples))throw Error('Ungültige Liste');sampleLibrary=data;}
   catch(err){sampleLibrary=null;console.info('Soundbibliothek nicht verfügbar',err);}
+  // First upgrade only: use the softer one-shot cymbal samples already shipped
+  // with Beatlap. Never replace a user's selected or uploaded samples.
+  if(sampleLibrary&&!P.softHatDefaultsV1){
+    for(const [id,sampleId] of [['hat','hihat-05'],['open','openhat-08']]){
+      if(!P.params[id].lib&&!sampleBytes[id]&&sampleLibrary.samples.some(s=>s.id===sampleId)){
+        P.params[id].lib=sampleId;
+        P.params[id].libRoot=null;
+      }
+    }
+    P.softHatDefaultsV1=true;save();
+  }
   renderLibraryOptions();
   if(sampleLibrary){for(const tr of TR){const entry=libraryById(P.params[tr.id].lib);if(!entry||entry.type==='loop')continue;try{samples[tr.id]=await getLibraryAudio(entry);}catch(err){console.warn('Sample nicht geladen:',entry.id,err);}}renderPads();updateSampleInfo();}
 }
