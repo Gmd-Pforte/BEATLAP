@@ -1281,7 +1281,7 @@ function generateComposition(surprise=false,mode='all'){
   const seed=(window.crypto?.getRandomValues?crypto.getRandomValues(new Uint32Array(1))[0]:Math.floor(Math.random()*4294967296))>>>0;
   const rnd=makeRng(seed),pick=a=>a[Math.floor(rnd()*a.length)],chance=p=>rnd()<p,between=(lo,hi)=>Math.round(lo+rnd()*(hi-lo));
   // Surprise should feel like a coherent song, not a random harsh sound demo.
-  const musicalGenres=['piano','sad','acoustic','cinema','folk','pop','jazz','ambient','house','melotech'];
+  const musicalGenres=['piano','sad','acoustic','cinema','folk','pop','ambient','melotech'];
   const musicalMoods=['sad','melancholic','hope','happy'];
   const genre=selectedGenre==='random'?pick(musicalGenres):selectedGenre;
   const mood=selectedMood==='random'?pick(musicalMoods):selectedMood;
@@ -1308,9 +1308,14 @@ function generateComposition(surprise=false,mode='all'){
     }
   }
   if(!keep.lead){P.rollLengths={};P.params.lead.snd=({
-    piano:'grand',sad:'felt',cinema:'cello',acoustic:'acoustic',jazz:'tenorSax',
-    folk:'acoustic',alternative:'acoustic',ambient:'flute'
-  })[genre]||cfg.lead;}
+    piano:'felt',sad:'felt',cinema:'cello',acoustic:'upright',jazz:'felt',
+    folk:'grand',alternative:'upright',ambient:'flute',pop:'grand',
+    melotech:'felt',house:'grand'
+  })[genre]||cfg.lead;
+    // Keep lead expressive but below overpowering toy-like oscillator levels.
+    P.params.lead.vol=Math.min(P.params.lead.vol,63);
+    P.params.lead.high=Math.min(P.params.lead.high||0,0);
+  }
   if(!keep.chords)P.params.chords.snd=({
     piano:'felt',sad:'grand',cinema:'strings',acoustic:'nylon',folk:'acoustic'
   })[genre]||cfg.chord;
