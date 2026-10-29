@@ -851,7 +851,43 @@ function parseScoreText(text){
   }
   return raw;
 }
-function scoreEvents(score,onlyTrack=-1){const a=[];score.tracks.forEach((tr,i)=>{if(onlyTrack>=0&&i!==onlyTrack)return;for(const n of tr.notes)a.push({track:tr,note:n});});return a.sort((a,b)=>a.note.start-b.note.start);}
+function scoreEvents(score,onlyTrack=-1){const a=[];score.tracks.forEach((tr,i)=>{if(onlyTrack>=0&&i!==onlyTrack)return;for(const n of tr.notes)a.push({track:tr,trackIndex:i,note:n});});return a.sort((a,b)=>a.note.start-b.note.start);}
+function ensureScoreMix(){
+  if(!P.score){P.scoreMix=[];return;}
+  if(!Array.isArray(P.scoreMix)||P.scoreMix.length!==P.score.tracks.length)P.scoreMix=P.score.tracks.map(()=>({mute:false,solo:false,volume:100}));
+  P.scoreMix=P.scoreMix.map(s=>({mute:!!s?.mute,solo:!!s?.solo,volume:Math.max(0,Math.min(100,Number(s?.volume??100)))}));
+}
+function scoreAudible(i){
+  const state=P.scoreMix?.[i];if(!state||state.mute)return false;
+  return !P.scoreMix.some(s=>s.solo)||state.solo;
+}
+function updateScoreGains(){
+  if(!live?.scoreBuses||!ac)return;
+  live.scoreBuses.forEach((bus,i)=>{
+    if(!bus)return;
+    const target=scoreAudible(i)?(P.scoreMix[i]?.volume??100)/100:0;
+    bus.gain.setTargetAtTime(target,ac.currentTime,.008);
+  });
+}
+function changeScoreTrack(i,field,value){
+  ensureScoreMix();P.scoreMix[i][field]=value;save();updateScoreGains();scorePreview();if(P.scoreActive)renderMixer();
+}
+function buildScoreTrackControls(container){
+  ensureScoreMix();container.replaceChildren();
+  P.score.tracks.forEach((tr,i)=>{
+    const state=P.scoreMix[i],hasSolo=P.scoreMix.some(s=>s.solo);
+    const row=document.createElement('div');row.className='mrow'+((state.mute||(hasSolo&&!state.solo))?' dim':'');
+    const label=document.createElement('div');label.className='mn';label.style.minWidth='0';
+    label.textContent=tr.name+' · '+tr.instrument;
+    const slider=document.createElement('input');slider.type='range';slider.min=0;slider.max=100;slider.value=state.volume;
+    slider.setAttribute('aria-label',tr.name+' Lautstärke');slider.oninput=()=>{P.scoreMix[i].volume=Number(slider.value);save();updateScoreGains();};
+    const solo=document.createElement('button');solo.className='ms s';solo.textContent='S';solo.title='Nur diese Spur hören';solo.setAttribute('aria-label',tr.name+' solo');solo.setAttribute('aria-pressed',state.solo);
+    solo.onclick=()=>changeScoreTrack(i,'solo',!state.solo);
+    const mute=document.createElement('button');mute.className='ms m';mute.textContent='M';mute.title='Diese Spur stummschalten';mute.setAttribute('aria-label',tr.name+' stumm');mute.setAttribute('aria-pressed',state.mute);
+    mute.onclick=()=>changeScoreTrack(i,'mute',!state.mute);
+    row.append(label,slider,solo,mute);container.append(row);
+  });
+}
 function midiName(n){return NN[n%12]+(Math.floor(n/12)-1);}
 function scorePreview(){
   const sc=P.score,active=!!sc&&P.scoreActive;
@@ -859,23 +895,18 @@ function scorePreview(){
   $('scoreTracks').replaceChildren();
   if(!sc){$('scoreStatus').textContent='Noch kein Notensong geladen. Deine bisherigen Beats bleiben erhalten.';return;}
   $('scoreStatus').textContent=(active?'▶ Notensong aktiv · ':'')+sc.title+' · '+sc.bpm+' BPM · '+(sc.lengthBeats/4)+' Takte · '+sc.tracks.length+' Spuren';
-  for(const tr of sc.tracks){
-    const item=document.createElement('div');item.className='hint';item.style.padding='8px';item.style.border='1px solid var(--line2)';item.style.borderRadius='12px';
-    const title=document.createElement('strong');title.textContent=tr.name+' · '+(INSTR[tr.instrument]?.[0]||BASSES[tr.instrument]?.[0]||DRUMS[tr.instrument]?.[0]||tr.instrument);
-    const details=document.createElement('div');details.textContent=tr.notes.length+' Noten · '+tr.notes.slice(0,8).map(n=>midiName(n.pitch)).join(' · ')+(tr.notes.length>8?' …':'');
-    item.append(title,details);$('scoreTracks').append(item);
-  }
+  buildScoreTrackControls($('scoreTracks'));
 }
-function activateScore(on){if(playing)stop();P.scoreActive=!!P.score&&!!on;if(P.scoreActive)bpm(P.score.bpm);save();scorePreview();exportLabel();msg(P.scoreActive?'Notensong aktiv. Drücke Play.':'Beat-Patterns wieder aktiv.');}
+function activateScore(on){if(playing)stop();P.scoreActive=!!P.score&&!!on;if(P.scoreActive)bpm(P.score.bpm);save();scorePreview();updateScoreGains();exportLabel();msg(P.scoreActive?'Notensong aktiv. Drücke Play.':'Beat-Patterns wieder aktiv.');}
 $('scoreEnable').onclick=()=>activateScore(true);
 $('scoreDisable').onclick=()=>activateScore(false);
-$('scoreRemove').onclick=()=>{if(playing)stop();delete P.score;P.scoreActive=false;save();scorePreview();exportLabel();msg('Notensong entfernt, Beat-Patterns bleiben erhalten.');};
+$('scoreRemove').onclick=()=>{if(playing)stop();delete P.score;P.scoreActive=false;P.scoreMix=[];if(live)live.scoreBuses=[];save();scorePreview();exportLabel();msg('Notensong entfernt, Beat-Patterns bleiben erhalten.');};
 $('scoreFile').onchange=async e=>{
   const file=e.target.files?.[0];if(!file)return;
   try{
     if(file.size>3*1024*1024)throw Error('Songdatei zu groß (maximal 3 MB).');
     const source=await file.text(),raw=file.name.toLowerCase().endsWith('.txt')?parseScoreText(source):JSON.parse(source);
-    const score=validateScore(raw);if(playing)stop();P.score=score;P.scoreActive=true;bpm(score.bpm);save();scorePreview();exportLabel();
+    const score=validateScore(raw);if(playing)stop();P.score=score;P.scoreMix=[];if(live)live.scoreBuses=[];ensureScoreMix();P.scoreActive=true;bpm(score.bpm);save();scorePreview();exportLabel();
     msg('Notensong geladen: '+score.title+' · '+score.tracks.reduce((s,t)=>s+t.notes.length,0)+' Noten.');
   }catch(err){msg('Songimport fehlgeschlagen: '+err.message);}
   finally{e.target.value='';}
@@ -890,9 +921,13 @@ function scoreExample(){
     ]};
 }
 $('scoreExample').onclick=()=>saveFile('PS-Beatlap-Notensong-Beispiel.json',new Blob([JSON.stringify(scoreExample(),null,2)],{type:'application/json'})).then(()=>msg('Notensong-Beispiel gespeichert.')).catch(e=>msg('Beispiel konnte nicht gespeichert werden: '+e.message));
-function playScoreNote(E,tr,n,t,secPerBeat){
+function playScoreNote(E,tr,n,t,secPerBeat,trackIndex=-1,ignoreMix=false){
   const C=E.ctx,o=C.createGain(),pan=C.createStereoPanner?C.createStereoPanner():C.createGain();
-  if(pan.pan)pan.pan.value=tr.pan;chain(o,pan,E.bus);
+  if(pan.pan)pan.pan.value=tr.pan;
+  if(!E.scoreBuses)E.scoreBuses=[];
+  let bus=E.scoreBuses[trackIndex];
+  if(!bus){bus=C.createGain();bus.gain.value=ignoreMix||trackIndex<0?1:(scoreAudible(trackIndex)?(P.scoreMix[trackIndex]?.volume??100)/100:0);bus.connect(E.bus);E.scoreBuses[trackIndex]=bus;}
+  chain(o,pan,bus);
   const vol=tr.volume*n.velocity,duration=n.duration*secPerBeat,f=440*semi(n.pitch-69);
   if(DRUMS[tr.instrument]){(DF[tr.instrument]||DF.kickBoom)(E,o,t,vol,0,1);return;}
   if(BASSES[tr.instrument]){playBass(E,o,t,vol,f,Math.max(.1,duration),tr.instrument,duration);return;}
@@ -905,7 +940,7 @@ function tickScore(){
   while(scoreCursor<scorePlaybackEvents.length){
     const ev=scorePlaybackEvents[scoreCursor],t=scoreStartTime+ev.note.start*secPerBeat;
     if(t>ac.currentTime+.16)break;
-    if(t>=ac.currentTime-.05)playScoreNote(live,ev.track,ev.note,t,secPerBeat);
+    if(t>=ac.currentTime-.05)playScoreNote(live,ev.track,ev.note,t,secPerBeat,ev.trackIndex);
     scoreCursor++;
   }
   if(ac.currentTime>scoreStartTime+P.score.lengthBeats*secPerBeat+.2)stop();
@@ -919,7 +954,11 @@ async function renderScoreWav(onlyTrack=-1,onProgress){
   const OC=window.OfflineAudioContext||window.webkitOfflineAudioContext;if(!OC)throw Error('WAV-Export wird hier nicht unterstützt.');
   const secPerBeat=60/P.bpm,sr=44100,duration=P.score.lengthBeats*secPerBeat+2.5;
   const oc=new OC(2,Math.ceil(duration*sr),sr),E=makeEngine(oc);
-  for(const ev of scoreEvents(P.score,onlyTrack))playScoreNote(E,ev.track,ev.note,.02+ev.note.start*secPerBeat,secPerBeat);
+  ensureScoreMix();
+  for(const ev of scoreEvents(P.score,onlyTrack)){
+    if(onlyTrack<0&&!scoreAudible(ev.trackIndex))continue;
+    playScoreNote(E,ev.track,ev.note,.02+ev.note.start*secPerBeat,secPerBeat,ev.trackIndex,onlyTrack>=0);
+  }
   return encodeRenderedWav(oc,onProgress);
 }
 
@@ -1105,6 +1144,7 @@ $('arrReset').onclick=()=>{ P.arrangement=defaultArr(); save(); renderArrangemen
 const anySolo=()=>TR.some(t=>P.params[t.id].solo);
 function renderMixer(){ const area=$('mixer'); area.innerHTML=''; const so=anySolo();
   $('master').value=P.master; $('oMaster').textContent=P.master;
+  if(P.scoreActive&&P.score){buildScoreTrackControls(area);return;}
   for(const tr of TR){ const p=P.params[tr.id], row=document.createElement('div'); row.className='mrow'+((p.mute||(so&&!p.solo))?' dim':'');
     const nm=document.createElement('button'); nm.className='mn'; nm.innerHTML=`<i style="background:${tr.c}"></i>`; nm.append(tr.n); nm.onclick=()=>{ sel=tr.id; showView('beat'); showTab('sound'); renderAll(); };
     const fader=document.createElement('input'); fader.type='range'; fader.min=0; fader.max=100; fader.value=p.vol; fader.setAttribute('aria-label',tr.n+' Lautstärke'); fader.oninput=()=>{ p.vol=+fader.value; save(); };
