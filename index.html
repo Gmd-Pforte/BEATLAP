@@ -552,7 +552,10 @@ let ac=null, live=null;
 const semi=x=>Math.pow(2,x/12);
 function makeEngine(ctx){
   const comp=ctx.createDynamicsCompressor(); comp.threshold.value=-14; comp.ratio.value=4; comp.attack.value=.003; comp.release.value=.2;
-  const out=ctx.createGain(); out.gain.value=masterGain(); const lim=ctx.createDynamicsCompressor(); lim.threshold.value=-3; lim.knee.value=0; lim.ratio.value=20; lim.attack.value=.001; lim.release.value=.08; comp.connect(out); out.connect(lim); lim.connect(ctx.destination);
+  const out=ctx.createGain(); out.gain.value=masterGain();
+  const lim=ctx.createDynamicsCompressor(); lim.threshold.value=-9; lim.knee.value=2; lim.ratio.value=18; lim.attack.value=.002; lim.release.value=.16;
+  const safety=ctx.createGain(); safety.gain.value=.72;
+  comp.connect(out);out.connect(lim);lim.connect(safety);safety.connect(ctx.destination);
   const nb=ctx.createBuffer(1,ctx.sampleRate*2,ctx.sampleRate), d=nb.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1;
   const curve=new Float32Array(1024); for(let i=0;i<1024;i++){ const x=i/512-1; curve[i]=Math.tanh(x*2.2); }
   const rev=ctx.createConvolver(), L=Math.floor(ctx.sampleRate*2.4), ir=ctx.createBuffer(2,L,ctx.sampleRate);
@@ -561,7 +564,7 @@ function makeEngine(ctx){
   const delay=ctx.createDelay(1),feedback=ctx.createGain(),wet=ctx.createGain();delay.delayTime.value=Math.min(.95,stepDur()*3);feedback.gain.value=.22;wet.gain.value=.38;delay.connect(feedback);feedback.connect(delay);delay.connect(wet);wet.connect(comp);
   return {ctx,bus:comp,out,curve,rev,delay,noise:nb,openG:null,bassG:null,bassF:0,bassT:-9,ks:{}};
 }
-const masterGain=()=>.7*(P.master??80)/80;
+const masterGain=()=>.62*(P.master??80)/80;
 function SH(E,o){ if(!o._sh){ const s=E.ctx.createWaveShaper(); s.curve=E.curve; s.connect(o); o._sh=s; } return o._sh; }
 function G(E,t,v,dec,att){ const g=E.ctx.createGain(); g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(Math.max(.0002,v),t+(att||.002)); g.gain.exponentialRampToValueAtTime(.0001,t+(att||.002)+dec); return g; }
 function N(E,t,dur){ const n=E.ctx.createBufferSource(); n.buffer=E.noise; n.start(t,Math.random()*.8); n.stop(t+dur+.05); return n; }
@@ -576,8 +579,12 @@ function kickG(E,o,t,v,p,k,f0,f1,dec,click,sat,lp){ const os=O(E,'sine',f0*semi(
 function snareG(E,o,t,v,p,k,tone,tdec,hp,ndec,nv,lp){ const os=O(E,'triangle',tone*semi(p),t,.3); os.frequency.exponentialRampToValueAtTime(tone*.73*semi(p),t+.06); chain(os,G(E,t,v*.5,tdec*k),o);
   const n=N(E,t,ndec*k+.05); const last=lp?chain(n,F(E,'highpass',hp*semi(p)),F(E,'lowpass',lp)):chain(n,F(E,'highpass',hp*semi(p))); chain(last,G(E,t,v*nv,ndec*k),o); }
 function hatG(E,o,t,v,p,k,hp,dur,vv,lp,isOpen){ if(E.openG){ try{ E.openG.gain.cancelScheduledValues(t); E.openG.gain.setTargetAtTime(.0001,t,.008);}catch(e){} E.openG=null; }
-  const f2=F(E,'peaking',10000*semi(p),1); f2.gain.value=6; let n=chain(N(E,t,dur*k),F(E,'highpass',hp*semi(p)),f2); if(lp) n=chain(n,F(E,'lowpass',lp)); const g=G(E,t,v*vv,dur*k); chain(n,g,o); if(isOpen) E.openG=g; }
-function metal(E,o,t,v,p,dur,bp){ const g=G(E,t,v,dur), f=F(E,'bandpass',bp*semi(p),.8), h=F(E,'highpass',5000); for(const r of [205.3,304.4,369.6,522.7,540,800]){ chain(O(E,'square',r*1.7*semi(p),t,dur),f); } chain(f,h,g,o); }
+  // Soft, band-limited hats: no 10 kHz boost or raw ultrasonic fizz.
+  const high=F(E,'highpass',Math.min(7000,hp*semi(p)));
+  const low=F(E,'lowpass',Math.min(7900,lp||7500));low.Q.value=.6;
+  const g=G(E,t,v*vv*.55,dur*k,.003);
+  chain(N(E,t,dur*k),high,low,g,o);if(isOpen)E.openG=g; }
+function metal(E,o,t,v,p,dur,bp){ const g=G(E,t,v*.12,dur,.004), f=F(E,'bandpass',bp*semi(p),.8), h=F(E,'lowpass',8500); for(const r of [205.3,304.4,369.6,522.7,540,800]){ chain(O(E,'square',r*1.7*semi(p),t,dur),f); } chain(f,h,g,o); }
 function tomG(E,o,t,v,p,k,f0,f1,dec){ const os=O(E,'sine',f0*semi(p),t,dec*k+.1); os.frequency.exponentialRampToValueAtTime(f1*semi(p),t+dec*.7); chain(os,G(E,t,v*.85,dec*k),o); chain(N(E,t,.02),F(E,'bandpass',2500),G(E,t,v*.12,.015),o); }
 function clapG(E,o,t,v,p,k,tail,n,bp){ const g=E.ctx.createGain(); g.gain.setValueAtTime(.0001,t); for(let i=0;i<n;i++){ const s=t+i*.011; g.gain.setValueAtTime(v*(i?0.85:1),s); g.gain.exponentialRampToValueAtTime(v*.15,s+.009); }
   const e=t+n*.011; g.gain.setValueAtTime(v*.85,e); g.gain.exponentialRampToValueAtTime(.0001,e+tail*k); chain(N(E,t,tail*k+.1),F(E,'bandpass',bp*semi(p),.9),g,o); }
@@ -1222,7 +1229,11 @@ function generateComposition(surprise=false,mode='all'){
   const gKeys=Object.keys(GENRES),mKeys=Object.keys(MOODS);
   const seed=(window.crypto?.getRandomValues?crypto.getRandomValues(new Uint32Array(1))[0]:Math.floor(Math.random()*4294967296))>>>0;
   const rnd=makeRng(seed),pick=a=>a[Math.floor(rnd()*a.length)],chance=p=>rnd()<p,between=(lo,hi)=>Math.round(lo+rnd()*(hi-lo));
-  const genre=selectedGenre==='random'?pick(gKeys):selectedGenre,mood=selectedMood==='random'?pick(mKeys):selectedMood;
+  // Surprise should feel like a coherent song, not a random harsh sound demo.
+  const musicalGenres=['piano','sad','acoustic','cinema','folk','pop','jazz','ambient','house','melotech'];
+  const musicalMoods=['sad','melancholic','hope','happy'];
+  const genre=selectedGenre==='random'?pick(musicalGenres):selectedGenre;
+  const mood=selectedMood==='random'?pick(musicalMoods):selectedMood;
   const cfg=GENRES[genre],feel=MOODS[mood],variation=$('ideaVariation').value;
   const keep={
     lead:mode==='backing'||(mode==='all'&&$('keepLead').checked),
@@ -1235,7 +1246,7 @@ function generateComposition(surprise=false,mode='all'){
   const before=JSON.parse(JSON.stringify(P));composerUndo=before;$('ideaUndo').disabled=false;
   const note=d=>Math.max(1,Math.min(15,d));
   const scale=pick(feel.scales),roots=pick(feel.progressions).slice();
-  const density=Math.max(.2,Math.min(.9,cfg.density*feel.density*(variation==='wild'?1.22:variation==='gentle'?.82:1)));
+  const density=Math.max(.2,Math.min(.72,cfg.density*feel.density*(variation==='wild'?1.12:variation==='gentle'?.82:1)));
   if(playing)stop();
   if(!preserveHarmony){P.bpm=between(...cfg.bpm);P.swing=cfg.swing;P.key=between(0,11);P.scale=scale;}
   P.chain=true;P.songMode=true;P.rollLengths=P.rollLengths||{};P.bassLengths=P.bassLengths||{};
@@ -1253,12 +1264,17 @@ function generateComposition(surprise=false,mode='all'){
     piano:'felt',sad:'grand',cinema:'strings',acoustic:'nylon',folk:'acoustic'
   })[genre]||cfg.chord;
   if(!keep.bass){P.bassLengths={};P.params.bass.snd=cfg.bass;}
-  if(!keep.drums){P.params.kick.snd=cfg.kick;P.params.snare.snd=cfg.snare;P.params.hat.snd=genre==='jazz'?'hatLofi':'hat';}
+  if(!keep.drums){P.params.kick.snd=cfg.kick;P.params.snare.snd=cfg.snare;P.params.hat.snd=genre==='jazz'||genre==='piano'||genre==='sad'?'hatLofi':'hat';
+    // Give the noisy percussion less presence than melody and harmonic parts.
+    P.params.hat.vol=Math.min(P.params.hat.vol,38);
+    P.params.open.vol=Math.min(P.params.open.vol,32);
+    P.params.shaker.vol=Math.min(P.params.shaker.vol,38);
+  }
   const baseRhythm=pick(MELODIC_RHYTHMS);
   const themeSteps=baseRhythm.filter((_,i)=>i===0||chance(.72)).slice(0,6);
   if(themeSteps.length<3)themeSteps.push(...[4,8,12].filter(s=>!themeSteps.includes(s)).slice(0,3-themeSteps.length));
   themeSteps.sort((a,b)=>a-b);
-  const contour=[0],walk=[-2,-1,-1,0,1,1,2];
+  const contour=[0],walk=[-1,-1,0,0,1,1];
   for(let i=1;i<themeSteps.length;i++){
     let offset=contour[i-1]+pick(walk);offset=Math.max(-3,Math.min(4,offset));contour.push(offset);
   }
@@ -1300,9 +1316,9 @@ function generateComposition(surprise=false,mode='all'){
         if(!chance(chanceToPlay))continue;
         let step=m.step;
         if(bar>0&&variation!=='gentle'&&!isStrong&&chance(variation==='wild'?.48:.18))step=Math.max(0,Math.min(15,step+pick([-1,1])));
-        let row=note(melodicStart+m.offset+shift+variationShift+(variation==='wild'?pick([-2,0,2]):pick([0,0,0,1,-1])));
+        let row=note(melodicStart+m.offset+shift+variationShift+(variation==='wild'?pick([-1,0,1]):pick([0,0,0,1,-1])));
         if(isStrong)row=note(root+7+(bar===2?pick([0,2]):0));
-        if(lastRow!==null&&Math.abs(row-lastRow)>4)row=note(lastRow+Math.sign(row-lastRow)*pick([2,3,4]));
+        if(lastRow!==null&&Math.abs(row-lastRow)>3)row=note(lastRow+Math.sign(row-lastRow)*pick([1,2,3]));
         if(bar===0&&i>1&&chance(.65))continue;
         lastRow=row;const bit=1<<(row-1);p.lead[step]|=bit;
         const length=pick(mood==='sad'||mood==='melancholic'?[2,3,4,4,6]:[1,2,2,3,4]);
@@ -1315,12 +1331,12 @@ function generateComposition(surprise=false,mode='all'){
       if(bar!==0&&cfg.groove!=='ambient'){
         barKick.forEach(s=>p.kick[s]=bar===3&&s%4!==0?1:2);
         barSnare.forEach(s=>p.snare[s]=bar===2?2:1);
-        for(let s=0;s<16;s+=cfg.groove==='ballad'?4:2)if(chance(bar===2?.9:.64))p.hat[s]=s%4===0?2:1;
+        for(let s=0;s<16;s+=cfg.groove==='ballad'?4:2)if(chance(bar===2?.58:.42))p.hat[s]=1;
       }else if(cfg.groove!=='ambient'){p.kick[0]=1;p.hat[8]=1;}
-      if(bar===2&&cfg.groove==='four')[2,6,10,14].forEach(s=>{if(chance(.75))p.open[s]=1;});
+      if(bar===2&&cfg.groove==='four')[6,14].forEach(s=>{if(chance(.25))p.open[s]=1;});
       if(cfg.groove==='reggae'&&bar>0)[3,7,11,15].forEach(s=>p.rim[s]=1);
       if(bar===3){p.snare[14]=1;p.snare[15]=1;if(chance(.5))p.tom[15]=1;}
-      if(variation==='wild'&&bar===2){p.kick[pick([3,6,10,14])]=1;p.open[pick([3,7,11,15])]=1;}
+      if(variation==='wild'&&bar===2)p.kick[pick([6,10,14])]=1;
     }
   }
   const requestedBars=+$('ideaLength').value||32;
