@@ -17,10 +17,17 @@
 <label>Modus<select id="mode"><option value="minor" selected>Moll</option><option value="major">Dur</option></select></label>
 <label>Tempo<input id="bpm" type="number" min="40" max="200" value="125"></label>
 <label>Melodie<select id="pattern"><option value="gentle">Gefühlvoll</option><option value="drive">Treibend</option><option value="rising">Aufbauend</option></select></label>
-</div><div class="buttons"><button id="play">▶ Akkorde & Melodie</button><button class="secondary" id="stop">■ Stop</button><button class="secondary" id="export">↓ Beatlap JSON exportieren</button></div>
+</div><div class="controls" style="margin-top:15px">
+<label>Songlänge<select id="length"><option value="short">Kurz · ca. 1–2 Min.</option><option value="full" selected>Komplett · ca. 3 Min.</option><option value="long">Lang · ca. 4–5 Min.</option></select></label>
+<label>Beat-Stil<select id="beatstyle"><option value="house" selected>Progressive House · 4/4</option><option value="pop">Pop / Ballade</option><option value="break">Hip-Hop / Breakbeat</option></select></label>
+<label>Drums<select id="drums"><option value="full" selected>Komplettes Drumkit</option><option value="soft">Dezent</option><option value="off">Ohne Drums</option></select></label>
+<label>Bass<select id="bass"><option value="on" selected>Tiefer Bass</option><option value="off">Ohne Bass</option></select></label>
+</div><div class="buttons"><button id="play">▶ Ganzen Song spielen</button><button class="secondary" id="stop">■ Stop</button><button class="secondary" id="generate">↻ Neuen Song komponieren</button><button class="secondary" id="export">↓ Beatlap JSON</button><button class="secondary" id="wav">↓ WAV rendern</button></div>
+<p id="songInfo" class="sub" aria-live="polite"></p>
+<div class="steps" id="sections"></div>
 <div class="steps" id="steps"></div></section>
 <section class="panel"><h2>03 · Live-Notenvisualisierung</h2><div id="chordLabel">Em</div><p id="notesLabel" class="sub">E · G · B</p><div class="graph" id="graph" role="img" aria-label="Animierte Tonhöhenlinien"></div><p><small>Die Linien zeigen die Tonhöhen des aktuellen Akkords. Die Audio-Ausgabe beginnt nach einer Berührung mit dem Play-Button.</small></p></section>
-<p class="footer">Experimentelle Engine 1.0 · Synthese ohne externe Abhängigkeiten · Export im Format PS-Beatlap-Score-1</p>
+<p class="footer">Beatlap Sound Engine 2.0 · Instrumental-Songgenerator mit Songabschnitten und synthetisierten Beats · PS-Beatlap-Score-1</p>
 <script>
 (()=>{'use strict';
 const $=id=>document.getElementById(id), names=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
@@ -44,4 +51,149 @@ $('savePreset').onclick=()=>{try{localStorage.setItem('beatlap-sound-preset-v1',
 $('loadPreset').onclick=()=>{try{let p=JSON.parse(localStorage.getItem('beatlap-sound-preset-v1'));if(!p)throw Error();for(const k of Object.keys(values())){if(p[k]!==undefined){$(k).value=p[k];$(k).dispatchEvent(new Event('input'))}}}catch(e){alert('Noch kein Preset vorhanden')}};
 $('root').onchange=$('mode').onchange=render;render();
 })();
-</script></body></html>
+</script>
+<script>
+/* Beatlap Song Engine 2.0: standalone composer and Web Audio drum synthesis. */
+(()=>{
+'use strict';
+const $=id=>document.getElementById(id);
+const names=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const note=m=>names[((m%12)+12)%12]+(Math.floor(m/12)-1);
+const freq=m=>440*Math.pow(2,(m-69)/12);
+let seed=42,plan=null,context=null,bus=null,scheduled=[],clock=null,playing=false,offset=0,started=0,previewIndex=-1;
+let live=[],noiseCache=new WeakMap();
+const rnd=(n)=>{let x=(Math.imul((n+seed)>>>0,1664525)+1013904223)>>>0;return x/4294967296};
+const tempo=()=>Math.max(40,Math.min(200,Number($('bpm').value)||125));
+const settings=()=>({wave:$('wave').value,attack:+$('attack').value,release:+$('release').value,cutoff:+$('cutoff').value,detune:+$('detune').value,volume:+$('volume').value});
+function songSections(){
+let full=[['Intro',4,1],['Strophe 1',12,2],['Pre-Chorus',4,3],['Refrain 1',16,4],['Strophe 2',12,2],['Pre-Chorus 2',4,3],['Refrain 2',16,4],['Bridge',8,1],['Letzter Refrain',16,5],['Outro',4,1]];
+let short=[['Intro',4,1],['Strophe',8,2],['Refrain',8,4],['Bridge',4,1],['Letzter Refrain',8,5],['Outro',4,1]];
+let long=[['Intro',8,1],['Strophe 1',16,2],['Pre-Chorus',8,3],['Refrain 1',24,4],['Strophe 2',16,2],['Pre-Chorus 2',8,3],['Refrain 2',24,4],['Bridge',8,1],['Letzter Refrain',24,5],['Outro',8,1]];
+return ($('length').value==='short'?short:$('length').value==='long'?long:full);
+}
+function chords(){
+let root=+$('root').value,major=$('mode').value==='major',offsets=major?[0,7,9,5]:[0,8,3,10];
+return offsets.map((step,i)=>{let base=48+root+step,minor=major?i===2:i===0;return {name:names[(root+step)%12]+(minor?'m':''),notes:[base,base+(minor?3:4),base+7]};});
+}
+function makeSong(){
+const sections=songSections(),harmony=chords(),events=[],marks=[];let bar=0,serial=0;
+const add=(track,pitch,beat,len,velocity)=>events.push({track,pitch,beat,duration:len,velocity});
+for(let si=0;si<sections.length;si++){
+let [title,bars,energy]=sections[si];marks.push({name:title,start:bar*4,bars,energy});
+for(let b=0;b<bars;b++){
+let absolute=bar+b,c=harmony[absolute%4],start=absolute*4,last=title==='Outro',bridge=title==='Bridge',chorus=energy>=4;
+let chordN=c.notes.map((m,i)=>m+(chorus&&i===2?12:0));
+chordN.forEach((m,i)=>add('Akkorde',m,start,3.75,.35+energy*.06));
+if(!last||b<bars-2){
+let shape=$('pattern').value==='drive'?[0,1,2,1,2,1,0,1]:$('pattern').value==='rising'?[0,1,1,2,1,2,2,1]:[2,1,0,1,2,1,0,1];
+let count=energy===1?4:8;
+for(let j=0;j<count;j++){
+if(!chorus&&j%4===3&&rnd(serial++)>.4)continue;
+let idx=shape[(j+(b%2?2:0))%8],pitch=c.notes[idx]+(chorus?24:12);
+if(bridge)pitch-=12;
+if(rnd(serial++)>.83)pitch+=idx===0?0:12;
+let pos=start+j*(4/count);
+add('Melodie',pitch,pos,chorus?.40:energy===1?.75:.47,Math.min(.95,.42+energy*.08+(j===0?.12:0)));
+}}
+if($('bass').value==='on'&&energy>=2){
+let steps=chorus?[0,1.5,2,3.5]:[0,2.5];
+for(let beat of steps)add('Bass',c.notes[0]-24,start+beat,chorus?.38:.65,.55+energy*.065);
+}
+if($('drums').value!=='off'){
+let style=$('beatstyle').value,soft=$('drums').value==='soft',drumEnergy=soft?Math.min(energy,2):energy;
+if(!(title==='Intro'&&b<2)||energy>=3){
+for(let k=0;k<4;k++){
+if(style==='house'||style==='pop'&&k===0||style==='break'&&(k===0||k===2||k===3&&rnd(serial++)>.6))add('Kick',36,start+k,.2,.45+drumEnergy*.1);
+if(k===1||k===3)add('Snare',38,start+k,.18,soft?.38:.6+energy*.065);
+}
+if(style==='pop')add('Kick',36,start+2,.2,.54);
+let hStep=energy>=3?.5:1;
+for(let p=0;p<4;p+=hStep){
+if(bridge&&p%1!==0)continue;
+add('Hi-Hat',42,start+p,.09,(soft?.18:.22)+energy*.035);
+}
+if(chorus&&b%2===1)add('Open Hat',46,start+3.5,.23,.35);
+}}
+}
+bar+=bars;
+}
+events.sort((a,b)=>a.beat-b.beat);return {events,sections:marks,totalBeats:bar*4,bpm:tempo(),harmony};
+}
+function ensureAudio(){if(!context){context=new (window.AudioContext||window.webkitAudioContext)();bus=context.createGain();bus.gain.value=.65;let compressor=context.createDynamicsCompressor();compressor.threshold.value=-12;compressor.ratio.value=3;bus.connect(compressor);compressor.connect(context.destination)}if(context.state==='suspended')context.resume();return context;}
+function noise(ctx){if(noiseCache.has(ctx))return noiseCache.get(ctx);let b=ctx.createBuffer(1,ctx.sampleRate,ctx.sampleRate),a=b.getChannelData(0),s=12345;for(let i=0;i<a.length;i++){s=(Math.imul(s,1664525)+1013904223)>>>0;a[i]=(s/2147483648-1)}noiseCache.set(ctx,b);return b;}
+function synth(ctx,out,pitch,at,dur,vel,type='lead'){
+let v=settings(),osc=ctx.createOscillator(),filter=ctx.createBiquadFilter(),gain=ctx.createGain();
+osc.type=type==='bass'?'sine':v.wave;osc.frequency.setValueAtTime(freq(pitch),at);
+if(type==='bass')osc.frequency.exponentialRampToValueAtTime(freq(pitch)*.995,at+.1);
+filter.type='lowpass';filter.frequency.value=type==='bass'?310:v.cutoff;
+const attack=type==='bass'?.008:Math.min(v.attack,dur*.45),end=at+Math.max(.04,dur),release=type==='bass'?.13:Math.min(v.release,.7);
+let level=Math.max(.0002,v.volume*vel*(type==='bass'?.9:type==='pad'?.22:.36));
+gain.gain.setValueAtTime(.0001,at);gain.gain.linearRampToValueAtTime(level,at+attack);
+gain.gain.setValueAtTime(level*.74,end);gain.gain.exponentialRampToValueAtTime(.0001,end+release);
+osc.connect(filter);filter.connect(gain);gain.connect(out);osc.start(at);osc.stop(end+release+.02);live.push(osc);
+osc.onended=()=>{live=live.filter(x=>x!==osc);osc.disconnect();filter.disconnect();gain.disconnect()};
+}
+function drum(ctx,out,kind,at,vel){
+let g=ctx.createGain(),source,f=ctx.createBiquadFilter();g.connect(out);
+if(kind==='Kick'){
+source=ctx.createOscillator();source.type='sine';source.frequency.setValueAtTime(160,at);source.frequency.exponentialRampToValueAtTime(49,at+.12);
+g.gain.setValueAtTime(Math.min(.8,vel*.63),at);g.gain.exponentialRampToValueAtTime(.0001,at+.28);source.connect(g);source.start(at);source.stop(at+.3);
+}else{
+source=ctx.createBufferSource();source.buffer=noise(ctx);f.type=kind==='Snare'?'bandpass':'highpass';f.frequency.value=kind==='Snare'?1800:7400;source.connect(f);f.connect(g);
+let decay=kind==='Snare'?.18:kind==='Open Hat'?.26:.065;
+g.gain.setValueAtTime(Math.min(.45,vel*(kind==='Snare'?.24:.12)),at);g.gain.exponentialRampToValueAtTime(.0001,at+decay);source.start(at);source.stop(at+decay+.02);
+}
+live.push(source);source.onended=()=>{live=live.filter(x=>x!==source);source.disconnect();f.disconnect();g.disconnect()};
+}
+function trigger(ctx,out,event,at,beatSeconds){
+if(event.track==='Kick'||event.track==='Snare'||event.track==='Hi-Hat'||event.track==='Open Hat')drum(ctx,out,event.track,at,event.velocity);
+else synth(ctx,out,event.pitch,at,event.duration*beatSeconds,event.velocity,event.track==='Bass'?'bass':event.track==='Akkorde'?'pad':'lead');
+}
+function drawAt(beat){if(!plan)return;let bar=Math.floor(beat/4),chord=plan.harmony[bar%4],mark=plan.sections.find(s=>beat>=s.start&&beat<s.start+s.bars*4);
+$('chordLabel').textContent=chord.name;$('notesLabel').textContent=chord.notes.map(note).join(' · ')+(mark?' · '+mark.name:'');
+$('steps').querySelectorAll('.step').forEach((e,i)=>e.classList.toggle('active',i===bar%4));
+$('sections').querySelectorAll('.step').forEach((e,i)=>e.classList.toggle('active',mark===plan.sections[i]));
+let graph=$('graph');graph.replaceChildren();
+chord.notes.forEach((n,i)=>{let el=document.createElement('div');el.className='line';el.style.setProperty('--c',['#56f0ec','#a37dff','#f4f5ff'][i]);el.style.top=(80-(n-48)*2.3)+'%';el.dataset.note=note(n);let dot=document.createElement('span');dot.className='dot';el.append(dot);graph.append(el)});
+}
+function drawPlan(){plan=makeSong();$('sections').replaceChildren(...plan.sections.map(s=>{let el=document.createElement('div');el.className='step';el.textContent=s.name;return el}));$('steps').replaceChildren(...plan.harmony.map(c=>{let el=document.createElement('div');el.className='step';el.textContent=c.name;return el}));let minutes=plan.totalBeats*60/plan.bpm/60;$('songInfo').textContent='Instrumental · '+plan.sections.length+' Abschnitte · '+plan.totalBeats/4+' Takte · ca. '+minutes.toFixed(1)+' Minuten · '+plan.events.length+' Klangereignisse';drawAt(0);}
+function stop(){if(clock){clearInterval(clock);clock=null}scheduled=[];live.forEach(s=>{try{s.stop()}catch(e){}});live=[];playing=false;offset=0;$('play').textContent='▶ Ganzen Song spielen';}
+function play(){
+if(playing){stop();return}stop();if(!plan)drawPlan();
+const ctx=ensureAudio(),beatSec=60/plan.bpm;started=ctx.currentTime+.1;offset=0;playing=true;$('play').textContent='■ Stop';
+let cursor=0;const tick=()=>{if(!playing)return;let now=ctx.currentTime,until=now+.22;while(cursor<plan.events.length){let e=plan.events[cursor],at=started+e.beat*beatSec;if(at>until)break;if(at>=now-.05)trigger(ctx,bus,e,Math.max(now+.001,at),beatSec);cursor++;}
+let currentBeat=Math.max(0,(now-started)/beatSec);if(Math.floor(currentBeat/4)!==previewIndex){previewIndex=Math.floor(currentBeat/4);drawAt(Math.min(currentBeat,plan.totalBeats-.01));}
+if(currentBeat>=plan.totalBeats){stop();drawAt(0);}};tick();clock=setInterval(tick,60);
+}
+function exportScore(){
+if(!plan)drawPlan();
+let tracks=['Akkorde','Melodie','Bass','Kick','Snare','Hi-Hat','Open Hat'].map(t=>({name:t,instrument:t==='Akkorde'?'piano':t==='Melodie'?'piano':t==='Bass'?'bass':t.toLowerCase().replace(' ','-'),volume:.8,notes:plan.events.filter(e=>e.track===t).map(e=>({pitch:note(e.pitch),start:e.beat,duration:e.duration,velocity:e.velocity}))})).filter(t=>t.notes.length);
+let data={format:'PS-Beatlap-Score-1',title:'Beatlap Instrumental Song '+seed,bpm:plan.bpm,beatsPerBar:4,lengthBeats:plan.totalBeats,sections:plan.sections.map(s=>({name:s.name,start:s.start})),tracks};
+downloadBlob(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),'Beatlap-Complete-Song.json');
+}
+function downloadBlob(blob,file){let url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=file;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);}
+function encodeWav(buffer){
+let n=buffer.length,ch=Math.min(2,buffer.numberOfChannels),bytes=44+n*ch*2,ab=new ArrayBuffer(bytes),dv=new DataView(ab),pos=0;
+const str=s=>{for(let i=0;i<s.length;i++)dv.setUint8(pos++,s.charCodeAt(i))};const u16=v=>{dv.setUint16(pos,v,true);pos+=2};const u32=v=>{dv.setUint32(pos,v,true);pos+=4};
+str('RIFF');u32(bytes-8);str('WAVEfmt ');u32(16);u16(1);u16(ch);u32(buffer.sampleRate);u32(buffer.sampleRate*ch*2);u16(ch*2);u16(16);str('data');u32(n*ch*2);
+for(let i=0;i<n;i++)for(let c=0;c<ch;c++){let v=Math.max(-1,Math.min(1,buffer.getChannelData(c)[i]));dv.setInt16(pos,v<0?v*32768:v*32767,true);pos+=2}
+return new Blob([ab],{type:'audio/wav'});
+}
+async function renderWav(){
+if(!plan)drawPlan();if(!window.OfflineAudioContext){alert('WAV-Export wird in diesem Browser nicht unterstützt.');return}
+const button=$('wav');button.disabled=true;button.textContent='WAV wird gerendert …';
+try{
+let beatSec=60/plan.bpm,seconds=plan.totalBeats*beatSec+2,sampleRate=22050;
+let ctx=new OfflineAudioContext(2,Math.ceil(seconds*sampleRate),sampleRate),out=ctx.createGain(),lim=ctx.createDynamicsCompressor();out.gain.value=.55;out.connect(lim);lim.connect(ctx.destination);
+for(let i=0;i<plan.events.length;i++){let e=plan.events[i];trigger(ctx,out,e,.01+e.beat*beatSec,beatSec)}
+let rendered=await ctx.startRendering();downloadBlob(encodeWav(rendered),'Beatlap-Complete-Song.wav');
+}catch(error){alert('WAV-Rendern fehlgeschlagen: '+error.message+' — versuche zuerst einen kurzen Song.')}finally{button.disabled=false;button.textContent='↓ WAV rendern';}
+}
+$('play').onclick=play;$('stop').onclick=stop;$('export').onclick=exportScore;$('wav').onclick=renderWav;
+$('generate').onclick=()=>{stop();seed=(seed+Math.floor(Math.random()*99999)+1)>>>0;drawPlan()};
+for(let id of ['length','beatstyle','drums','bass','root','mode','bpm','pattern'])$(id).addEventListener('change',()=>{stop();drawPlan()});
+$('preview').onclick=()=>{let ctx=ensureAudio(),t=ctx.currentTime+.025;[60,64,67].forEach(m=>synth(ctx,bus,m,t,1,.65))};
+drawPlan();
+})();
+</script>
+</body></html>
