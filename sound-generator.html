@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Beatlap Sound Generator</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,sans-serif;background:#0b0910;color:#f5f1fb}*{box-sizing:border-box}body{margin:0;padding:18px;max-width:1050px;margin:auto;background:radial-gradient(circle at 80% 0%,#122d48,transparent 55%),#0b0910;min-height:100vh}h1{font-size:clamp(24px,5vw,38px);margin-bottom:3px}.sub{color:#b9a9c9;margin-top:0}.panel{background:#191525;border:1px solid #383044;border-radius:18px;padding:18px;margin:16px 0}h2{font-size:18px;margin:0 0 14px}.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px}label{display:grid;gap:7px;font-size:13px;color:#c9bbd9}select,input{width:100%;background:#272137;border:1px solid #544766;color:#fff;border-radius:9px;padding:11px}input[type=range]{padding:0;accent-color:#ff4fa0}button{background:linear-gradient(100deg,#ff4fa0,#2f9bff);border:0;border-radius:11px;color:#fff;font-weight:800;padding:13px 16px;cursor:pointer;touch-action:manipulation}button.secondary{background:#30283f;border:1px solid #534763}.buttons{display:flex;gap:9px;flex-wrap:wrap;margin-top:18px}.graph{height:230px;position:relative;overflow:hidden;border-radius:12px;background:repeating-linear-gradient(to bottom,transparent 0 27px,#ffffff0c 28px 29px),linear-gradient(120deg,#0b1822,#181126)}.line{position:absolute;left:0;right:0;height:2px;background:var(--c);box-shadow:0 0 15px var(--c);transform:translateY(-50%);transition:top .5s ease}.line:after{content:attr(data-note);position:absolute;right:12px;top:-19px;color:#fff;font:12px monospace}.dot{width:10px;height:10px;border-radius:50%;background:#fff;box-shadow:0 0 14px var(--c);position:absolute;left:53%;top:-4px}#chordLabel{font-size:34px;font-weight:800;letter-spacing:2px}small{color:#afa2bf}.steps{display:flex;gap:7px;flex-wrap:wrap;margin-top:16px}.step{background:#30283f;border:1px solid #564669;flex:1;min-width:65px;text-align:center;padding:10px;border-radius:9px}.active{outline:2px solid #64d7ff}.footer{color:#9e90ae;font-size:12px;margin:20px 0}a{color:#78c2ff}
+</style></head><body>
+<h1>BEATLAP <span style="color:#ff4fa0">MELODY STUDIO</span></h1><p class="sub">Komplette Instrumental-Songs und einzigartige Melodien als Vorlage für Suno · PS AI MUSIC</p>
+<section class="panel"><h2>01 · Sound Designer</h2><div class="controls">
+<label>Klangform<select id="wave"><option value="sine">Weich / Sinus</option><option value="triangle" selected>Warm / Dreieck</option><option value="sawtooth">Brillant / Sägezahn</option><option value="square">Kräftig / Rechteck</option></select></label>
+<label>Attack <span id="attackV">0.04 s</span><input id="attack" type="range" min="0.005" max="1.5" step=".005" value=".04"></label>
+<label>Release <span id="releaseV">0.50 s</span><input id="release" type="range" min=".05" max="3" step=".05" value=".5"></label>
+<label>Helligkeit <span id="cutoffV">2600 Hz</span><input id="cutoff" type="range" min="180" max="9000" step="20" value="2600"></label>
+<label>Klangfülle <span id="detuneV">7 Cent</span><input id="detune" type="range" min="0" max="25" step="1" value="7"></label>
+<label>Lautstärke <span id="volumeV">35 %</span><input id="volume" type="range" min=".05" max=".7" step=".01" value=".35"></label>
+</div><div class="buttons"><button id="preview">🎹 Klang testen</button><button class="secondary" id="savePreset">Preset speichern</button><button class="secondary" id="loadPreset">Preset laden</button></div></section>
+<section class="panel"><h2>02 · Akkord- & Melodiegenerator</h2><div class="controls">
+<label>Tonart<select id="root"><option value="0">C</option><option value="2">D</option><option value="4" selected>E</option><option value="5">F</option><option value="7">G</option><option value="9">A</option><option value="11">B</option></select></label>
+<label>Modus<select id="mode"><option value="minor" selected>Moll</option><option value="major">Dur</option></select></label>
+<label>Tempo<input id="bpm" type="number" min="40" max="200" value="125"></label>
+<label>Melodie-Charakter<select id="pattern"><option value="singing" selected>Gesanglich · eingängig</option><option value="gentle">Sanft · schwebend</option><option value="drive">Treibend · rhythmisch</option><option value="rising">Aufbauend · steigend</option><option value="broken">Gebrochen · verletzlich</option><option value="leaping">Große Tonsprünge</option><option value="arpeggio">Arpeggio · fließend</option><option value="minimal">Wenige starke Töne</option><option value="syncopated">Synkopiert · groovig</option><option value="cinematic">Filmisch · weit</option></select></label>
+</div><div class="controls" style="margin-top:15px">
+<label>Gefühl<select id="mood"><option value="grief">Sehr traurig · Abschied</option><option value="melancholy" selected>Melancholisch · Sehnsucht</option><option value="nostalgia">Nostalgisch · Erinnerungen</option><option value="hope">Hoffnungsvoll · warm</option><option value="dream">Verträumt · sanft</option><option value="mystery">Geheimnisvoll · düster</option><option value="happy">Fröhlich · leicht</option><option value="euphoria">Euphorisch · groß</option><option value="groove">Peppig · verspielt</option><option value="epic">Dramatisch · kraftvoll</option></select></label>
+<label>Notendichte<select id="density"><option value="sparse">Wenige Noten · viel Raum</option><option value="balanced" selected>Ausgewogen</option><option value="busy">Viele Noten · lebendig</option></select></label>
+<label>Tonhöhe<select id="register"><option value="low">Tief · warm</option><option value="mid" selected>Mittel · gesanglich</option><option value="high">Hoch · klar</option></select></label>
+<label>Variation <span id="variationV">70 %</span><input id="variation" type="range" min="0" max="100" step="5" value="70"></label>
+<label>Songlänge<select id="length"><option value="short">Kurz · ca. 1–2 Min.</option><option value="full" selected>Komplett · ca. 3 Min.</option><option value="long">Lang · ca. 4–5 Min.</option></select></label>
+<label>Beat-Stil<select id="beatstyle"><option value="house" selected>Progressive House · 4/4</option><option value="pop">Pop / Ballade</option><option value="break">Hip-Hop / Breakbeat</option></select></label>
+<label>Drums<select id="drums"><option value="full" selected>Komplettes Drumkit</option><option value="soft">Dezent</option><option value="off">Ohne Drums</option></select></label>
+<label>Bass<select id="bass"><option value="on" selected>Tiefer Bass</option><option value="off">Ohne Bass</option></select></label>
+</div><div class="buttons"><button id="play">▶ Ganzen Song spielen</button><button class="secondary" id="melodyOnly">♫ Nur Melodie hören</button><button class="secondary" id="stop">■ Stop</button><button class="secondary" id="generate">↻ Neue Melodie komponieren</button><button class="secondary" id="export">↓ Beatlap JSON</button><button class="secondary" id="wav">↓ Ganzen Song als WAV</button><button class="secondary" id="melodyWav">↓ Melodie als WAV für Suno</button></div>
+<p class="sub">Tipp für Suno: Mit „Melodie als WAV“ erhältst du eine reine Instrumental-Melodie ohne Beat und Begleitung. Diese kannst du als Audio-Vorlage hochladen.</p>
+<p id="songInfo" class="sub" aria-live="polite"></p>
+<div class="steps" id="sections"></div>
+<div class="steps" id="steps"></div></section>
+<section class="panel"><h2>03 · Live-Notenvisualisierung</h2><div id="chordLabel">Em</div><p id="notesLabel" class="sub">E · G · B</p><div class="graph" id="graph" role="img" aria-label="Animierte Tonhöhenlinien"></div><p><small>Die Linien zeigen die Tonhöhen des aktuellen Akkords. Die Audio-Ausgabe beginnt nach einer Berührung mit dem Play-Button.</small></p></section>
+<p class="footer">Beatlap Sound Engine 2.0 · Instrumental-Songgenerator mit Songabschnitten und synthetisierten Beats · PS-Beatlap-Score-1</p>
+<script>
+(()=>{'use strict';
+const $=id=>document.getElementById(id), names=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+let audio=null,master=null,timers=[],nodes=[],playing=false,current=0;
+const values=()=>({wave:$('wave').value,attack:+$('attack').value,release:+$('release').value,cutoff:+$('cutoff').value,detune:+$('detune').value,volume:+$('volume').value});
+for(const id of ['attack','release','cutoff','detune','volume'])$(id).addEventListener('input',()=>{$(id+'V').textContent=id==='cutoff'?$(id).value+' Hz':id==='detune'?$(id).value+' Cent':id==='volume'?Math.round($(id).value*100)+' %':(+$(id).value).toFixed(2)+' s';});
+const freq=m=>440*Math.pow(2,(m-69)/12),noteName=m=>names[m%12]+(Math.floor(m/12)-1);
+function engine(){if(!audio){audio=new (window.AudioContext||window.webkitAudioContext)();master=audio.createGain();master.gain.value=.8;master.connect(audio.destination)}if(audio.state==='suspended')audio.resume();return audio;}
+function playNote(midi,time,duration,velocity=.7){const ctx=engine(),v=values(),osc=ctx.createOscillator(),osc2=ctx.createOscillator(),filter=ctx.createBiquadFilter(),env=ctx.createGain();osc.type=osc2.type=v.wave;osc.frequency.value=osc2.frequency.value=freq(midi);osc2.detune.value=v.detune;osc.detune.value=-v.detune;filter.type='lowpass';filter.frequency.value=v.cutoff;env.gain.setValueAtTime(.0001,time);env.gain.linearRampToValueAtTime(Math.max(.0002,v.volume*velocity*.5),time+v.attack);env.gain.setValueAtTime(Math.max(.0002,v.volume*velocity*.5),time+v.attack+Math.max(.01,duration-v.attack));env.gain.exponentialRampToValueAtTime(.0001,time+duration+v.release);osc.connect(filter);osc2.connect(filter);filter.connect(env);env.connect(master);osc.start(time);osc2.start(time);osc.stop(time+duration+v.release+.02);osc2.stop(time+duration+v.release+.02);nodes.push(osc,osc2);osc.onended=()=>{nodes=nodes.filter(n=>n!==osc&&n!==osc2);osc.disconnect();osc2.disconnect();filter.disconnect();env.disconnect()};}
+function progression(){let root=+ $('root').value,major=$('mode').value==='major',offsets=major?[0,7,9,5]:[0,8,3,10];return offsets.map((o,i)=>{let r=root+o,minor=major?i===2:i===0||i===3;return {name:names[r%12]+(minor?'m':''),notes:[48+r,48+r+(minor?3:4),48+r+7],root:r}});}
+function melody(chord,index){let n=chord.notes,pat=$('pattern').value,shape=pat==='drive'?[1,2,1,0,2,1,0,1]:pat==='rising'?[0,1,2,1,2,2,1,2]:[2,1,0,1,2,1,0,1];return shape.map((x,i)=>({pitch:noteName(n[x]+12+(i===7&&index===3?-12:0)),start:index*4+i*.5,duration:pat==='gentle'?.46:.38,velocity:i%4===0?.8:.6}));}
+function score(){const chords=progression();return {format:'PS-Beatlap-Score-1',title:'Beatlap Sound Generator',bpm:Math.max(40,Math.min(200,+$('bpm').value||125)),beatsPerBar:4,sections:[{name:'Generator',start:0}],tracks:[{name:'Akkorde',instrument:'piano',volume:.65,notes:chords.flatMap((c,i)=>c.notes.map(m=>({pitch:noteName(m),start:i*4,duration:3.8,velocity:.6})))},{name:'Melodie',instrument:'piano',volume:.8,notes:chords.flatMap((c,i)=>melody(c,i))}]};}
+function visual(chord,index){$('chordLabel').textContent=chord.name;$('notesLabel').textContent=chord.notes.map(noteName).join(' · ');$('steps').querySelectorAll('.step').forEach((el,i)=>el.classList.toggle('active',i===index));$('graph').replaceChildren();chord.notes.forEach((n,i)=>{const el=document.createElement('div');el.className='line';el.style.setProperty('--c',['#56f0ec','#a37dff','#f4f5ff'][i]);el.style.top=(80-(n-48)*2.3)+'%';el.dataset.note=noteName(n);const dot=document.createElement('span');dot.className='dot';el.append(dot);$('graph').append(el)});}
+function render(){const c=progression();$('steps').replaceChildren(...c.map(x=>{let el=document.createElement('div');el.className='step';el.textContent=x.name;return el}));visual(c[0],0)}
+function stop(){timers.forEach(clearTimeout);timers=[];nodes.forEach(n=>{try{n.stop()}catch(e){}});nodes=[];playing=false;$('play').textContent='▶ Akkorde & Melodie';}
+$('preview').onclick=()=>{const t=engine().currentTime+.025;[60,64,67].forEach(m=>playNote(m,t,1.1,.65));};
+$('play').onclick=()=>{if(playing){stop();return}stop();playing=true;$('play').textContent='■ Stop';const chords=progression(),s=score(),beat=60/s.bpm,start=engine().currentTime+.08;chords.forEach((c,i)=>{const time=start+i*4*beat;c.notes.forEach(m=>playNote(m,time,3.7*beat,.6));melody(c,i).forEach(n=>{let midi=names.indexOf(n.pitch.replace(/-?\d+$/,''))+(parseInt(n.pitch.match(/-?\d+$/)[0],10)+1)*12;playNote(midi,start+n.start*beat,n.duration*beat,n.velocity)});timers.push(setTimeout(()=>visual(c,i),Math.max(0,(time-audio.currentTime)*1000)))});timers.push(setTimeout(stop,16*beat*1000+1800));};
+$('stop').onclick=stop;
+$('export').onclick=()=>{let blob=new Blob([JSON.stringify(score(),null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='Beatlap-Sound-Generator.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
+$('savePreset').onclick=()=>{try{localStorage.setItem('beatlap-sound-preset-v1',JSON.stringify(values()));alert('Sound-Preset gespeichert')}catch(e){alert('Speichern nicht verfügbar')}};
+$('loadPreset').onclick=()=>{try{let p=JSON.parse(localStorage.getItem('beatlap-sound-preset-v1'));if(!p)throw Error();for(const k of Object.keys(values())){if(p[k]!==undefined){$(k).value=p[k];$(k).dispatchEvent(new Event('input'))}}}catch(e){alert('Noch kein Preset vorhanden')}};
+$('root').onchange=$('mode').onchange=render;render();
+})();
+</script>
+<script>
+/* Beatlap Song Engine 2.0: standalone composer and Web Audio drum synthesis. */
+(()=>{
+'use strict';
+const $=id=>document.getElementById(id);
+const names=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const note=m=>names[((m%12)+12)%12]+(Math.floor(m/12)-1);
+const freq=m=>440*Math.pow(2,(m-69)/12);
+let seed=42,plan=null,context=null,bus=null,scheduled=[],clock=null,playing=false,offset=0,started=0,previewIndex=-1;
+let live=[],noiseCache=new WeakMap();
+const rnd=(n)=>{let x=(Math.imul((n+seed)>>>0,1664525)+1013904223)>>>0;return x/4294967296};
+const tempo=()=>Math.max(40,Math.min(200,Number($('bpm').value)||125));
+const settings=()=>({wave:$('wave').value,attack:+$('attack').value,release:+$('release').value,cutoff:+$('cutoff').value,detune:+$('detune').value,volume:+$('volume').value});
+function songSections(){
+let full=[['Intro',4,1],['Strophe 1',12,2],['Pre-Chorus',4,3],['Refrain 1',16,4],['Strophe 2',12,2],['Pre-Chorus 2',4,3],['Refrain 2',16,4],['Bridge',8,1],['Letzter Refrain',16,5],['Outro',4,1]];
+let short=[['Intro',4,1],['Strophe',8,2],['Refrain',8,4],['Bridge',4,1],['Letzter Refrain',8,5],['Outro',4,1]];
+let long=[['Intro',8,1],['Strophe 1',16,2],['Pre-Chorus',8,3],['Refrain 1',24,4],['Strophe 2',16,2],['Pre-Chorus 2',8,3],['Refrain 2',24,4],['Bridge',8,1],['Letzter Refrain',24,5],['Outro',8,1]];
+return ($('length').value==='short'?short:$('length').value==='long'?long:full);
+}
+function chords(){
+let root=+$('root').value,major=$('mode').value==='major',offsets=major?[0,7,9,5]:[0,8,3,10];
+return offsets.map((step,i)=>{let base=48+root+step,minor=major?i===2:i===0;return {name:names[(root+step)%12]+(minor?'m':''),notes:[base,base+(minor?3:4),base+7]};});
+}
+const motifShapes={
+singing:[0,1,2,1,2,4,2,0],gentle:[2,1,0,null,1,2,1,null],
+drive:[0,2,1,2,0,4,2,1],rising:[0,1,2,3,2,4,3,4],
+broken:[4,2,null,1,0,null,2,1],leaping:[0,4,1,5,2,4,0,3],
+arpeggio:[0,1,2,4,2,1,0,2],minimal:[0,null,null,2,null,1,null,0],
+syncopated:[null,2,0,1,null,4,2,1],cinematic:[0,null,2,4,3,null,2,0]
+};
+const moods={
+grief:{density:.60,rests:.32,high:0,legato:1.25},
+melancholy:{density:.78,rests:.20,high:0,legato:1.05},
+nostalgia:{density:.85,rests:.15,high:0,legato:1.10},
+hope:{density:.95,rests:.12,high:1,legato:1},
+dream:{density:.73,rests:.24,high:1,legato:1.30},
+mystery:{density:.68,rests:.23,high:-1,legato:1.15},
+happy:{density:1.13,rests:.08,high:2,legato:.82},
+euphoria:{density:1.16,rests:.07,high:2,legato:.9},
+groove:{density:1.25,rests:.10,high:1,legato:.72},
+epic:{density:1.02,rests:.10,high:2,legato:1.18}
+};
+function makeMelodyBar(c,section,b,absolute,add){
+ const style=$('pattern').value,shape=motifShapes[style],mood=moods[$('mood').value],moodIndex=Object.keys(moods).indexOf($('mood').value),density=$('density').value;
+ const variation=+$('variation').value/100,energy=section.energy,chorus=energy>=4;
+ const family=section.name.includes('Refrain')?'chorus':section.name.includes('Strophe')?'verse':section.name.includes('Pre-Chorus')?'pre':section.name==='Bridge'?'bridge':'quiet';
+ const familyIndex={quiet:0,verse:1,pre:2,chorus:3,bridge:4}[family];
+ const register=$('register').value==='low'?-12:$('register').value==='high'?12:0;
+ const root=+$('root').value,scale=$('mode').value==='major'?[0,2,4,5,7,9,11]:[0,2,3,5,7,8,10];
+ const seedOffset=familyIndex*131+Math.floor(b/4)*7;
+ const moodOctave=mood.high>=2?12:mood.high<0?-12:0;
+ const baseCount=density==='sparse'?4:density==='busy'?12:8;
+ const count=energy===1?Math.max(3,baseCount-3):baseCount;
+ const grid=4/count;
+ let lastPitch=null;
+ for(let j=0;j<count;j++){
+  const motifIndex=Math.floor(j*8/count)%8;
+  let target=shape[(motifIndex+familyIndex+(seed%3)+moodIndex)%8];
+  if(target===null)continue;
+  const identity=(seedOffset+motifIndex*17+familyIndex*49+moodIndex*97)>>>0;
+  if(rnd(identity+1)>mood.density*(density==='busy'?1.1:1))continue;
+  if(rnd(identity+2)<mood.rests*(energy>=4?.35:1))continue;
+  const phraseShift=(b%4===3&&j>=count-2)?-1:0;
+  if(rnd(identity+3)<variation*.54)target=(target+(rnd(identity+4)>.5?1:-1)+6)%6;
+  target=(target+phraseShift+6)%6;
+  const tones=[c.notes[0],c.notes[1],c.notes[2],c.notes[0]+12,c.notes[1]+12,c.notes[2]+12];
+  let pitch=tones[target]+12+register+(chorus?12:0)+moodOctave;
+  if(style==='cinematic'&&j===0)pitch=tones[0]+12+register;
+  if(section.name==='Bridge')pitch-=12;
+  if(style==='leaping'&&j%3===0)pitch+=12;
+  if(style==='broken'&&j%4===2)pitch-=12;
+  if(rnd(identity+6)<variation*.33){
+   let neighbor=pitch+(rnd(identity+7)>.5?2:-2),pc=((neighbor-root)%12+12)%12;
+   let nearest=scale.reduce((a,v)=>Math.abs(v-pc)<Math.abs(a-pc)?v:a,scale[0]);
+   pitch=neighbor+(nearest-pc);
+  }
+  pitch=Math.max(48,Math.min(88,pitch));
+  if(lastPitch!==null&&Math.abs(pitch-lastPitch)>17&&style!=='leaping')pitch+=pitch>lastPitch?-12:12;
+  lastPitch=pitch;
+  const swing=style==='syncopated'||$('beatstyle').value==='break'?(j%2?grid*.2:0):0;
+  let start=absolute*4+j*grid+swing;
+  if(style==='broken'&&j%4===1)start+=grid*.18;
+  const duration=Math.max(.13,grid*mood.legato*(energy===1?1.3:.86));
+  const velocity=Math.max(.32,Math.min(.96,.50+energy*.055+(j%4===0?.13:0)+(rnd(identity+9)-.5)*.17));
+  add('Melodie',pitch,start,duration,velocity);
+ }
+}
+function makeSong(){
+const sections=songSections(),harmony=chords(),events=[],marks=[];let bar=0,serial=0;
+const add=(track,pitch,beat,len,velocity)=>events.push({track,pitch,beat,duration:len,velocity});
+for(let si=0;si<sections.length;si++){
+let [title,bars,energy]=sections[si];let section={name:title,start:bar*4,bars,energy};marks.push(section);
+for(let b=0;b<bars;b++){
+let absolute=bar+b,c=harmony[absolute%4],start=absolute*4,last=title==='Outro',bridge=title==='Bridge',chorus=energy>=4;
+let chordN=c.notes.map((m,i)=>m+(chorus&&i===2?12:0));
+chordN.forEach((m,i)=>add('Akkorde',m,start,3.75,.35+energy*.06));
+if(!last||b<bars-2)makeMelodyBar(c,section,b,absolute,add);
+if($('bass').value==='on'&&energy>=2){
+let steps=chorus?[0,1.5,2,3.5]:[0,2.5];
+for(let beat of steps)add('Bass',c.notes[0]-24,start+beat,chorus?.38:.65,.55+energy*.065);
+}
+if($('drums').value!=='off'){
+let style=$('beatstyle').value,soft=$('drums').value==='soft',drumEnergy=soft?Math.min(energy,2):energy;
+if(!(title==='Intro'&&b<2)||energy>=3){
+for(let k=0;k<4;k++){
+if(style==='house'||style==='pop'&&k===0||style==='break'&&(k===0||k===2||k===3&&rnd(serial++)>.6))add('Kick',36,start+k,.2,.45+drumEnergy*.1);
+if(k===1||k===3)add('Snare',38,start+k,.18,soft?.38:.6+energy*.065);
+}
+if(style==='pop')add('Kick',36,start+2,.2,.54);
+let hStep=energy>=3?.5:1;
+for(let p=0;p<4;p+=hStep){
+if(bridge&&p%1!==0)continue;
+add('Hi-Hat',42,start+p,.09,(soft?.18:.22)+energy*.035);
+}
+if(chorus&&b%2===1)add('Open Hat',46,start+3.5,.23,.35);
+}}
+}
+bar+=bars;
+}
+events.sort((a,b)=>a.beat-b.beat);return {events,sections:marks,totalBeats:bar*4,bpm:tempo(),harmony};
+}
+function ensureAudio(){if(!context){context=new (window.AudioContext||window.webkitAudioContext)();bus=context.createGain();bus.gain.value=.65;let compressor=context.createDynamicsCompressor();compressor.threshold.value=-12;compressor.ratio.value=3;bus.connect(compressor);compressor.connect(context.destination)}if(context.state==='suspended')context.resume();return context;}
+function noise(ctx){if(noiseCache.has(ctx))return noiseCache.get(ctx);let b=ctx.createBuffer(1,ctx.sampleRate,ctx.sampleRate),a=b.getChannelData(0),s=12345;for(let i=0;i<a.length;i++){s=(Math.imul(s,1664525)+1013904223)>>>0;a[i]=(s/2147483648-1)}noiseCache.set(ctx,b);return b;}
+function synth(ctx,out,pitch,at,dur,vel,type='lead'){
+let v=settings(),osc=ctx.createOscillator(),filter=ctx.createBiquadFilter(),gain=ctx.createGain();
+osc.type=type==='bass'?'sine':v.wave;osc.frequency.setValueAtTime(freq(pitch),at);
+if(type==='bass')osc.frequency.exponentialRampToValueAtTime(freq(pitch)*.995,at+.1);
+filter.type='lowpass';filter.frequency.value=type==='bass'?310:v.cutoff;
+const attack=type==='bass'?.008:Math.min(v.attack,dur*.45),end=at+Math.max(.04,dur),release=type==='bass'?.13:Math.min(v.release,.7);
+let level=Math.max(.0002,v.volume*vel*(type==='bass'?.9:type==='pad'?.22:.36));
+gain.gain.setValueAtTime(.0001,at);gain.gain.linearRampToValueAtTime(level,at+attack);
+gain.gain.setValueAtTime(level*.74,end);gain.gain.exponentialRampToValueAtTime(.0001,end+release);
+osc.connect(filter);filter.connect(gain);gain.connect(out);osc.start(at);osc.stop(end+release+.02);live.push(osc);
+osc.onended=()=>{live=live.filter(x=>x!==osc);osc.disconnect();filter.disconnect();gain.disconnect()};
+}
+function drum(ctx,out,kind,at,vel){
+let g=ctx.createGain(),source,f=ctx.createBiquadFilter();g.connect(out);
+if(kind==='Kick'){
+source=ctx.createOscillator();source.type='sine';source.frequency.setValueAtTime(160,at);source.frequency.exponentialRampToValueAtTime(49,at+.12);
+g.gain.setValueAtTime(Math.min(.8,vel*.63),at);g.gain.exponentialRampToValueAtTime(.0001,at+.28);source.connect(g);source.start(at);source.stop(at+.3);
+}else{
+source=ctx.createBufferSource();source.buffer=noise(ctx);f.type=kind==='Snare'?'bandpass':'highpass';f.frequency.value=kind==='Snare'?1800:7400;source.connect(f);f.connect(g);
+let decay=kind==='Snare'?.18:kind==='Open Hat'?.26:.065;
+g.gain.setValueAtTime(Math.min(.45,vel*(kind==='Snare'?.24:.12)),at);g.gain.exponentialRampToValueAtTime(.0001,at+decay);source.start(at);source.stop(at+decay+.02);
+}
+live.push(source);source.onended=()=>{live=live.filter(x=>x!==source);source.disconnect();f.disconnect();g.disconnect()};
+}
+function trigger(ctx,out,event,at,beatSeconds){
+if(event.track==='Kick'||event.track==='Snare'||event.track==='Hi-Hat'||event.track==='Open Hat')drum(ctx,out,event.track,at,event.velocity);
+else synth(ctx,out,event.pitch,at,event.duration*beatSeconds,event.velocity,event.track==='Bass'?'bass':event.track==='Akkorde'?'pad':'lead');
+}
+function drawAt(beat){if(!plan)return;let bar=Math.floor(beat/4),chord=plan.harmony[bar%4],mark=plan.sections.find(s=>beat>=s.start&&beat<s.start+s.bars*4);
+$('chordLabel').textContent=chord.name;$('notesLabel').textContent=chord.notes.map(note).join(' · ')+(mark?' · '+mark.name:'');
+$('steps').querySelectorAll('.step').forEach((e,i)=>e.classList.toggle('active',i===bar%4));
+$('sections').querySelectorAll('.step').forEach((e,i)=>e.classList.toggle('active',mark===plan.sections[i]));
+let graph=$('graph');graph.replaceChildren();
+chord.notes.forEach((n,i)=>{let el=document.createElement('div');el.className='line';el.style.setProperty('--c',['#56f0ec','#a37dff','#f4f5ff'][i]);el.style.top=(80-(n-48)*2.3)+'%';el.dataset.note=note(n);let dot=document.createElement('span');dot.className='dot';el.append(dot);graph.append(el)});
+}
+function drawPlan(){plan=makeSong();$('sections').replaceChildren(...plan.sections.map(s=>{let el=document.createElement('div');el.className='step';el.textContent=s.name;return el}));$('steps').replaceChildren(...plan.harmony.map(c=>{let el=document.createElement('div');el.className='step';el.textContent=c.name;return el}));let minutes=plan.totalBeats*60/plan.bpm/60,melodic=plan.events.filter(e=>e.track==='Melodie').length;$('songInfo').textContent='Komposition #'+seed+' · '+plan.sections.length+' Songabschnitte · '+plan.totalBeats/4+' Takte · '+minutes.toFixed(1)+' Minuten · '+melodic+' Melodietöne';drawAt(0);}
+function stop(){if(clock){clearInterval(clock);clock=null}scheduled=[];live.forEach(s=>{try{s.stop()}catch(e){}});live=[];playing=false;offset=0;previewIndex=-1;$('play').textContent='▶ Ganzen Song spielen';$('melodyOnly').textContent='♫ Nur Melodie hören';}
+function play(solo=false){
+if(playing){stop();return}stop();if(!plan)drawPlan();
+const ctx=ensureAudio(),beatSec=60/plan.bpm;started=ctx.currentTime+.1;offset=0;playing=true;(solo?$('melodyOnly'):$('play')).textContent='■ Stop';
+let cursor=0;const tick=()=>{if(!playing)return;let now=ctx.currentTime,until=now+.22;while(cursor<plan.events.length){let e=plan.events[cursor],at=started+e.beat*beatSec;if(at>until)break;if(at>=now-.05&&(!solo||e.track==='Melodie'))trigger(ctx,bus,e,Math.max(now+.001,at),beatSec);cursor++;}
+let currentBeat=Math.max(0,(now-started)/beatSec);if(Math.floor(currentBeat/4)!==previewIndex){previewIndex=Math.floor(currentBeat/4);drawAt(Math.min(currentBeat,plan.totalBeats-.01));}
+if(currentBeat>=plan.totalBeats){stop();drawAt(0);}};tick();clock=setInterval(tick,60);
+}
+function exportScore(){
+if(!plan)drawPlan();
+let tracks=['Akkorde','Melodie','Bass','Kick','Snare','Hi-Hat','Open Hat'].map(t=>({name:t,instrument:t==='Akkorde'?'piano':t==='Melodie'?'piano':t==='Bass'?'bass':t.toLowerCase().replace(' ','-'),volume:.8,notes:plan.events.filter(e=>e.track===t).map(e=>({pitch:note(e.pitch),start:e.beat,duration:e.duration,velocity:e.velocity}))})).filter(t=>t.notes.length);
+let data={format:'PS-Beatlap-Score-1',title:'Beatlap Instrumental Song '+seed,bpm:plan.bpm,beatsPerBar:4,lengthBeats:plan.totalBeats,sections:plan.sections.map(s=>({name:s.name,start:s.start})),tracks};
+downloadBlob(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),'Beatlap-Complete-Song.json');
+}
+function downloadBlob(blob,file){let url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=file;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);}
+function encodeWav(buffer){
+let n=buffer.length,ch=Math.min(2,buffer.numberOfChannels),bytes=44+n*ch*2,ab=new ArrayBuffer(bytes),dv=new DataView(ab),pos=0;
+const str=s=>{for(let i=0;i<s.length;i++)dv.setUint8(pos++,s.charCodeAt(i))};const u16=v=>{dv.setUint16(pos,v,true);pos+=2};const u32=v=>{dv.setUint32(pos,v,true);pos+=4};
+str('RIFF');u32(bytes-8);str('WAVEfmt ');u32(16);u16(1);u16(ch);u32(buffer.sampleRate);u32(buffer.sampleRate*ch*2);u16(ch*2);u16(16);str('data');u32(n*ch*2);
+for(let i=0;i<n;i++)for(let c=0;c<ch;c++){let v=Math.max(-1,Math.min(1,buffer.getChannelData(c)[i]));dv.setInt16(pos,v<0?v*32768:v*32767,true);pos+=2}
+return new Blob([ab],{type:'audio/wav'});
+}
+async function renderWav(solo=false){
+if(!plan)drawPlan();if(!window.OfflineAudioContext){alert('WAV-Export wird in diesem Browser nicht unterstützt.');return}
+const button=solo?$('melodyWav'):$('wav');button.disabled=true;button.textContent='WAV wird gerendert …';
+try{
+let beatSec=60/plan.bpm,seconds=plan.totalBeats*beatSec+2,sampleRate=22050;
+let ctx=new OfflineAudioContext(2,Math.ceil(seconds*sampleRate),sampleRate),out=ctx.createGain(),lim=ctx.createDynamicsCompressor();out.gain.value=.55;out.connect(lim);lim.connect(ctx.destination);
+for(let i=0;i<plan.events.length;i++){let e=plan.events[i];if(!solo||e.track==='Melodie')trigger(ctx,out,e,.01+e.beat*beatSec,beatSec)}
+let rendered=await ctx.startRendering();downloadBlob(encodeWav(rendered),solo?'Beatlap-Suno-Melodie.wav':'Beatlap-Complete-Song.wav');
+}catch(error){alert('WAV-Rendern fehlgeschlagen: '+error.message+' — versuche zuerst einen kurzen Song.')}finally{button.disabled=false;button.textContent=solo?'↓ Melodie als WAV für Suno':'↓ Ganzen Song als WAV';}
+}
+$('play').onclick=()=>play(false);$('melodyOnly').onclick=()=>play(true);$('stop').onclick=stop;$('export').onclick=exportScore;$('wav').onclick=()=>renderWav(false);$('melodyWav').onclick=()=>renderWav(true);
+$('generate').onclick=()=>{stop();seed=(seed+Math.floor(Math.random()*99999)+1)>>>0;drawPlan()};
+for(let id of ['length','beatstyle','drums','bass','root','mode','bpm','pattern','mood','density','register'])$(id).addEventListener('change',()=>{stop();drawPlan()});
+$('variation').addEventListener('input',()=>{$('variationV').textContent=$('variation').value+' %';stop();drawPlan()});
+$('preview').onclick=()=>{let ctx=ensureAudio(),t=ctx.currentTime+.025;[60,64,67].forEach(m=>synth(ctx,bus,m,t,1,.65))};
+drawPlan();
+})();
+</script>
+</body></html>
