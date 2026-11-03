@@ -39,11 +39,11 @@ for(const mood of ['grief','melancholy','nostalgia','hope','dream','mystery','ha
 }
 assert.ok(signatures.size>=8,'Mood choices should produce distinct melodies');
 document.getElementById('mood').value='melancholy';signatures.clear();
-for(const pattern of ['singing','gentle','drive','rising','broken','leaping','arpeggio','minimal','syncopated','cinematic']){
+for(const pattern of ['singing','gentle','drive','rising','broken','leaping','arpeggio','minimal','syncopated','cinematic','longing','question','waltz','heartbeat','folk','anthem','jazzy','ostinato','flutter','tender','dramatic','call']){
   document.getElementById('pattern').value=pattern;
   signatures.add(makeSong().events.filter(e=>e.track==='Melodie').slice(0,30).map(e=>e.pitch+':'+e.beat).join(','));
 }
-assert.ok(signatures.size>=9,'Melody patterns should differ');
+assert.ok(signatures.size>=18,'Expanded melody patterns should differ');
 document.getElementById('pattern').value='singing';
 setSeed(110);const first=makeSong().events.filter(e=>e.track==='Melodie').slice(0,50).map(e=>e.pitch).join(',');
 setSeed(8201);const next=makeSong().events.filter(e=>e.track==='Melodie').slice(0,50).map(e=>e.pitch).join(',');
@@ -56,4 +56,8 @@ for(const length of ['short','full','long']){
  assert.ok(song.events.some(e=>e.track==='Kick'));
  assert.ok(song.events.some(e=>e.track==='Bass'));
 }
-console.log('✓ Beatlap Melody Studio checks passed: scripts, controls, moods, motifs, structures, beats and bass');
+for(const id of ['findMelodies','showFavorites','batchCount','batchMix','melodyResults','finderInfo'])assert.ok(html.includes('id="'+id+'"'),'Missing Melody Finder '+id);
+for(const n of ['8','16','32','64'])assert.match(html,new RegExp('option value="'+n+'"'));
+assert.match(html,/function findMelodies\(/);
+assert.match(html,/localStorage\.setItem\('beatlap-melody-favorites-v1'/);
+console.log('✓ Beatlap Melody Studio checks passed: 22 melody styles, batch finder, favorites, moods and song generation');
