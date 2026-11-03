@@ -2,7 +2,7 @@
 <html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Beatlap Sound Generator</title>
 <style>
 :root{color-scheme:dark;font-family:system-ui,sans-serif;background:#0b0910;color:#f5f1fb}*{box-sizing:border-box}body{margin:0;padding:18px;max-width:1050px;margin:auto;background:radial-gradient(circle at 80% 0%,#122d48,transparent 55%),#0b0910;min-height:100vh}h1{font-size:clamp(24px,5vw,38px);margin-bottom:3px}.sub{color:#b9a9c9;margin-top:0}.panel{background:#191525;border:1px solid #383044;border-radius:18px;padding:18px;margin:16px 0}h2{font-size:18px;margin:0 0 14px}.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px}label{display:grid;gap:7px;font-size:13px;color:#c9bbd9}select,input{width:100%;background:#272137;border:1px solid #544766;color:#fff;border-radius:9px;padding:11px}input[type=range]{padding:0;accent-color:#ff4fa0}button{background:linear-gradient(100deg,#ff4fa0,#2f9bff);border:0;border-radius:11px;color:#fff;font-weight:800;padding:13px 16px;cursor:pointer;touch-action:manipulation}button.secondary{background:#30283f;border:1px solid #534763}.buttons{display:flex;gap:9px;flex-wrap:wrap;margin-top:18px}.graph{height:230px;position:relative;overflow:hidden;border-radius:12px;background:repeating-linear-gradient(to bottom,transparent 0 27px,#ffffff0c 28px 29px),linear-gradient(120deg,#0b1822,#181126)}.line{position:absolute;left:0;right:0;height:2px;background:var(--c);box-shadow:0 0 15px var(--c);transform:translateY(-50%);transition:top .5s ease}.line:after{content:attr(data-note);position:absolute;right:12px;top:-19px;color:#fff;font:12px monospace}.dot{width:10px;height:10px;border-radius:50%;background:#fff;box-shadow:0 0 14px var(--c);position:absolute;left:53%;top:-4px}#chordLabel{font-size:34px;font-weight:800;letter-spacing:2px}small{color:#afa2bf}.steps{display:flex;gap:7px;flex-wrap:wrap;margin-top:16px}.step{background:#30283f;border:1px solid #564669;flex:1;min-width:65px;text-align:center;padding:10px;border-radius:9px}.active{outline:2px solid #64d7ff}.footer{color:#9e90ae;font-size:12px;margin:20px 0}a{color:#78c2ff}
-</style></head><body>
+ .candidate-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:14px}.candidate{background:#241d32;border:1px solid #4a3c5e;border-radius:12px;padding:12px}.candidate strong{display:block;margin-bottom:4px}.candidate .sub{font-size:12px;margin:5px 0}.candidate .buttons{margin-top:10px}.candidate button{font-size:12px;padding:9px 10px}.candidate button.saved{background:#773451}\n</style></head><body>
 <h1>BEATLAP <span style="color:#ff4fa0">MELODY STUDIO</span></h1><p class="sub">Komplette Instrumental-Songs und einzigartige Melodien als Vorlage für Suno · PS AI MUSIC</p>
 <section class="panel"><h2>01 · Sound Designer</h2><div class="controls">
 <label>Klangform<select id="wave"><option value="sine">Weich / Sinus</option><option value="triangle" selected>Warm / Dreieck</option><option value="sawtooth">Brillant / Sägezahn</option><option value="square">Kräftig / Rechteck</option></select></label>
@@ -16,7 +16,7 @@
 <label>Tonart<select id="root"><option value="0">C</option><option value="2">D</option><option value="4" selected>E</option><option value="5">F</option><option value="7">G</option><option value="9">A</option><option value="11">B</option></select></label>
 <label>Modus<select id="mode"><option value="minor" selected>Moll</option><option value="major">Dur</option></select></label>
 <label>Tempo<input id="bpm" type="number" min="40" max="200" value="125"></label>
-<label>Melodie-Charakter<select id="pattern"><option value="singing" selected>Gesanglich · eingängig</option><option value="gentle">Sanft · schwebend</option><option value="drive">Treibend · rhythmisch</option><option value="rising">Aufbauend · steigend</option><option value="broken">Gebrochen · verletzlich</option><option value="leaping">Große Tonsprünge</option><option value="arpeggio">Arpeggio · fließend</option><option value="minimal">Wenige starke Töne</option><option value="syncopated">Synkopiert · groovig</option><option value="cinematic">Filmisch · weit</option></select></label>
+<label>Melodie-Charakter<select id="pattern"><option value="singing" selected>Gesanglich · eingängig</option><option value="gentle">Sanft · schwebend</option><option value="drive">Treibend · rhythmisch</option><option value="rising">Aufbauend · steigend</option><option value="broken">Gebrochen · verletzlich</option><option value="leaping">Große Tonsprünge</option><option value="arpeggio">Arpeggio · fließend</option><option value="minimal">Wenige starke Töne</option><option value="syncopated">Synkopiert · groovig</option><option value="cinematic">Filmisch · weit</option><option value="longing">Sehnsucht · lange Bögen</option><option value="question">Fragend · antwortend</option><option value="waltz">Walzerartig · wiegend</option><option value="heartbeat">Herzschlag · pulsierend</option><option value="folk">Folk · schlicht</option><option value="anthem">Hymnisch · groß</option><option value="jazzy">Jazzig · überraschend</option><option value="ostinato">Ostinato · hypnotisch</option><option value="flutter">Flatternd · verspielt</option><option value="tender">Zart · intim</option><option value="dramatic">Dramatische Wendung</option><option value="call">Ruf und Antwort</option></select></label>
 </div><div class="controls" style="margin-top:15px">
 <label>Gefühl<select id="mood"><option value="grief">Sehr traurig · Abschied</option><option value="melancholy" selected>Melancholisch · Sehnsucht</option><option value="nostalgia">Nostalgisch · Erinnerungen</option><option value="hope">Hoffnungsvoll · warm</option><option value="dream">Verträumt · sanft</option><option value="mystery">Geheimnisvoll · düster</option><option value="happy">Fröhlich · leicht</option><option value="euphoria">Euphorisch · groß</option><option value="groove">Peppig · verspielt</option><option value="epic">Dramatisch · kraftvoll</option></select></label>
 <label>Notendichte<select id="density"><option value="sparse">Wenige Noten · viel Raum</option><option value="balanced" selected>Ausgewogen</option><option value="busy">Viele Noten · lebendig</option></select></label>
@@ -31,7 +31,7 @@
 <p id="songInfo" class="sub" aria-live="polite"></p>
 <div class="steps" id="sections"></div>
 <div class="steps" id="steps"></div></section>
-<section class="panel"><h2>03 · Live-Notenvisualisierung</h2><div id="chordLabel">Em</div><p id="notesLabel" class="sub">E · G · B</p><div class="graph" id="graph" role="img" aria-label="Animierte Tonhöhenlinien"></div><p><small>Die Linien zeigen die Tonhöhen des aktuellen Akkords. Die Audio-Ausgabe beginnt nach einer Berührung mit dem Play-Button.</small></p></section>
+<section class="panel" id="finder"><h2>03 · Melodie-Finder <span style="color:#ff4fa0">NEU</span></h2><p class="sub">Viele Ideen auf einmal entdecken, kurz anhören, als Favorit sichern und für Suno übernehmen.</p><div class="controls"><label>Wie viele Melodien?<select id="batchCount"><option value="8">8</option><option value="16" selected>16</option><option value="32">32</option><option value="64">64</option></select></label><label>Varianten mischen<select id="batchMix"><option value="seed">Gewählten Stil behalten</option><option value="style">Verschiedene Melodie-Stile</option><option value="all" selected>Stile und Gefühle mischen</option></select></label></div><div class="buttons"><button id="findMelodies">✨ Melodien finden</button><button id="showFavorites" class="secondary">♡ Favoriten</button></div><p id="finderInfo" class="sub" aria-live="polite">Bereit für neue Ideen.</p><div id="melodyResults" class="candidate-grid"></div></section><section class="panel"><h2>04 · Live-Notenvisualisierung</h2><div id="chordLabel">Em</div><p id="notesLabel" class="sub">E · G · B</p><div class="graph" id="graph" role="img" aria-label="Animierte Tonhöhenlinien"></div><p><small>Die Linien zeigen die Tonhöhen des aktuellen Akkords. Die Audio-Ausgabe beginnt nach einer Berührung mit dem Play-Button.</small></p></section>
 <p class="footer">Beatlap Sound Engine 2.0 · Instrumental-Songgenerator mit Songabschnitten und synthetisierten Beats · PS-Beatlap-Score-1</p>
 <script>
 (()=>{'use strict';
@@ -85,7 +85,7 @@ singing:[0,1,2,1,2,4,2,0],gentle:[2,1,0,null,1,2,1,null],
 drive:[0,2,1,2,0,4,2,1],rising:[0,1,2,3,2,4,3,4],
 broken:[4,2,null,1,0,null,2,1],leaping:[0,4,1,5,2,4,0,3],
 arpeggio:[0,1,2,4,2,1,0,2],minimal:[0,null,null,2,null,1,null,0],
-syncopated:[null,2,0,1,null,4,2,1],cinematic:[0,null,2,4,3,null,2,0]
+syncopated:[null,2,0,1,null,4,2,1],cinematic:[0,null,2,4,3,null,2,0],longing:[0,null,1,2,null,4,3,1],question:[2,1,null,0,2,4,3,2],waltz:[0,2,1,0,1,2,4,2],heartbeat:[0,null,0,2,null,1,0,null],folk:[0,1,2,1,0,2,1,0],anthem:[0,2,4,3,2,4,5,4],jazzy:[2,4,1,3,5,2,0,1],ostinato:[0,1,0,2,0,1,0,4],flutter:[2,3,1,4,2,5,3,1],tender:[1,null,0,1,2,null,1,0],dramatic:[0,4,5,2,1,4,2,0],call:[2,2,1,null,0,1,2,0]
 };
 const moods={
 grief:{density:.60,rests:.32,high:0,legato:1.25},
@@ -253,6 +253,52 @@ $('generate').onclick=()=>{stop();seed=(seed+Math.floor(Math.random()*99999)+1)>
 for(let id of ['length','beatstyle','drums','bass','root','mode','bpm','pattern','mood','density','register'])$(id).addEventListener('change',()=>{stop();drawPlan()});
 $('variation').addEventListener('input',()=>{$('variationV').textContent=$('variation').value+' %';stop();drawPlan()});
 $('preview').onclick=()=>{let ctx=ensureAudio(),t=ctx.currentTime+.025;[60,64,67].forEach(m=>synth(ctx,bus,m,t,1,.65))};
+
+/* Melody Finder 4.0: batches of independently composed song ideas. */
+let finderItems=[],favoriteItems=[];
+try {const stored=JSON.parse(localStorage.getItem('beatlap-melody-favorites-v1')||'[]');if(Array.isArray(stored))favoriteItems=stored.filter(x=>Number.isInteger(x.seed)&&typeof x.style==='string'&&typeof x.mood==='string').slice(0,150)}catch(e){}
+const candidateKey=x=>x.seed+'|'+x.style+'|'+x.mood;
+const saveFavorites=()=>{try{localStorage.setItem('beatlap-melody-favorites-v1',JSON.stringify(favoriteItems.slice(0,150)))}catch(e){}};
+const optionValues=id=>Array.from($(id).options).map(x=>x.value);
+function candidatePanel(item){
+ const card=document.createElement('div');card.className='candidate';
+ const title=document.createElement('strong');title.textContent='Melodie #'+item.seed;card.append(title);
+ const desc=document.createElement('p');desc.className='sub';desc.textContent=item.styleLabel+' · '+item.moodLabel;card.append(desc);
+ const detail=document.createElement('p');detail.className='sub';detail.textContent=item.noteCount+' Melodietöne im Song · Vorschau aus der Strophe';card.append(detail);
+ const controls=document.createElement('div');controls.className='buttons';
+ const listen=document.createElement('button');listen.className='secondary';listen.textContent='▶ Anhören';
+ listen.onclick=()=>{stop();const ctx=ensureAudio(),at=ctx.currentTime+.08,step=60/tempo();item.preview.forEach(n=>synth(ctx,bus,n.pitch,at+n.beat*step,n.duration*step,n.velocity));$('finderInfo').textContent='Vorschau: '+item.styleLabel+' · '+item.moodLabel};
+ const choose=document.createElement('button');choose.textContent='✓ Übernehmen';choose.onclick=()=>{stop();seed=item.seed;$('pattern').value=item.style;$('mood').value=item.mood;drawPlan();$('finderInfo').textContent='Melodie #'+seed+' übernommen. Jetzt kannst du den ganzen Song oder die Suno-Melodie exportieren.';window.scrollTo?.({top:0,behavior:'smooth'})};
+ const fav=document.createElement('button');fav.className='secondary';const update=()=>{let yes=favoriteItems.some(x=>candidateKey(x)===candidateKey(item));fav.textContent=yes?'♥ Gespeichert':'♡ Merken';fav.classList.toggle('saved',yes)};fav.onclick=()=>{let index=favoriteItems.findIndex(x=>candidateKey(x)===candidateKey(item));if(index>=0)favoriteItems.splice(index,1);else favoriteItems.unshift(item);saveFavorites();update()};
+ update();controls.append(listen,choose,fav);card.append(controls);return card;
+}
+function showCandidates(items){$('melodyResults').replaceChildren(...items.map(candidatePanel));$('finderInfo').textContent=items.length+' verschiedene Melodie-Ideen zur Auswahl.'}
+async function findMelodies(){
+ const button=$('findMelodies'),amount=+$('batchCount').value,mix=$('batchMix').value;
+ const original={seed,style:$('pattern').value,mood:$('mood').value};
+ const styles=optionValues('pattern'),feelings=optionValues('mood'),found=[],signatures=new Set();
+ button.disabled=true;button.textContent='Komponiert …';$('melodyResults').replaceChildren();
+ try{
+ let tries=0;
+ while(found.length<amount&&tries<amount*8){
+  tries++;seed=(Math.random()*4294967295)>>>0;
+  if(mix!=='seed')$('pattern').value=styles[Math.floor(Math.random()*styles.length)];
+  if(mix==='all')$('mood').value=feelings[Math.floor(Math.random()*feelings.length)];
+  const candidate=makeSong(),melodyEvents=candidate.events.filter(e=>e.track==='Melodie');
+  const signature=melodyEvents.slice(0,45).map(e=>e.pitch+':'+Math.round(e.beat*4)).join('|');
+  if(signatures.has(signature)||!melodyEvents.length)continue;signatures.add(signature);
+  const style=$('pattern').value,mood=$('mood').value;
+  let preview=melodyEvents.filter(e=>e.beat>=16&&e.beat<32).slice(0,90).map(e=>({pitch:e.pitch,beat:e.beat-16,duration:e.duration,velocity:e.velocity}));
+  if(!preview.length)preview=melodyEvents.slice(0,60).map(e=>({pitch:e.pitch,beat:e.beat,duration:e.duration,velocity:e.velocity}));
+  found.push({seed,style,mood,styleLabel:$('pattern').selectedOptions[0].textContent,moodLabel:$('mood').selectedOptions[0].textContent,noteCount:melodyEvents.length,preview});
+  if(found.length%8===0){$('finderInfo').textContent=found.length+' Melodien komponiert …';await new Promise(resolve=>setTimeout(resolve,0))}
+ }
+ finderItems=found;showCandidates(found);
+ }catch(e){$('finderInfo').textContent='Komponieren fehlgeschlagen: '+e.message}
+ finally{seed=original.seed;$('pattern').value=original.style;$('mood').value=original.mood;button.disabled=false;button.textContent='✨ Melodien finden'}
+}
+$('findMelodies').onclick=findMelodies;
+$('showFavorites').onclick=()=>{showCandidates(favoriteItems);if(!favoriteItems.length)$('finderInfo').textContent='Noch keine Favoriten gespeichert.'};
 drawPlan();
 })();
 </script>
