@@ -27,7 +27,8 @@
 <label>Beat-Stil<select id="beatstyle"><option value="house" selected>Progressive House · 4/4</option><option value="pop">Pop / Ballade</option><option value="break">Hip-Hop / Breakbeat</option></select></label>
 <label>Drums<select id="drums"><option value="full" selected>Komplettes Drumkit</option><option value="soft">Dezent</option><option value="off">Ohne Drums</option></select></label>
 <label>Bass<select id="bass"><option value="on" selected>Tiefer Bass</option><option value="off">Ohne Bass</option></select></label>
-</div><div class="buttons"><button id="play">▶ Ganzen Song spielen</button><button class="secondary" id="melodyOnly">♫ Nur Melodie hören</button><button class="secondary" id="stop">■ Stop</button><button class="secondary" id="generate">↻ Neue Melodie komponieren</button><button class="secondary" id="export">↓ Beatlap JSON</button><button class="secondary" id="wav">↓ Ganzen Song als WAV</button><button class="secondary" id="melodyWav">↓ Melodie als WAV für Suno</button><button class="secondary" id="hookWav">★ Kurzen Suno-Hook als WAV</button></div>
+</div><div class="buttons"><button id="smartCompose">🧠 Komponiere etwas völlig Neues</button><button id="play">▶ Ganzen Song spielen</button><button class="secondary" id="melodyOnly">♫ Nur Melodie hören</button><button class="secondary" id="stop">■ Stop</button><button class="secondary" id="generate">↻ Neue Melodie komponieren</button><button class="secondary" id="export">↓ Beatlap JSON</button><button class="secondary" id="wav">↓ Ganzen Song als WAV</button><button class="secondary" id="melodyWav">↓ Melodie als WAV für Suno</button><button class="secondary" id="hookWav">★ Kurzen Suno-Hook als WAV</button></div>
+<p id="smartInfo" class="sub" aria-live="polite">Smart Composer: Wähle einfach ein Gefühl und lass BEATLAP Tonart, Melodieführung und Rhythmus selbst ausprobieren.</p>
 <p class="sub">Tipp für Suno: Der neue kurze Hook exportiert acht Refrain-Takte als reine Melodie (meist 15–20 Sekunden). Das ist ein klarerer musikalischer Anker als eine drei Minuten lange Tonfolge. Suno kann Vorlagen trotzdem verändern.</p>
 <p id="songInfo" class="sub" aria-live="polite"></p>
 <div class="steps" id="sections"></div>
@@ -78,8 +79,17 @@ let long=[['Intro',8,1],['Strophe 1',16,2],['Pre-Chorus',8,3],['Refrain 1',24,4]
 return ($('length').value==='short'?short:$('length').value==='long'?long:full);
 }
 function chords(){
-let root=+$('root').value,major=$('mode').value==='major',offsets=major?[0,7,9,5]:[0,8,3,10];
-return offsets.map((step,i)=>{let base=48+root+step,minor=major?i===2:i===0;return {name:names[(root+step)%12]+(minor?'m':''),notes:[base,base+(minor?3:4),base+7]};});
+let root=+$('root').value,major=$('mode').value==='major';
+const scale=major?[0,2,4,5,7,9,11]:[0,2,3,5,7,8,10];
+const paths=major?[[0,4,5,3],[0,3,4,0],[5,3,0,4],[0,5,1,4],[0,2,3,4],[3,0,5,4]]:
+ [[0,5,2,6],[0,6,5,2],[0,2,6,3],[0,3,5,2],[0,5,6,2],[0,3,6,4]];
+const degrees=paths[(seed>>>0)%paths.length];
+return degrees.map(d=>{
+ const base=48+root+scale[d],third=scale[(d+2)%7]+((d+2)>=7?12:0)-scale[d];
+ const fifth=scale[(d+4)%7]+((d+4)>=7?12:0)-scale[d];
+ const quality=third===3?'m':third===4?'': 'dim';
+ return {name:names[(root+scale[d])%12]+quality,notes:[base,base+third,base+fifth]};
+});
 }
 const motifShapes={
 singing:[0,1,2,1,2,4,2,0],gentle:[2,1,0,null,1,2,1,null],
@@ -254,6 +264,69 @@ let graph=$('graph');graph.replaceChildren();
 chord.notes.forEach((n,i)=>{let el=document.createElement('div');el.className='line';el.style.setProperty('--c',['#56f0ec','#a37dff','#f4f5ff'][i]);el.style.top=(80-(n-48)*2.3)+'%';el.dataset.note=note(n);let dot=document.createElement('span');dot.className='dot';el.append(dot);graph.append(el)});
 }
 function drawPlan(){plan=makeSong();$('sections').replaceChildren(...plan.sections.map(s=>{let el=document.createElement('div');el.className='step';el.textContent=s.name;return el}));$('steps').replaceChildren(...plan.harmony.map(c=>{let el=document.createElement('div');el.className='step';el.textContent=c.name;return el}));let minutes=plan.totalBeats*60/plan.bpm/60,melodic=plan.events.filter(e=>e.track==='Melodie').length;$('songInfo').textContent='Komposition #'+seed+' · '+plan.sections.length+' Songabschnitte · '+plan.totalBeats/4+' Takte · '+minutes.toFixed(1)+' Minuten · '+melodic+' Melodietöne';drawAt(0);}
+// Smart Composer: deterministic music-theory heuristics, no external AI service.
+let previousSmart=[];
+const near=(actual,target,width)=>Math.max(0,1-Math.abs(actual-target)/width);
+function evaluateComposition(song){
+ const section=song.sections.find(s=>s.name.includes('Refrain'))||song.sections[0];
+ const from=section.start,melody=song.events.filter(e=>e.track==='Melodie'&&e.beat>=from&&e.beat<from+32);
+ if(melody.length<12)return {score:-1000,fingerprint:[]};
+ const pitches=melody.map(e=>e.pitch),intervals=pitches.slice(1).map((p,i)=>p-pitches[i]);
+ const gaps=melody.slice(1).map((e,i)=>e.beat-melody[i].beat);
+ const span=Math.max(...pitches)-Math.min(...pitches);
+ const steps=intervals.filter(x=>Math.abs(x)<=4).length/intervals.length;
+ const leaps=intervals.filter(x=>Math.abs(x)>=7&&Math.abs(x)<=12).length/intervals.length;
+ const wild=intervals.filter(x=>Math.abs(x)>12).length/intervals.length;
+ const repeats=intervals.filter(x=>x===0).length/intervals.length;
+ const uniqueNotes=new Set(pitches.map(p=>((p%12)+12)%12)).size;
+ const uniqueRhythms=new Set(gaps.map(x=>Math.round(x*4))).size;
+ const avgDensity=melody.length/8;
+ const chordTones=melody.filter(e=>{
+  const chord=song.harmony[Math.floor(e.beat/4)%4];
+  return chord.notes.some(n=>(n%12+12)%12===(e.pitch%12+12)%12);
+ }).length/melody.length;
+ const rests=gaps.filter((gap,i)=>gap>melody[i].duration+.3).length/gaps.length;
+ // A memorable phrase balances motion, harmonic safety, breathing room and contrast.
+ let score=22*near(steps,.58,.55)+10*near(leaps,.13,.25)+13*near(span,18,24)
+  +9*near(uniqueNotes,6,5)+9*near(uniqueRhythms,4,5)+8*near(avgDensity,5,5)
+  +12*near(chordTones,.58,.52)+9*near(rests,.22,.32)+5*near(repeats,.13,.30)-18*wild;
+ const fingerprint=melody.slice(0,22).map((e,i)=>[i?Math.round((e.beat-melody[i-1].beat)*4):0,i?Math.max(-12,Math.min(12,e.pitch-melody[i-1].pitch)):0]);
+ const similarity=other=>{const length=Math.min(fingerprint.length,other.length);if(!length)return 0;let same=0;for(let i=1;i<length;i++)if(fingerprint[i][0]===other[i][0]&&Math.abs(fingerprint[i][1]-other[i][1])<=2)same++;return same/(length-1)};
+ for(const other of previousSmart)score-=Math.max(0,similarity(other)-.35)*65;
+ return {score,fingerprint};
+}
+async function smartCompose(){
+ const button=$('smartCompose'),info=$('smartInfo'),ids=['root','mode','pattern','melodyDna','density','register','variation'];
+ const original=Object.fromEntries(ids.map(id=>[id,$(id).value]));const oldSeed=seed;
+ const roots=optionValues('root'),styles=optionValues('pattern');
+ const mood=$('mood').value,quiet=['grief','melancholy','nostalgia','dream','mystery'].includes(mood);
+ const candidates=[],count=36;let best=null;
+ stop();button.disabled=true;button.textContent='🧠 BEATLAP komponiert …';
+ try{
+  for(let i=0;i<count;i++){
+   seed=(Math.random()*4294967295)>>>0;
+   $('root').value=roots[Math.floor(Math.random()*roots.length)];
+   $('mode').value=quiet?Math.random()<.8?'minor':'major':Math.random()<.65?'major':'minor';
+   $('pattern').value=styles[Math.floor(Math.random()*styles.length)];
+   $('melodyDna').value=dnaNames[Math.floor(Math.random()*dnaNames.length)];
+   $('density').value=quiet&&Math.random()<.55?'sparse':Math.random()<.35?'busy':'balanced';
+   $('register').value=quiet&&Math.random()<.45?'low':Math.random()<.3?'high':'mid';
+   $('variation').value=String(40+Math.floor(Math.random()*12)*5);
+   const song=makeSong(),result=evaluateComposition(song);
+   const settings=Object.fromEntries(ids.map(id=>[id,$(id).value]));
+   candidates.push({seed,settings,...result});
+   if(!best||result.score>best.score)best=candidates[candidates.length-1];
+   if(i%9===8){info.textContent=(i+1)+' / '+count+' Entwürfe geprüft …';await new Promise(resolve=>setTimeout(resolve,0))}
+  }
+  if(!best)throw Error('Keine passende Komposition gefunden');
+  seed=best.seed;for(const id of ids)$(id).value=best.settings[id];
+  $('variationV').textContent=$('variation').value+' %';
+  previousSmart.unshift(best.fingerprint);previousSmart=previousSmart.slice(0,8);
+  drawPlan();
+  info.textContent='Aus '+count+' Entwürfen ausgewählt · '+$('melodyDna').selectedOptions[0].textContent+' · '+$('mode').selectedOptions[0].textContent+' · Tonart '+$('root').selectedOptions[0].textContent+' · musikalischer Prüfwert '+Math.round(best.score)+'. Hör dir den Song oder den Suno-Hook an!';
+ }catch(error){seed=oldSeed;for(const id of ids)$(id).value=original[id];drawPlan();info.textContent='Smart Composer: '+error.message}
+ finally{button.disabled=false;button.textContent='🧠 Komponiere etwas völlig Neues'}
+}
 function stop(){if(clock){clearInterval(clock);clock=null}scheduled=[];live.forEach(s=>{try{s.stop()}catch(e){}});live=[];playing=false;offset=0;previewIndex=-1;$('play').textContent='▶ Ganzen Song spielen';$('melodyOnly').textContent='♫ Nur Melodie hören';}
 function play(solo=false){
 if(playing){stop();return}stop();if(!plan)drawPlan();
@@ -289,6 +362,7 @@ let rendered=await ctx.startRendering();downloadBlob(encodeWav(rendered),hook?'B
 }
 $('play').onclick=()=>play(false);$('melodyOnly').onclick=()=>play(true);$('stop').onclick=stop;$('export').onclick=exportScore;$('wav').onclick=()=>renderWav('full');$('melodyWav').onclick=()=>renderWav('melody');$('hookWav').onclick=()=>renderWav('hook');
 $('generate').onclick=()=>{stop();seed=(seed+Math.floor(Math.random()*99999)+1)>>>0;drawPlan()};
+$('smartCompose').onclick=smartCompose;
 for(let id of ['length','beatstyle','drums','bass','root','mode','bpm','pattern','melodyDna','mood','density','register'])$(id).addEventListener('change',()=>{stop();drawPlan()});
 $('variation').addEventListener('input',()=>{$('variationV').textContent=$('variation').value+' %';stop();drawPlan()});
 $('preview').onclick=()=>{let ctx=ensureAudio(),t=ctx.currentTime+.025;[60,64,67].forEach(m=>synth(ctx,bus,m,t,1,.65))};
