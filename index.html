@@ -34,6 +34,14 @@
 <div class="steps" id="sections"></div>
 <div class="steps" id="steps"></div></section>
 <section class="panel" id="finder"><h2>03 · Melodie-Finder <span style="color:#ff4fa0">NEU</span></h2><p class="sub">Viele Ideen auf einmal entdecken, kurz anhören, als Favorit sichern und für Suno übernehmen.</p><div class="controls"><label>Wie viele Melodien?<select id="batchCount"><option value="8">8</option><option value="16" selected>16</option><option value="32">32</option><option value="64">64</option></select></label><label>Varianten mischen<select id="batchMix"><option value="seed">Gewählten Stil behalten</option><option value="style">Verschiedene Melodie-Stile</option><option value="all" selected>Stile, Gefühle und DNA mischen</option></select></label></div><div class="buttons"><button id="findMelodies">✨ Melodien finden</button><button id="showFavorites" class="secondary">♡ Favoriten</button></div><p id="finderInfo" class="sub" aria-live="polite">Bereit für neue Ideen.</p><div id="melodyResults" class="candidate-grid"></div></section><section class="panel"><h2>04 · Live-Notenvisualisierung</h2><div id="chordLabel">Em</div><p id="notesLabel" class="sub">E · G · B</p><div class="graph" id="graph" role="img" aria-label="Animierte Tonhöhenlinien"></div><p><small>Die Linien zeigen die Tonhöhen des aktuellen Akkords. Die Audio-Ausgabe beginnt nach einer Berührung mit dem Play-Button.</small></p></section>
+<section class="panel" id="beatlapImportPanel">
+<h2>05 · Gespeicherte Melodie importieren 🎹</h2>
+<p class="sub">Importiere deine BEATLAP-JSON-Dateien (PS-Beatlap-Score-1). Die vorhandenen Komponierfunktionen bleiben unverändert.</p>
+<label>BEATLAP-Datei auswählen <input type="file" id="beatlapImportFile" accept=".json,application/json"></label>
+<p id="beatlapImportInfo" class="sub" aria-live="polite">Noch keine Datei geladen.</p>
+<div class="buttons"><button type="button" id="beatlapImportPlay" disabled>▶ Import abspielen</button><button type="button" class="secondary" id="beatlapImportStop">■ Stop</button><button type="button" class="secondary" id="beatlapImportWav" disabled>↓ Import als WAV</button></div>
+<p class="sub"><small>Spielt importierte Notenspuren mit BEATLAP-internen Klängen ab; die ursprünglichen Instrumenten-Samples werden nicht mit der JSON-Datei gespeichert.</small></p>
+</section>
 <p class="footer">Beatlap Sound Engine 2.0 · Instrumental-Songgenerator mit Songabschnitten und synthetisierten Beats · PS-Beatlap-Score-1</p>
 <script>
 (()=>{'use strict';
@@ -418,6 +426,107 @@ async function findMelodies(){
 $('findMelodies').onclick=findMelodies;
 $('showFavorites').onclick=()=>{showCandidates(favoriteItems);if(!favoriteItems.length)$('finderInfo').textContent='Noch keine Favoriten gespeichert.'};
 drawPlan();
+})();
+</script>
+<script>
+/* PS AI MUSIC – additive BEATLAP JSON importer; intentionally isolated from the generator. */
+(()=>{
+'use strict';
+const $=id=>document.getElementById(id);
+const input=$('beatlapImportFile'), info=$('beatlapImportInfo'),play=$('beatlapImportPlay'),stop=$('beatlapImportStop'),wav=$('beatlapImportWav');
+let score=null,ctx=null,voices=[],active=false,timeout=0;
+const pitchToMidi=p=>{
+ if(typeof p==='number'&&Number.isFinite(p)&&p>=0&&p<=127)return p;
+ const m=/^([A-Ga-g])([#b]?)(-?\d+)$/.exec(String(p).trim());
+ if(!m)return null;
+ const base={C:0,D:2,E:4,F:5,G:7,A:9,B:11}[m[1].toUpperCase()];
+ const num=(Number(m[3])+1)*12+base+(m[2]==='#'?1:m[2]==='b'?-1:0);
+ return num>=0&&num<=127?num:null;
+};
+const getEvents=data=>{
+ let ev=[];
+ data.tracks.forEach(track=>{
+  if(!Array.isArray(track.notes))return;
+  track.notes.forEach(n=>{
+   let midi=pitchToMidi(n.pitch),start=Number(n.start),duration=Number(n.duration);
+   if(midi===null||!Number.isFinite(start)||start<0||!Number.isFinite(duration)||duration<=0)return;
+   ev.push({midi,start,duration:Math.min(duration,64),vel:Math.max(.05,Math.min(1,Number(n.velocity) || .7)),volume:Math.max(.05,Math.min(1,Number(track.volume)||.7)),instrument:String(track.instrument||'piano')});
+  });
+ });
+ return ev.sort((a,b)=>a.start-b.start).slice(0,18000);
+};
+function synth(ac,dest,e,start,duration){
+ const osc=ac.createOscillator(),gain=ac.createGain();
+ let hz=440*Math.pow(2,(e.midi-69)/12);
+ osc.type=e.instrument==='bass'?'sine':'triangle';
+ osc.frequency.setValueAtTime(hz,start);
+ let level=.18*e.vel*e.volume;
+ gain.gain.setValueAtTime(.0001,start);
+ gain.gain.linearRampToValueAtTime(level,start+.012);
+ gain.gain.setTargetAtTime(.0001,start+Math.min(duration*.65,.35),Math.max(.04,duration*.2));
+ gain.gain.setValueAtTime(.0001,start+duration+.02);
+ osc.connect(gain);gain.connect(dest);
+ osc.start(start);osc.stop(start+duration+.04);
+ if(ac===ctx)voices.push(osc);
+}
+function end(){active=false;clearTimeout(timeout);voices.forEach(v=>{try{v.stop()}catch{}});voices=[];stop.disabled=true;play.disabled=!score;}
+async function doPlay(){
+ if(!score)return;
+ end();
+ try{
+ ctx=ctx||new (window.AudioContext||window.webkitAudioContext)();
+ await ctx.resume();
+ const bpm=score.bpm,unit=60/bpm,now=ctx.currentTime+.08;
+ let ev=getEvents(score),endBeat=Math.max(...ev.map(e=>e.start+e.duration));
+ for(const e of ev)synth(ctx,ctx.destination,e,now+e.start*unit,e.duration*unit);
+ active=true;stop.disabled=false;play.disabled=true;
+ timeout=setTimeout(end,Math.ceil((endBeat*unit+.25)*1000));
+ info.textContent='▶ '+score.title+' — '+ev.length+' Noten · '+bpm+' BPM';
+ }catch(err){end();info.textContent='Wiedergabe nicht möglich: '+err.message;}
+}
+function encodeWav(buf){
+ let samples=buf.getChannelData(0),out=new ArrayBuffer(44+samples.length*2),view=new DataView(out);
+ const str=(at,s)=>{for(let i=0;i<s.length;i++)view.setUint8(at+i,s.charCodeAt(i))};
+ str(0,'RIFF');view.setUint32(4,out.byteLength-8,true);str(8,'WAVEfmt ');
+ view.setUint32(16,16,true);view.setUint16(20,1,true);view.setUint16(22,1,true);
+ view.setUint32(24,buf.sampleRate,true);view.setUint32(28,buf.sampleRate*2,true);
+ view.setUint16(32,2,true);view.setUint16(34,16,true);str(36,'data');view.setUint32(40,samples.length*2,true);
+ for(let i=0;i<samples.length;i++){let v=Math.max(-1,Math.min(1,samples[i]));view.setInt16(44+i*2,v<0?v*32768:v*32767,true)}
+ return new Blob([out],{type:'audio/wav'});
+}
+input.addEventListener('change',async()=>{
+ end();score=null;wav.disabled=true;play.disabled=true;
+ let f=input.files?.[0];if(!f)return;
+ if(f.size>5e6){info.textContent='Datei zu groß (maximal 5 MB).';return}
+ try{
+ let data=JSON.parse(await f.text());
+ if(data.format!=='PS-Beatlap-Score-1'||!Array.isArray(data.tracks))throw Error('Dies ist keine PS-Beatlap-Score-1-Datei.');
+ if(data.tracks.length>64)throw Error('Zu viele Spuren.');
+ let bpm=Number(data.bpm),events=getEvents(data);
+ if(!Number.isFinite(bpm)||bpm<20||bpm>300||events.length===0)throw Error('Keine gültigen Noten oder Tempo gefunden.');
+ let last=Math.max(...events.map(e=>e.start+e.duration));
+ if(last*60/bpm>600)throw Error('Importierte Melodie ist länger als 10 Minuten.');
+ score={...data,bpm,title:String(data.title||f.name).slice(0,100)};
+ play.disabled=false;wav.disabled=false;
+ info.textContent='✓ '+score.title+' — '+events.length+' Noten, '+data.tracks.length+' Spuren, '+bpm+' BPM';
+ }catch(err){info.textContent='Import fehlgeschlagen: '+err.message;}
+});
+play.addEventListener('click',doPlay);
+stop.addEventListener('click',end);stop.disabled=true;
+wav.addEventListener('click',async()=>{
+ if(!score)return;
+ let old=wav.textContent;wav.disabled=true;wav.textContent='WAV wird erstellt …';
+ try{
+ const events=getEvents(score),unit=60/score.bpm,endBeat=Math.max(...events.map(e=>e.start+e.duration));
+ const sampleRate=22050,length=Math.ceil((endBeat*unit+.3)*sampleRate);
+ const offline=new OfflineAudioContext(1,length,sampleRate);
+ for(const e of events)synth(offline,offline.destination,e,.04+e.start*unit,e.duration*unit);
+ const rendered=await offline.startRendering(),blob=encodeWav(rendered);
+ const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=(score.title.replace(/[^a-z0-9_-]+/gi,'_').slice(0,64)||'Beatlap_Import')+'.wav';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),3e4);
+ info.textContent='✓ WAV exportiert: '+score.title;
+ }catch(err){info.textContent='WAV-Export fehlgeschlagen: '+err.message}
+ finally{wav.disabled=!score;wav.textContent=old;}
+});
 })();
 </script>
 </body></html>
